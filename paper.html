@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>근로계약서 협상</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-navy:#12172a; --ink-navy-deep:#0b0f1c; --parchment:#f1ead8; --ink-text:#211c14;
+    --gold:#c8a133; --gold-bright:#e6c25c;
+    --manager-color:#8a3636; --manager-dark:#652525;
+    --worker-color:#2f6f6b; --worker-dark:#1f4d49;
+    --line:rgba(200,161,51,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(circle at 50% -10%, #1c2340 0%, var(--ink-navy) 45%, var(--ink-navy-deep) 100%);
+    color:var(--parchment); font-family:'Gowun Batang', serif; min-height:100vh;
+    padding:28px 16px 60px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+  .eyebrow{ text-align:center; letter-spacing:0.35em; font-size:11px; color:var(--gold-bright); font-family:-apple-system, sans-serif; margin-bottom:10px; opacity:0.85;}
+  h1{ font-family:'Noto Serif KR', serif; font-weight:900; font-size:24px; line-height:1.35; text-align:center; margin:0 0 6px;}
+  .subtitle{ text-align:center; font-size:13px; color:var(--gold-bright); opacity:0.75; margin-bottom:22px;}
+  .divider{ width:64px;height:2px;margin:0 auto 22px; background:linear-gradient(90deg, transparent, var(--gold), transparent);}
+
+  .card{ background:var(--parchment); color:var(--ink-text); border-radius:4px; padding:20px 18px; margin-bottom:14px;
+    box-shadow:0 12px 26px rgba(0,0,0,0.32); border:1px solid rgba(0,0,0,0.06);}
+  .card-label{ font-family:-apple-system, sans-serif; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--manager-dark); opacity:0.55; margin-bottom:10px; font-weight:600;}
+
+  label{ display:block; font-family:-apple-system, sans-serif; font-size:12.5px; color:var(--gold-bright); margin-bottom:6px; opacity:0.85;}
+  select, input[type=text], input[type=number], textarea{
+    width:100%; background:var(--parchment); color:var(--ink-text); border:1px solid rgba(0,0,0,0.15);
+    border-radius:4px; padding:11px 12px; font-family:-apple-system, sans-serif; font-size:14px; margin-bottom:14px;
+  }
+  textarea{ min-height:70px; resize:vertical; }
+  .row2{ display:flex; gap:10px; }
+  .row2 > div{ flex:1; }
+
+  .story-box{
+    background:var(--ink-navy); border:1px solid var(--line); border-radius:4px; padding:16px; margin-bottom:14px;
+    font-family:'Gowun Batang', serif; font-size:14px; line-height:1.7; color:var(--parchment);
+  }
+  .story-box .tip{
+    margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);
+    font-family:-apple-system, sans-serif; font-size:12.5px; line-height:1.6; color:var(--gold-bright);
+  }
+
+  .info-card{
+    border-radius:4px; padding:16px; margin-bottom:14px; font-family:-apple-system, sans-serif; font-size:12.5px; line-height:1.75;
+    border-left:4px solid;
+  }
+  .info-card.manager{ background:rgba(138,54,54,0.12); border-left-color:var(--manager-color); color:var(--parchment);}
+  .info-card.worker{ background:rgba(47,111,107,0.12); border-left-color:var(--worker-color); color:var(--parchment);}
+  .info-card .info-title{ font-family:'Noto Serif KR', serif; font-weight:700; font-size:14px; margin-bottom:8px;}
+  .info-card ul{ margin:0; padding-left:18px;}
+  .info-card li{ margin-bottom:6px;}
+
+  .choice-group{ margin-bottom:14px; }
+  .choice-group .glabel{ font-family:-apple-system, sans-serif; font-size:12.5px; color:var(--manager-dark); opacity:0.7; margin-bottom:8px; font-weight:600;}
+  .choice-options{ display:flex; flex-wrap:wrap; gap:8px; }
+  .choice-pill{
+    padding:9px 14px; border-radius:20px; border:1.5px solid rgba(0,0,0,0.15); background:rgba(255,255,255,0.5);
+    font-family:-apple-system, sans-serif; font-size:12.5px; cursor:pointer; color:var(--ink-text);
+  }
+  .choice-pill.selected{ background:var(--gold); border-color:var(--gold); color:#2a1e05; font-weight:700;}
+  .choice-pill.multi.selected{ background:var(--worker-color); border-color:var(--worker-color); color:#fff;}
+  .choice-pill.multi.selected::before{ content:'✓ '; }
+  .explain-text{
+    margin-top:8px; font-family:-apple-system, sans-serif; font-size:11.5px; line-height:1.6; color:var(--manager-dark);
+    opacity:0.75; background:rgba(138,54,54,0.06); border-radius:4px; padding:8px 10px;
+  }
+
+  .calc-btn, .confirm-btn{
+    width:100%; border:none; border-radius:4px; padding:15px; font-family:'Noto Serif KR', serif; font-weight:900;
+    font-size:15px; cursor:pointer; margin-bottom:10px;
+  }
+  .calc-btn{ background:rgba(241,234,216,0.12); border:1.5px solid var(--gold-bright); color:var(--gold-bright);}
+  .confirm-btn{ background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#2a1e05; box-shadow:0 10px 24px rgba(200,161,51,0.3);}
+  .confirm-btn:disabled{ opacity:0.35; cursor:not-allowed; box-shadow:none;}
+
+  .ledger{ display:none; }
+  .ledger.show{ display:block; animation:riseIn 0.4s ease both;}
+  @keyframes riseIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+  .ledger-row{ display:flex; justify-content:space-between; font-family:-apple-system, sans-serif; font-size:13px; padding:6px 0; }
+  .ledger-row.minus{ color:var(--manager-dark); }
+  .ledger-row.total{ border-top:1px solid rgba(0,0,0,0.15); margin-top:6px; padding-top:10px; font-weight:700; font-size:14.5px;}
+  .ledger-row.final{ border-top:2px solid var(--ink-text); margin-top:6px; padding-top:10px; font-weight:900; font-size:16px;}
+  .compare-note{ margin-top:10px; font-family:-apple-system, sans-serif; font-size:12px; opacity:0.7; text-align:center;}
+
+  .score-bar-wrap{ margin-top:16px; }
+  .score-labels{ display:flex; justify-content:space-between; font-family:-apple-system, sans-serif; font-size:12px; font-weight:700; margin-bottom:6px;}
+  .score-labels .m{ color:var(--manager-dark); } .score-labels .w{ color:var(--worker-dark); }
+  .score-bar{ height:22px; border-radius:11px; overflow:hidden; display:flex; box-shadow:inset 0 2px 4px rgba(0,0,0,0.15);}
+  .score-bar .seg-m{ background:var(--manager-color); }
+  .score-bar .seg-w{ background:var(--worker-color); }
+
+  .result-section{ display:none; }
+  .result-section.show{ display:block; text-align:center; padding:20px 0;}
+  .seal{
+    width:96px;height:96px;border-radius:50%; margin:0 auto 16px;
+    background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, #8a6a1c 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 14px 30px rgba(200,161,51,0.45);
+    font-family:'Noto Serif KR', serif; font-weight:900; font-size:14px; color:#2a1e05; text-align:center; line-height:1.2;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">2차 회의</div>
+  <h1>근로계약서 협상</h1>
+  <div class="subtitle">— 조건을 조율하고, 손익을 확인하고, 계약을 맺다 —</div>
+  <div class="divider"></div>
+
+  <div id="formSection">
+
+    <div class="card">
+      <div class="card-label">Step 1 · 기본 정보</div>
+      <div class="row2">
+        <div><label>모둠번호</label><input type="text" id="groupNum" placeholder="예: 3"></div>
+        <div><label>학번</label><input type="text" id="studentNum" placeholder="예: 10203"></div>
+      </div>
+      <label>이름</label>
+      <input type="text" id="studentName" placeholder="이름">
+      <label>사업장</label>
+      <select id="workplaceSelect"><option value="">사업장을 선택하세요</option></select>
+      <label>나의 역할</label>
+      <select id="roleSelect">
+        <option value="">역할을 선택하세요</option>
+        <option value="manager">관리직 노동자</option>
+        <option value="worker">실무직 노동자</option>
+      </select>
+      <label>나의 직책</label>
+      <select id="titleSelect"><option value="">사업장·역할을 먼저 선택하세요</option></select>
+    </div>
+
+    <div id="storyBox"></div>
+    <div id="infoCardBox"></div>
+
+    <div class="card" id="termsCard" style="display:none;">
+      <div class="card-label" id="termsLabel">Step 2 · 계약 조건</div>
+      <div id="termsBody"></div>
+    </div>
+
+    <button class="calc-btn" id="calcBtn" style="display:none;">🧮 계산하기</button>
+
+    <div class="card ledger" id="ledgerCard">
+      <div class="card-label" id="ledgerLabel">예상 손익 계산</div>
+      <div id="ledgerBody"></div>
+      <div class="score-bar-wrap">
+        <div class="score-labels"><span class="m" id="scoreManagerLabel">관리직 노동자 0점</span><span class="w" id="scoreWorkerLabel">실무직 노동자 0점</span></div>
+        <div class="score-bar"><div class="seg-m" id="segManager" style="width:50%;"></div><div class="seg-w" id="segWorker" style="width:50%;"></div></div>
+      </div>
+    </div>
+
+    <button class="confirm-btn" id="confirmBtn" disabled>📝 근로계약서 확정</button>
+  </div>
+
+  <div class="result-section" id="resultSection">
+    <div class="seal">계약<br>체결<br>완료</div>
+    <div style="font-family:'Noto Serif KR', serif; font-weight:900; font-size:18px; margin-bottom:8px;">계약이 체결되었습니다</div>
+    <div style="font-family:-apple-system, sans-serif; font-size:13px; opacity:0.85; line-height:1.7;" id="finalSummary"></div>
+  </div>
+
+</div>
+
+<iframe name="contract_hidden_iframe" id="contract_hidden_iframe" style="display:none;"></iframe>
+<form id="contractFormBridge" method="POST" target="contract_hidden_iframe" style="display:none;"
+      action="https://docs.google.com/forms/d/e/1FAIpQLScHlVp5Ob8Ry3wt8CVEtVNe0kYYnVf_ZHcJ0cXQ4QPQ4qAf1w/formResponse">
+  <input type="text" name="entry.1219627582" id="cf_group">
+  <input type="text" name="entry.1629980461" id="cf_workplace">
+  <input type="text" name="entry.392108960" id="cf_role">
+  <input type="text" name="entry.425619824" id="cf_name">
+  <input type="text" name="entry.100026556" id="cf_title">
+  <input type="text" name="entry.257455019" id="cf_terms">
+  <input type="text" name="entry.146711589" id="cf_wage">
+  <input type="text" name="entry.578845929" id="cf_cost">
+  <input type="text" name="entry.1963656756" id="cf_score">
+</form>
+
+<script>
+(function(){
+  const MIN_COST = 2156880; // 2026년 최저월급 기준
+
+  const WORKPLACES = [
+    { key:'로펌', name:'대형 로펌', isDelivery:false,
+      finance:{revenue:60000000, mgmt:5000000, utility:1000000, rent:8000000},
+      managerWage:{type:'월급', options:[6000000,9000000,12000000,15000000]}, workerWage:{type:'월급', options:[3000000,4000000,5000000,6000000]},
+      story:'화려한 유리빌딩 27층, 밤 11시에도 사무실 불이 꺼지지 않는다. 오늘, 이곳에서 일할 사람의 근로조건을 확정지어야 한다.',
+      tipManager:'연장근무가 잦은 만큼, 가산수당 조항을 최소화할수록 인건비를 아낄 수 있어요.',
+      tipWorker:'이 업계는 야근이 많아요. 연장·야간 가산수당을 확실히 챙기면 실수령액이 크게 달라져요.',
+      managers:['대표 변호사','파트너 변호사','시니어 변호사'], workers:['초임 변호사','사무 보조원','인턴 변호사']
+    },
+    { key:'건설사', name:'종합 건설사', isDelivery:false,
+      finance:{revenue:120000000, mgmt:10000000, utility:3000000, rent:4000000},
+      managerWage:{type:'월급', options:[4000000,5000000,6000000,7000000]}, workerWage:{type:'시급', options:[12000,15000,18000,22000]},
+      story:'먼지와 소음이 가득한 공사현장, 오늘도 크레인이 돌아간다. 안전과 임금을 두고 협상 테이블에 앉는다.',
+      tipManager:'위험수당·산재보험 항목을 줄이면 당장은 아끼지만, 사고 시 더 큰 비용이 들 수 있어요.',
+      tipWorker:'위험한 현장일수록 산재보험 적용 여부를 꼭 확인하세요. 다치면 이게 생명줄이에요.',
+      managers:['원청 현장소장','원청 공사팀장','원청 안전관리자'], workers:['하청 일용직 노동자','하청 철근공','하청 신호수']
+    },
+    { key:'병원', name:'대학 병원', isDelivery:false,
+      finance:{revenue:150000000, mgmt:15000000, utility:6000000, rent:7000000},
+      managerWage:{type:'월급', options:[8000000,10000000,13000000,16000000]}, workerWage:{type:'월급', options:[2500000,3000000,3500000,4000000]},
+      story:'새벽 3시, 응급실은 여전히 분주하다. 3교대 근무표 위에서 협상이 시작된다.',
+      tipManager:'3교대는 야간이 필수라 가산수당을 피할 수 없어요. 대신 다른 항목에서 조율해보세요.',
+      tipWorker:'3교대엔 야간근무가 필수로 껴 있어요. 야간 가산수당(통상임금 50%)을 놓치지 마세요.',
+      managers:['병원장','고위 전문의','진료부원장'], workers:['전공의','3교대 간호사','신규 간호사']
+    },
+    { key:'IT', name:'IT 대기업', isDelivery:false,
+      finance:{revenue:80000000, mgmt:6000000, utility:1500000, rent:9000000},
+      managerWage:{type:'월급', options:[7000000,9000000,11000000,14000000]}, workerWage:{type:'월급', options:[3000000,3500000,4000000,4500000]},
+      story:'배포 하루 전날 밤, 자리마다 모니터 불빛만 남았다. 마감을 앞두고 조건이 오간다.',
+      tipManager:'정규 근무시간 안에서 끝나는 조건으로 묶으면 가산수당 지출을 최소화할 수 있어요.',
+      tipWorker:'마감 시즌엔 연장근무가 뻔해요. 미리 연장수당 조항을 확실히 해두는 게 유리해요.',
+      managers:['본사 임원진','본사 팀장','본사 PM'], workers:['파견직 QA','유지보수 개발자','파견직 개발자']
+    },
+    { key:'프랜차이즈', name:'대형 프랜차이즈', isDelivery:false,
+      finance:{revenue:30000000, mgmt:3000000, utility:1500000, rent:4000000},
+      managerWage:{type:'월급', options:[3500000,4500000,5500000,6500000]}, workerWage:{type:'시급', options:[10320,11500,13000,15000]},
+      story:'퇴근길 손님이 몰려드는 저녁 7시, 주방은 정신이 없다. 최저시급 언저리에서 협상이 오간다.',
+      tipManager:'이 업종은 마진이 박해요. 최저임금에 가깝게 맞출수록 운영이 수월해져요.',
+      tipWorker:'최저임금 밑으로는 절대 안 된다는 걸 명심하세요. 그게 협상의 마지노선이에요.',
+      managers:['본사 대표','본사 슈퍼바이저','가맹 관리팀장'], workers:['가맹점 최저시급 아르바이트생','주방 아르바이트생','야간 아르바이트생']
+    },
+    { key:'방송국', name:'대형 방송국', isDelivery:false,
+      finance:{revenue:50000000, mgmt:5000000, utility:2000000, rent:6000000},
+      managerWage:{type:'월급', options:[6000000,8000000,10000000,12000000]}, workerWage:{type:'월급', options:[2000000,2500000,3000000,3500000]},
+      story:'생방송 30분 전, 스튜디오에 긴장감이 감돈다. 프리랜서 계약서 한 장이 오늘 방송의 운명을 가른다.',
+      tipManager:'프리랜서 계약은 상대적으로 조건을 유연하게 정할 여지가 많아요.',
+      tipWorker:'프리랜서는 4대보험 등 보호가 약해요. 그만큼 임금 자체를 더 높게 요구할 근거가 있어요.',
+      managers:['정규직 책임 프로듀서','정규직 국장','정규직 부장 PD'], workers:['프리랜서 방송작가','프리랜서 스태프','프리랜서 조연출']
+    },
+    { key:'배달', name:'플랫폼 배달 대행사', isDelivery:true,
+      finance:{revenue:25000000, mgmt:2500000, utility:800000, rent:3000000},
+      feeOptions:[2500,3000,3500,4000],
+      story:'비 오는 밤, 배달 알림이 쉴 새 없이 울린다. 오늘 하루도 도로 위에서 시작된다.',
+      tipManager:'위탁계약이라 최저임금 적용 의무가 없어요. 건당 수수료를 낮게 잡을수록 유리해요.',
+      tipWorker:'콜이 몰리는 야간·주말 시간대에 집중하면 건당 수수료 수입이 확 늘어나요. 다만 산재보험 특례 조건은 꼭 챙기세요.',
+      managers:['지역 지사장','플랫폼 운영팀장','물류센터장'], workers:['특수형태근로종사자 배달 라이더','특고 배달 라이더','신입 라이더']
+    },
+    { key:'백화점', name:'대형 백화점', isDelivery:false,
+      finance:{revenue:40000000, mgmt:4000000, utility:2500000, rent:9000000},
+      managerWage:{type:'월급', options:[3500000,4500000,5500000,6500000]}, workerWage:{type:'시급', options:[10320,11500,13000,15000]},
+      story:'세일 기간, 매장은 발 디딜 틈이 없다. 웃는 얼굴 뒤로 계약서 협상이 조용히 진행된다.',
+      tipManager:'시간제·단시간 근무로 묶으면 4대보험 부담을 줄일 수 있어요.',
+      tipWorker:'감정노동 강도가 센 곳이에요. 휴게시간만큼은 꼭 법정 기준대로 확보하세요.',
+      managers:['점장 및 관리직','매장 관리직','영업팀장'], workers:['감정노동 하도급 판매원','하도급 미화원','시간제 판매원']
+    }
+  ];
+
+  const MANAGER_INFO = [
+    '최저임금 하한선: 2026년 기준 시급 10,320원(월 환산 2,156,880원) 밑으로는 절대 못 내려감. 위반 시 3년 이하 징역 또는 2천만원 이하 벌금',
+    '최저임금 미달 계약은 무효 — 억지로 낮게 써도 자동으로 최저임금액으로 대체됨',
+    '수습 감액: 1년 이상 계약 + 수습 3개월 이내면 최저임금의 90%까지 감액 가능 (단순노무직은 예외)',
+    '서면 계약 의무: 근로조건을 서면으로 안 써주면 500만원 이하 벌금',
+    '관리자의 재량권: 법정 최소기준 이상이라면 근무시간·특약사항은 회사 재량'
+  ];
+  const WORKER_INFO = [
+    '최저임금은 권리: 2026년 기준 시급 10,320원 미만 요구는 명백한 위법',
+    '휴게시간 보장: 4시간마다 30분, 8시간마다 1시간 (근로기준법 제54조)',
+    '주휴일 보장: 주 1회 유급휴일 (근로기준법 제55조)',
+    '연장·야간·휴일근로 가산: 통상임금의 50% 가산 지급 (근로기준법 제56조)',
+    '4대보험 가입은 원칙적으로 의무',
+    '계약서 거부는 불법 — 계약서 안 써주면 신고 대상'
+  ];
+  const DELIVERY_INFO = [
+    '근로기준법·최저임금법이 원칙적으로 적용 제외 (개인사업자로 간주)',
+    '산재보험은 일부 특례로 적용되지만, 조건(전속성 등)이 까다로움',
+    '위탁계약서엔 최저임금·휴게시간 관련 보호 조항이 아예 없는 게 정상 — 이게 법의 사각지대'
+  ];
+
+  const EXPLAIN = {
+    period: '정규직/계약직에 따라 고용 안정성이 달라져요. 계약직·수습은 해고나 재계약 거부가 더 쉬워요.',
+    schedule: '3교대는 야간근무가 포함돼서 법적으로 가산수당을 줘야 해요.',
+    overtime: '연장·야간·휴일에 일하면 통상임금의 50%를 추가로 줘야 하는 게 법이에요 (근로기준법 제56조). 안 챙기면 불법이에요.',
+    rest: '일하다 지치지 않게 쉬는 시간이에요. 법적으로 4시간마다 30분은 반드시 줘야 해요 (근로기준법 제54조). 못 쉬면 몸도 마음도 상해요.',
+    holiday: '일주일에 하루는 쉬어도 월급이 깎이지 않는 유급휴일이에요 (근로기준법 제55조). 없으면 계속 쉼 없이 일해야 해요.',
+    insurance: '국민연금·건강보험·고용보험·산재보험을 합쳐 4대보험이라고 해요. 아프거나 다치거나 실직했을 때 나라가 도와주는 최소한의 안전망이에요. 미적용이면 이 보호를 못 받아요.',
+    wage: '같은 사업장이라도 관리직과 실무직은 급여 수준 자체가 달라요. 협상에서 어느 구간을 고를지가 핵심이에요.',
+    timeSlot: '언제 일하느냐에 따라 콜(주문) 수가 달라져요. 야간·주말은 콜이 몰려서 수입이 늘지만, 그만큼 위험도도 높아져요.',
+    injuryIns: '배달 라이더는 원칙적으로 근로기준법 밖에 있지만, 산재보험만은 예외적으로 특례 적용될 수 있어요. 조건(전속성 등)이 까다로워서 놓치기 쉬워요.',
+    special: '법에 없는 추가 조건이에요. 서로 합의하면 계약서에 넣을 수 있어요.'
+  };
+
+  const SPECIAL_TERMS_NORMAL = ['야근수당 별도 지급','명절 상여금 지급','교통비 지원','식대 지원','없음'];
+  const SPECIAL_TERMS_DELIVERY = ['우천 시 수수료 할증','안전장비 지원','사고 시 지원금','없음'];
+
+  const workplaceSelect = document.getElementById('workplaceSelect');
+  const roleSelect = document.getElementById('roleSelect');
+  const titleSelect = document.getElementById('titleSelect');
+  const storyBox = document.getElementById('storyBox');
+  const infoCardBox = document.getElementById('infoCardBox');
+  const termsCard = document.getElementById('termsCard');
+  const termsBody = document.getElementById('termsBody');
+  const calcBtn = document.getElementById('calcBtn');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const ledgerCard = document.getElementById('ledgerCard');
+
+  WORKPLACES.forEach(function(w){
+    const opt = document.createElement('option');
+    opt.value = w.key; opt.textContent = w.name;
+    workplaceSelect.appendChild(opt);
+  });
+
+  function getWorkplace(){ return WORKPLACES.find(function(w){ return w.key === workplaceSelect.value; }); }
+
+  function updateTitleOptions(){
+    const w = getWorkplace();
+    titleSelect.innerHTML = '';
+    if(!w || !roleSelect.value){
+      titleSelect.innerHTML = '<option value="">사업장·역할을 먼저 선택하세요</option>';
+      return;
+    }
+    const list = roleSelect.value === 'manager' ? w.managers : w.workers;
+    titleSelect.innerHTML = '<option value="">직책을 선택하세요</option>' + list.map(function(t){ return '<option value="'+t+'">'+t+'</option>'; }).join('');
+  }
+
+  function updateStoryAndInfo(){
+    const w = getWorkplace();
+    if(!w){ storyBox.innerHTML=''; infoCardBox.innerHTML=''; termsCard.style.display='none'; calcBtn.style.display='none'; return; }
+    const tip = roleSelect.value === 'manager' ? w.tipManager : (roleSelect.value === 'worker' ? w.tipWorker : '');
+    storyBox.innerHTML = '<div class="story-box">' + w.story + (tip ? '<div class="tip">💡 ' + tip + '</div>' : '') + '</div>';
+
+    if(roleSelect.value){
+      let info, cls, title;
+      if(w.isDelivery){
+        info = DELIVERY_INFO; cls='manager'; title='🚴 위탁계약 - 알아둘 것';
+      }else if(roleSelect.value === 'manager'){
+        info = MANAGER_INFO; cls='manager'; title='🏢 관리직 노동자(사용자 측)가 알아야 할 것';
+      }else{
+        info = WORKER_INFO; cls='worker'; title='🙋 실무직 노동자가 알아야 할 것';
+      }
+      infoCardBox.innerHTML = '<div class="info-card ' + cls + '"><div class="info-title">' + title + '</div><ul>' + info.map(function(i){ return '<li>'+i+'</li>'; }).join('') + '</ul></div>';
+    } else {
+      infoCardBox.innerHTML = '';
+    }
+
+    if(w && roleSelect.value){
+      renderTerms(w);
+      termsCard.style.display = 'block';
+      calcBtn.style.display = 'block';
+    } else {
+      termsCard.style.display = 'none';
+      calcBtn.style.display = 'none';
+    }
+    ledgerCard.classList.remove('show');
+    confirmBtn.disabled = true;
+  }
+
+  function pill(name, value, label, checked){
+    return '<button type="button" class="choice-pill ' + (checked?'selected':'') + '" data-group="'+name+'" data-value="'+value+'">'+label+'</button>';
+  }
+
+  function multiPill(name, value, label, checked){
+    return '<button type="button" class="choice-pill multi ' + (checked?'selected':'') + '" data-group="'+name+'" data-value="'+value+'" data-multi="1">'+label+'</button>';
+  }
+
+  function explainBlock(key){
+    return EXPLAIN[key] ? '<div class="explain-text">❓ ' + EXPLAIN[key] + '</div>' : '';
+  }
+
+  function fmtWon(n){ return n.toLocaleString('ko-KR'); }
+
+  function renderTerms(w){
+    document.getElementById('termsLabel').textContent = w.isDelivery ? 'Step 2 · 업무위탁계약 조건' : 'Step 2 · 근로계약 조건';
+    const role = roleSelect.value;
+
+    if(w.isDelivery){
+      const feeOpts = w.feeOptions.map(function(f, i){ return pill('fee', f, f.toLocaleString()+'원/건', i===0); }).join('');
+      const specialOpts = SPECIAL_TERMS_DELIVERY.map(function(s, i){ return multiPill('special', s, s, i===SPECIAL_TERMS_DELIVERY.length-1); }).join('');
+      termsBody.innerHTML =
+        '<div class="choice-group"><div class="glabel">계약 형태</div>' + pill('contractType','위탁','업무위탁계약(개인사업자)',true) + '</div>' +
+        '<div class="choice-group"><div class="glabel">근무 시간대</div>' + pill('timeSlot','주간','주간 위주',true) + pill('timeSlot','야간주말','야간·주말 집중',false) + explainBlock('timeSlot') + '</div>' +
+        '<div class="choice-group"><div class="glabel">산재보험 특례</div>' + pill('injuryIns','적용','특례 적용',true) + pill('injuryIns','미적용','미적용',false) + explainBlock('injuryIns') + '</div>' +
+        '<div class="choice-group"><div class="glabel">건당 수수료</div>' + feeOpts + explainBlock('wage') + '</div>' +
+        '<div class="choice-group"><div class="glabel">특약사항 (복수 선택 가능)</div>' + specialOpts + explainBlock('special') + '</div>';
+    } else {
+      const wageInfo = role === 'manager' ? w.managerWage : w.workerWage;
+      const wageOpts = wageInfo.options.map(function(v, i){
+        const label = wageInfo.type === '시급' ? '시급 ' + fmtWon(v) + '원' : '월급 ' + fmtWon(v/10000) + '만원';
+        return pill('wage', v, label, i===0);
+      }).join('');
+      const specialOpts = SPECIAL_TERMS_NORMAL.map(function(s, i){ return multiPill('special', s, s, i===SPECIAL_TERMS_NORMAL.length-1); }).join('');
+
+      termsBody.innerHTML =
+        '<div class="choice-group"><div class="glabel">근로계약기간</div>' +
+          pill('period','정규직','정규직(기간 정함 없음)',true) + pill('period','1년','1년 계약직',false) + pill('period','6개월','6개월 계약직',false) + pill('period','수습','3개월 수습',false) +
+          explainBlock('period') + '</div>' +
+        '<div class="choice-group"><div class="glabel">근무 형태</div>' +
+          pill('schedule','주간','주간 근무',true) + pill('schedule','3교대','3교대(야간 포함)',false) +
+          explainBlock('schedule') + '</div>' +
+        '<div class="choice-group"><div class="glabel">가산수당 적용 근무 포함? (연장·야간·휴일)</div>' +
+          pill('overtime','포함','포함',false) + pill('overtime','미포함','미포함',true) +
+          explainBlock('overtime') + '</div>' +
+        '<div class="choice-group"><div class="glabel">휴게시간</div>' +
+          pill('rest','준수','법정기준 준수(4시간마다 30분)',true) + pill('rest','미준수','미준수',false) +
+          explainBlock('rest') + '</div>' +
+        '<div class="choice-group"><div class="glabel">주휴일</div>' +
+          pill('holiday','부여','부여',true) + pill('holiday','미부여','미부여',false) +
+          explainBlock('holiday') + '</div>' +
+        '<div class="choice-group"><div class="glabel">4대보험</div>' +
+          pill('insurance','적용','적용',true) + pill('insurance','일부','일부 적용',false) + pill('insurance','미적용','미적용',false) +
+          explainBlock('insurance') + '</div>' +
+        '<div class="choice-group"><div class="glabel">임금 (' + wageInfo.type + ')</div>' + wageOpts + explainBlock('wage') + '</div>' +
+        '<div class="choice-group"><div class="glabel">특약사항 (복수 선택 가능)</div>' + specialOpts + explainBlock('special') + '</div>';
+    }
+
+    termsBody.querySelectorAll('.choice-pill').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const group = btn.dataset.group;
+        if(btn.dataset.multi){
+          if(btn.dataset.value === '없음'){
+            termsBody.querySelectorAll('.choice-pill[data-group="'+group+'"]').forEach(function(b){ b.classList.remove('selected'); });
+            btn.classList.add('selected');
+          } else {
+            termsBody.querySelector('.choice-pill[data-group="'+group+'"][data-value="없음"]').classList.remove('selected');
+            btn.classList.toggle('selected');
+          }
+        } else {
+          termsBody.querySelectorAll('.choice-pill[data-group="'+group+'"]:not([data-multi])').forEach(function(b){ b.classList.remove('selected'); });
+          btn.classList.add('selected');
+        }
+      });
+    });
+  }
+
+  function getSelectedPill(group){
+    const el = termsBody.querySelector('.choice-pill.selected[data-group="'+group+'"]');
+    return el ? el.dataset.value : null;
+  }
+
+  function getSelectedMulti(group){
+    const els = termsBody.querySelectorAll('.choice-pill.selected[data-group="'+group+'"]');
+    return Array.from(els).map(function(e){ return e.dataset.value; });
+  }
+
+  function formatWon(n){
+    return Math.round(n/10000).toLocaleString('ko-KR') + '만원';
+  }
+
+  let lastCalc = null;
+
+  function doCalc(){
+    const w = getWorkplace();
+    if(!w) return;
+    const f = w.finance;
+    const preProfit = f.revenue - f.mgmt - f.utility - f.rent;
+
+    let cost, laborLabel, termsSummary, wageDisplay, minPossible, maxPossible, compareBase;
+
+    if(w.isDelivery){
+      const timeSlot = getSelectedPill('timeSlot') || '주간';
+      const calls = timeSlot === '야간주말' ? 340 : 220;
+      const fee = parseFloat(getSelectedPill('fee')) || 0;
+      cost = fee * calls;
+      laborLabel = '라이더 정산 지급액 (예상 ' + calls + '건 기준)';
+      termsSummary = '위탁계약 / ' + timeSlot + ' / 건당 ' + fee.toLocaleString() + '원 / 산재보험 ' + (getSelectedPill('injuryIns')||'') + ' / 특약: ' + getSelectedMulti('special').join(',');
+      wageDisplay = '건당 ' + fee.toLocaleString() + '원';
+      const feeMin = Math.min.apply(null, w.feeOptions);
+      const feeMax = Math.max.apply(null, w.feeOptions);
+      minPossible = feeMin * 220;
+      maxPossible = feeMax * 340;
+      compareBase = MIN_COST;
+    } else {
+      const wageInfo = roleSelect.value === 'manager' ? w.managerWage : w.workerWage;
+      const wageValue = parseFloat(getSelectedPill('wage')) || 0;
+      let base = wageInfo.type === '시급' ? wageValue * 209 : wageValue;
+      const overtime = getSelectedPill('overtime') === '포함';
+      const insurance = getSelectedPill('insurance');
+      const insRate = insurance === '적용' ? 0.10 : insurance === '일부' ? 0.05 : 0;
+      const premium = overtime ? base * 0.2 : 0;
+      const insCost = base * insRate;
+      cost = base + premium + insCost;
+      laborLabel = '내가 정한 인건비 (이 직원 1명)';
+      termsSummary = [getSelectedPill('period'), getSelectedPill('schedule'), '가산수당 '+getSelectedPill('overtime'), '휴게 '+getSelectedPill('rest'), '주휴 '+getSelectedPill('holiday'), '4대보험 '+getSelectedPill('insurance'), '특약: '+getSelectedMulti('special').join(',')].join(' / ');
+      wageDisplay = wageInfo.type + ' ' + wageValue.toLocaleString() + '원';
+
+      const wMin = Math.min.apply(null, wageInfo.options);
+      const wMax = Math.max.apply(null, wageInfo.options);
+      const baseMin = wageInfo.type === '시급' ? wMin * 209 : wMin;
+      const baseMax = wageInfo.type === '시급' ? wMax * 209 : wMax;
+      minPossible = baseMin;
+      maxPossible = baseMax * 1.2 * 1.10;
+
+      compareBase = MIN_COST * (1 + (overtime ? 0.2 : 0)) * (1 + insRate);
+    }
+
+    const finalProfit = preProfit - cost;
+    const diff = cost - compareBase;
+
+    let workerScore = Math.round(((cost - minPossible) / (maxPossible - minPossible)) * 100);
+    workerScore = Math.max(0, Math.min(100, workerScore));
+    const managerScore = 100 - workerScore;
+
+    document.getElementById('ledgerLabel').textContent = w.isDelivery ? '지사 손익 계산' : '이번 달 우리 사업장 장부';
+    document.getElementById('ledgerBody').innerHTML =
+      '<div class="ledger-row"><span>이번 달 매출</span><span>' + formatWon(f.revenue) + '</span></div>' +
+      '<div class="ledger-row minus"><span>- 관리비</span><span>-' + formatWon(f.mgmt) + '</span></div>' +
+      '<div class="ledger-row minus"><span>- 전기·수도세</span><span>-' + formatWon(f.utility) + '</span></div>' +
+      '<div class="ledger-row minus"><span>- 임대료</span><span>-' + formatWon(f.rent) + '</span></div>' +
+      '<div class="ledger-row total"><span>인건비 반영 전 순이익</span><span>' + formatWon(preProfit) + '</span></div>' +
+      '<div class="ledger-row minus"><span>- ' + laborLabel + '</span><span>-' + formatWon(cost) + '</span></div>' +
+      '<div class="ledger-row final"><span>👉 이 계약 후 남는 돈</span><span>' + formatWon(finalProfit) + '</span></div>' +
+      '<div class="compare-note">(같은 조건에서 임금만 최저임금이었다면 나갈 인건비: ' + formatWon(compareBase) + (Math.abs(diff) < 1000 ? ' → 지금 조건은 정확히 같아요' : ' → 지금 조건은 그보다 ' + formatWon(Math.abs(diff)) + (diff>=0?' 더 나가요':' 덜 나가요')) + ')</div>';
+
+    document.getElementById('scoreManagerLabel').textContent = '관리직 노동자 ' + managerScore + '점';
+    document.getElementById('scoreWorkerLabel').textContent = '실무직 노동자 ' + workerScore + '점';
+    document.getElementById('segManager').style.width = managerScore + '%';
+    document.getElementById('segWorker').style.width = workerScore + '%';
+
+    ledgerCard.classList.add('show');
+    confirmBtn.disabled = false;
+
+    lastCalc = { cost: Math.round(cost), termsSummary: termsSummary, wageDisplay: wageDisplay, workerScore: workerScore, managerScore: managerScore };
+  }
+
+  workplaceSelect.addEventListener('change', function(){ updateTitleOptions(); updateStoryAndInfo(); });
+  roleSelect.addEventListener('change', function(){ updateTitleOptions(); updateStoryAndInfo(); });
+  calcBtn.addEventListener('click', doCalc);
+
+  confirmBtn.addEventListener('click', function(){
+    if(!lastCalc) return;
+    const w = getWorkplace();
+    const myScore = roleSelect.value === 'manager' ? lastCalc.managerScore : lastCalc.workerScore;
+    const roleLabel = roleSelect.value === 'manager' ? '관리직 노동자' : '실무직 노동자';
+
+    try{
+      document.getElementById('cf_group').value = document.getElementById('groupNum').value;
+      document.getElementById('cf_workplace').value = w.name;
+      document.getElementById('cf_role').value = roleLabel;
+      document.getElementById('cf_name').value = document.getElementById('studentNum').value + ' ' + document.getElementById('studentName').value;
+      document.getElementById('cf_title').value = titleSelect.value;
+      document.getElementById('cf_terms').value = lastCalc.termsSummary;
+      document.getElementById('cf_wage').value = lastCalc.wageDisplay;
+      document.getElementById('cf_cost').value = lastCalc.cost;
+      document.getElementById('cf_score').value = myScore;
+      document.getElementById('contractFormBridge').submit();
+    }catch(e){ console.error('구글시트 기록 실패', e); }
+
+    document.getElementById('finalSummary').innerHTML =
+      w.name + ' · ' + titleSelect.value + '<br>' + roleLabel + ' 점수: <b>' + myScore + '점</b>';
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('resultSection').classList.add('show');
+  });
+
+})();
+</script>
+</body>
+</html>
