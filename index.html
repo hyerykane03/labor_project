@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>직업 제비뽑기: 운명의 배정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-navy:#12172a;
+    --ink-navy-deep:#0b0f1c;
+    --parchment:#f1ead8;
+    --ink-text:#211c14;
+    --gold:#c8a133;
+    --gold-bright:#e6c25c;
+    --manager-color:#8a3636;
+    --manager-dark:#652525;
+    --worker-color:#2f6f6b;
+    --worker-dark:#1f4d49;
+    --line:rgba(200,161,51,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(circle at 50% -10%, #1c2340 0%, var(--ink-navy) 45%, var(--ink-navy-deep) 100%);
+    color:var(--parchment);
+    font-family:'Gowun Batang', serif;
+    min-height:100vh;
+    padding:28px 16px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+  .eyebrow{
+    text-align:center; letter-spacing:0.35em; font-size:11px; color:var(--gold-bright);
+    font-family:-apple-system, sans-serif; margin-bottom:10px; opacity:0.85;
+  }
+  h1{
+    font-family:'Noto Serif KR', serif; font-weight:900; font-size:26px; line-height:1.35;
+    text-align:center; margin:0 0 6px; text-shadow:0 2px 14px rgba(230,194,92,0.15);
+  }
+  .subtitle{ text-align:center; font-size:14px; color:var(--gold-bright); opacity:0.75; margin-bottom:26px; }
+  .divider{ width:64px;height:2px;margin:0 auto 26px; background:linear-gradient(90deg, transparent, var(--gold), transparent); }
+
+  .card{
+    background:var(--parchment); color:var(--ink-text); border-radius:4px; padding:22px 20px; margin-bottom:16px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.4) inset;
+    border:1px solid rgba(0,0,0,0.06); animation:riseIn 0.5s ease both;
+  }
+  @keyframes riseIn{ from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);} }
+  .card-label{
+    font-family:-apple-system, sans-serif; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--manager-dark); opacity:0.55; margin-bottom:10px; font-weight:600;
+  }
+  label{
+    display:block; font-family:-apple-system, sans-serif; font-size:12.5px; letter-spacing:0.05em;
+    color:var(--gold-bright); margin-bottom:8px; opacity:0.85;
+  }
+  textarea{
+    width:100%; background:var(--parchment); color:var(--ink-text); border:1px solid rgba(0,0,0,0.15);
+    border-radius:4px; padding:13px 14px; font-family:-apple-system, sans-serif; font-size:14px;
+    min-height:150px; line-height:1.7; resize:vertical;
+  }
+  .hint{
+    font-family:-apple-system, sans-serif; font-size:11.5px; color:var(--parchment); opacity:0.55;
+    margin-top:8px; line-height:1.6;
+  }
+  .count-badge{
+    display:inline-block; margin-top:10px; background:var(--ink-navy); color:var(--gold-bright);
+    border:1px solid var(--line); border-radius:20px; padding:5px 14px; font-family:-apple-system, sans-serif;
+    font-size:12.5px;
+  }
+
+  .draw-btn{
+    width:100%; background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#2a1e05; border:none;
+    border-radius:4px; padding:17px; font-family:'Noto Serif KR', serif; font-weight:900; font-size:16px;
+    letter-spacing:0.05em; cursor:pointer; box-shadow:0 10px 26px rgba(200,161,51,0.3); transition:transform 0.15s, opacity 0.2s;
+  }
+  .draw-btn:active{ transform:scale(0.98); }
+  .draw-btn:disabled{ opacity:0.35; cursor:not-allowed; box-shadow:none; }
+
+  .warn{
+    display:none; background:rgba(138,54,54,0.15); border:1px solid var(--manager-color); color:#f1c9c9;
+    border-radius:4px; padding:12px 14px; font-family:-apple-system, sans-serif; font-size:12.5px; margin-top:14px; line-height:1.6;
+  }
+  .warn.show{ display:block; }
+
+  #resultSection{ display:none; }
+  #resultSection.show{ display:block; }
+
+  .result-title{
+    font-family:'Noto Serif KR', serif; font-weight:900; font-size:20px; text-align:center; margin:8px 0 22px;
+  }
+
+  .group-card{
+    background:var(--parchment); color:var(--ink-text); border-radius:4px; padding:0; margin-bottom:16px;
+    box-shadow:0 12px 26px rgba(0,0,0,0.3); overflow:hidden; opacity:0; transform:translateY(16px) scale(0.97);
+    animation:stampCard 0.5s cubic-bezier(.2,1,.4,1) forwards;
+  }
+  @keyframes stampCard{ to{opacity:1; transform:translateY(0) scale(1);} }
+  .group-head{
+    background:var(--ink-navy); color:var(--gold-bright); padding:14px 18px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .group-head .gname{ font-family:'Noto Serif KR', serif; font-weight:700; font-size:15px; }
+  .group-head .wname{ font-family:-apple-system, sans-serif; font-size:12.5px; opacity:0.85; }
+  .member-row{
+    padding:12px 18px; border-bottom:1px solid rgba(0,0,0,0.06);
+  }
+  .member-row:last-child{ border-bottom:none; }
+  .member-top{ display:flex; justify-content:space-between; align-items:center; }
+  .member-name{ font-family:-apple-system, sans-serif; font-size:14px; font-weight:600; }
+  .member-title{ font-family:-apple-system, sans-serif; font-size:11.5px; opacity:0.6; margin-top:2px; }
+  .member-desc{
+    font-family:-apple-system, sans-serif; font-size:11.5px; opacity:0.75; margin-top:6px; line-height:1.55;
+    padding-left:10px; border-left:2px solid rgba(0,0,0,0.1);
+  }
+  .role-badge{
+    font-family:-apple-system, sans-serif; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; color:#fff; white-space:nowrap;
+    flex-shrink:0; margin-left:10px;
+  }
+  .role-badge.manager{ background:var(--manager-color); }
+  .role-badge.worker{ background:var(--worker-color); }
+
+  .action-row{ display:flex; gap:10px; margin-top:20px; }
+  .action-btn{
+    flex:1; background:none; border:1px solid var(--line); color:var(--gold-bright);
+    font-family:-apple-system, sans-serif; font-size:13px; padding:13px; border-radius:4px; cursor:pointer;
+  }
+  .copy-toast{
+    display:none; text-align:center; font-family:-apple-system, sans-serif; font-size:12px; color:var(--gold-bright);
+    margin-top:10px; opacity:0.9;
+  }
+  .copy-toast.show{ display:block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">직업 제비뽑기</div>
+  <h1>운명의 배정<br>당신의 자리는 어디인가</h1>
+  <div class="subtitle">— 8대 가상 사업장, 관리직 노동자 혹은 실무직 노동자 —</div>
+  <div class="divider"></div>
+
+  <div id="formSection">
+    <div class="card">
+      <div class="card-label">Step 1 · 명단 입력</div>
+      <label for="rosterInput">학생 명단 (한 줄에 한 명씩)</label>
+      <textarea id="rosterInput" placeholder="10101 김민준&#10;10102 이서연&#10;10103 박도윤&#10;...&#10;(번호 없이 이름만 넣으셔도 돼요)"></textarea>
+      <div class="hint">한 줄에 한 명씩 입력해주세요. "번호 이름" 형식이든 이름만이든 상관없어요.</div>
+      <div class="count-badge" id="countBadge">0명 입력됨</div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Step 2 · 자동 모둠 편성 (4인 조 우선)</div>
+      <div id="groupPreview" style="font-family:-apple-system, sans-serif; font-size:14px; line-height:1.7;">
+        명단을 입력하면 최대한 4인 조로 묶고, 남는 인원은 5~6인 조로 흡수해서 자동 편성돼요.
+      </div>
+    </div>
+
+    <button class="draw-btn" id="drawBtn" disabled>🎲 제비뽑기 시작</button>
+    <div class="warn" id="warnBox"></div>
+  </div>
+
+  <div id="resultSection">
+    <div class="result-title">⚖️ 배정 결과</div>
+    <div id="groupsContainer"></div>
+    <div class="action-row">
+      <button class="action-btn" id="copyBtn">📋 결과 복사하기</button>
+      <button class="action-btn" id="redrawBtn">🔄 다시 뽑기</button>
+    </div>
+    <div class="copy-toast" id="copyToast">복사되었습니다!</div>
+  </div>
+
+</div>
+
+<iframe name="sheet_hidden_iframe" id="sheet_hidden_iframe" style="display:none;"></iframe>
+<form id="resultFormBridge"
+      action="https://docs.google.com/forms/d/e/1FAIpQLSdf43LHMtKuM1uffj5lj1OszNpe5HmfHShbm8e26l-_tq7qRg/formResponse"
+      method="POST" target="sheet_hidden_iframe" style="display:none;">
+  <input type="text" name="entry.1740828749" id="gf_group">
+  <input type="text" name="entry.1584222831" id="gf_workplace">
+  <input type="text" name="entry.1622487629" id="gf_name">
+  <input type="text" name="entry.1275568983" id="gf_role">
+  <input type="text" name="entry.592035247" id="gf_title">
+</form>
+
+<script>
+(function(){
+  const WORKPLACES = [
+    { name:'대형 로펌',
+      managers:[
+        {title:'대표 변호사', desc:'로펌의 최종 의사결정권자로, 사건 수임과 인사·보수를 결정한다.'},
+        {title:'파트너 변호사', desc:'로펌의 지분을 보유한 시니어 변호사로, 수익 배분에 관여한다.'},
+        {title:'시니어 변호사', desc:'다년간 실무 경험을 쌓아 팀을 이끄는 관리자급 변호사다.'}
+      ],
+      workers:[
+        {title:'초임 변호사', desc:'갓 임용되어 야근과 격무에 시달리는 신입 변호사다.'},
+        {title:'사무 보조원', desc:'서류 작업과 일정 관리를 담당하며 고용이 불안정한 경우가 많다.'},
+        {title:'인턴 변호사', desc:'정식 채용 전 실무를 배우는 수습 신분으로 처우가 열악하다.'}
+      ]
+    },
+    { name:'종합 건설사',
+      managers:[
+        {title:'원청 현장소장', desc:'공사 전체를 총괄 지휘하며 하청업체를 관리·감독한다.'},
+        {title:'원청 공사팀장', desc:'공정 진행과 예산을 관리하는 원청 소속 관리자다.'},
+        {title:'원청 안전관리자', desc:'산업안전 규정을 감독하지만 원청 소속으로 신분이 안정적이다.'}
+      ],
+      workers:[
+        {title:'하청 일용직 노동자', desc:'그날그날 고용되어 산업재해 위험이 크고 고용이 불안정하다.'},
+        {title:'하청 철근공', desc:'위험한 고강도 육체노동을 담당하는 전문 기능직 하청 노동자다.'},
+        {title:'하청 신호수', desc:'중장비 이동을 신호로 통제하며 사고 위험에 가장 크게 노출된다.'}
+      ]
+    },
+    { name:'대학 병원',
+      managers:[
+        {title:'병원장', desc:'병원 경영 전반을 총괄하는 최고 책임자다.'},
+        {title:'고위 전문의', desc:'임상과를 이끌며 전공의와 간호사를 지도·감독한다.'},
+        {title:'진료부원장', desc:'진료 정책과 의료진 인사에 관여하는 고위 관리자다.'}
+      ],
+      workers:[
+        {title:'전공의', desc:'수련 중인 의사로 살인적인 당직 근무에 시달리는 경우가 많다.'},
+        {title:'3교대 간호사', desc:'밤낮 없이 교대 근무하며 감정노동과 격무에 시달린다.'},
+        {title:'신규 간호사', desc:'갓 입사해 조직문화 적응의 부담을 크게 겪는다.'}
+      ]
+    },
+    { name:'IT 대기업',
+      managers:[
+        {title:'본사 임원진', desc:'회사의 전략과 인사, 예산을 최종 결정한다.'},
+        {title:'본사 팀장', desc:'정규직으로 프로젝트와 팀원을 관리한다.'},
+        {title:'본사 PM', desc:'일정과 요구사항을 조율하는 정규직 관리자다.'}
+      ],
+      workers:[
+        {title:'파견직 QA', desc:'다른 회사 소속으로 파견되어 품질 검증을 담당하는 비정규직이다.'},
+        {title:'유지보수 개발자', desc:'기존 시스템을 유지·보수하며 고용이 불안정한 경우가 많다.'},
+        {title:'파견직 개발자', desc:'프로젝트 단위로 파견되어 고용 안정성이 낮은 개발자다.'}
+      ]
+    },
+    { name:'대형 프랜차이즈',
+      managers:[
+        {title:'본사 대표', desc:'브랜드 전체 전략과 가맹 정책을 결정한다.'},
+        {title:'본사 슈퍼바이저', desc:'가맹점을 순회 점검하고 본사 지침을 전달한다.'},
+        {title:'가맹 관리팀장', desc:'가맹점 계약과 매출을 관리하는 본사 소속 관리자다.'}
+      ],
+      workers:[
+        {title:'가맹점 최저시급 아르바이트생', desc:'최저임금 수준으로 근무하며 근로조건이 열악한 경우가 많다.'},
+        {title:'주방 아르바이트생', desc:'고온·바쁜 환경에서 단시간 근무하는 비정규 노동자다.'},
+        {title:'야간 아르바이트생', desc:'심야 시간대에 홀로 근무하며 안전 위협에 노출되기 쉽다.'}
+      ]
+    },
+    { name:'대형 방송국',
+      managers:[
+        {title:'정규직 책임 프로듀서', desc:'프로그램 제작을 총괄하며 예산과 인력을 결정한다.'},
+        {title:'정규직 국장', desc:'편성과 인사에 관여하는 고위 관리자다.'},
+        {title:'정규직 부장 PD', desc:'여러 프로그램을 관리·감독하는 정규직 간부다.'}
+      ],
+      workers:[
+        {title:'프리랜서 방송작가', desc:'원고료 기반으로 일하며 고용계약서 없이 일하는 경우가 많다.'},
+        {title:'프리랜서 스태프', desc:'촬영·조명 등을 담당하며 프로젝트 단위로 계약한다.'},
+        {title:'프리랜서 조연출', desc:'정규직 PD를 보조하지만 신분은 프리랜서다.'}
+      ]
+    },
+    { name:'플랫폼 배달 대행사',
+      managers:[
+        {title:'지역 지사장', desc:'배달 대행 지사의 운영과 라이더 배정을 총괄한다.'},
+        {title:'플랫폼 운영팀장', desc:'앱 운영과 정책을 결정하는 본사 소속 관리자다.'},
+        {title:'물류센터장', desc:'배송 물류 거점을 관리하는 정규직 책임자다.'}
+      ],
+      workers:[
+        {title:'특수형태근로종사자 배달 라이더', desc:'개인사업자 신분으로 계약해 노동법 사각지대에 놓인다.'},
+        {title:'특고 배달 라이더', desc:'건당 수수료를 받으며 사고 위험을 스스로 감수한다.'},
+        {title:'신입 라이더', desc:'이제 막 시작해 수입이 불안정하고 안전교육이 부족한 경우가 많다.'}
+      ]
+    },
+    { name:'대형 백화점',
+      managers:[
+        {title:'점장 및 관리직', desc:'매장 운영 전반과 인력 배치를 결정한다.'},
+        {title:'매장 관리직', desc:'매출과 판매원 근무를 관리하는 정규직이다.'},
+        {title:'영업팀장', desc:'여러 매장의 영업 실적을 관리하는 정규직 간부다.'}
+      ],
+      workers:[
+        {title:'감정노동 하도급 판매원', desc:'고객 응대 스트레스가 크지만 하도급 업체 소속으로 처우가 낮다.'},
+        {title:'하도급 미화원', desc:'시설 청소를 담당하며 대부분 하도급 계약직이다.'},
+        {title:'시간제 판매원', desc:'짧은 시간 단위로 근무하며 고용이 매우 불안정하다.'}
+      ]
+    }
+  ];
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const rosterInput = document.getElementById('rosterInput');
+  const countBadge = document.getElementById('countBadge');
+  const groupPreview = document.getElementById('groupPreview');
+  const drawBtn = document.getElementById('drawBtn');
+  const warnBox = document.getElementById('warnBox');
+
+  function getRoster(){
+    return rosterInput.value.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length > 0; });
+  }
+
+  function computeGroupSizes(n){
+    let bestG = null;
+    for(let g = Math.floor(n / 4); g >= 1; g--){
+      if(n <= 6 * g){ bestG = g; break; }
+    }
+    if(bestG === null){
+      bestG = Math.max(1, Math.round(n / 5));
+    }
+    const sizes = new Array(bestG).fill(4);
+    let remaining = n - 4 * bestG;
+    let i = 0;
+    let guard = 0;
+    while(remaining > 0 && guard < 10000){
+      guard++;
+      if(sizes[i] < 6){
+        sizes[i]++;
+        remaining--;
+      }
+      i = (i + 1) % bestG;
+      if(sizes.every(function(s){ return s >= 6; }) && remaining > 0){
+        sizes[sizes.length - 1] += remaining;
+        remaining = 0;
+      }
+    }
+    return sizes;
+  }
+
+  function summarizeSizes(sizes){
+    const counts = {};
+    sizes.forEach(function(s){ counts[s] = (counts[s] || 0) + 1; });
+    const keys = Object.keys(counts).map(Number).sort(function(a,b){ return a-b; });
+    return keys.map(function(k){ return counts[k] + '모둠 × ' + k + '명'; }).join(', ');
+  }
+
+  function updateCount(){
+    const n = getRoster().length;
+    countBadge.textContent = n + '명 입력됨';
+    warnBox.classList.remove('show');
+    if(n === 0){
+      groupPreview.textContent = '명단을 입력하면 최대한 4인 조로 묶고, 남는 인원은 5~6인 조로 흡수해서 자동 편성돼요.';
+      drawBtn.disabled = true;
+      return;
+    }
+    if(n < 4){
+      groupPreview.textContent = '최소 4명 이상 입력해주세요.';
+      drawBtn.disabled = true;
+      return;
+    }
+    const sizes = computeGroupSizes(n);
+    groupPreview.innerHTML = '총 <b>' + n + '명</b> → <b>' + sizes.length + '모둠</b>으로 자동 편성돼요<br><span style="opacity:0.7; font-size:12.5px;">(' + summarizeSizes(sizes) + ')</span>';
+    if(sizes.some(function(s){ return s > 6; })){
+      warnBox.textContent = '⚠️ 인원이 애매해서 일부 모둠이 6명을 넘을 수 있어요. 결과를 확인 후 수동으로 조정해주세요.';
+      warnBox.classList.add('show');
+    }
+    drawBtn.disabled = false;
+  }
+  rosterInput.addEventListener('input', updateCount);
+
+  function dealGroups(names, sizes){
+    const shuffled = shuffle(names);
+    const shuffledSizes = shuffle(sizes);
+    const groups = [];
+    let idx = 0;
+    shuffledSizes.forEach(function(sz){
+      groups.push(shuffled.slice(idx, idx + sz));
+      idx += sz;
+    });
+    return groups;
+  }
+
+  function assignWorkplaces(numGroups){
+    let pool = shuffle(WORKPLACES);
+    const result = [];
+    for(let i = 0; i < numGroups; i++){
+      if(pool.length === 0) pool = shuffle(WORKPLACES);
+      result.push(pool.pop());
+    }
+    return result;
+  }
+
+  function pickTitle(list, idx){
+    const base = list[idx % list.length];
+    const round = Math.floor(idx / list.length);
+    return {
+      title: round > 0 ? base.title + ' (' + (round + 1) + ')' : base.title,
+      desc: base.desc
+    };
+  }
+
+  function assignRoles(group, workplace){
+    const members = shuffle(group);
+    const half = Math.floor(members.length / 2);
+    let managerCount = half;
+    if(members.length % 2 !== 0){
+      managerCount = Math.random() < 0.5 ? half : half + 1;
+    }
+    const managers = members.slice(0, managerCount);
+    const workers = members.slice(managerCount);
+    const managerTitles = shuffle(workplace.managers);
+    const workerTitles = shuffle(workplace.workers);
+    const managerAssignments = managers.map(function(name, i){
+      const t = pickTitle(managerTitles, i);
+      return { name: name, role: 'manager', roleLabel: '관리직 노동자', title: t.title, desc: t.desc };
+    });
+    const workerAssignments = workers.map(function(name, i){
+      const t = pickTitle(workerTitles, i);
+      return { name: name, role: 'worker', roleLabel: '실무직 노동자', title: t.title, desc: t.desc };
+    });
+    return managerAssignments.concat(workerAssignments);
+  }
+
+  let lastResult = null;
+
+  function runDraw(){
+    const roster = getRoster();
+    if(roster.length < 4) return;
+    const sizes = computeGroupSizes(roster.length);
+    const groups = dealGroups(roster, sizes);
+    const workplaces = assignWorkplaces(groups.length);
+    const result = groups.map(function(group, i){
+      return {
+        groupNumber: i + 1,
+        workplace: workplaces[i],
+        members: assignRoles(group, workplaces[i])
+      };
+    });
+    lastResult = result;
+    renderResult(result);
+    submitAllToSheet(result);
+  }
+
+  const sheetQueue = [];
+  let sheetSending = false;
+
+  document.getElementById('sheet_hidden_iframe').addEventListener('load', function(){
+    if(sheetSending){
+      sheetSending = false;
+      processSheetQueue();
+    }
+  });
+
+  function processSheetQueue(){
+    if(sheetSending) return;
+    if(sheetQueue.length === 0) return;
+    const row = sheetQueue.shift();
+    sheetSending = true;
+    try{
+      document.getElementById('gf_group').value = row.groupNumber;
+      document.getElementById('gf_workplace').value = row.workplace;
+      document.getElementById('gf_name').value = row.name;
+      document.getElementById('gf_role').value = row.role;
+      document.getElementById('gf_title').value = row.title;
+      document.getElementById('resultFormBridge').submit();
+    }catch(e){
+      console.error('구글시트 기록 실패', e);
+      sheetSending = false;
+      processSheetQueue();
+    }
+  }
+
+  function submitAllToSheet(result){
+    result.forEach(function(g){
+      g.members.forEach(function(m){
+        sheetQueue.push({
+          groupNumber: g.groupNumber,
+          workplace: g.workplace.name,
+          name: m.name,
+          role: m.roleLabel,
+          title: m.title
+        });
+      });
+    });
+    processSheetQueue();
+  }
+
+  function renderResult(result){
+    const container = document.getElementById('groupsContainer');
+    container.innerHTML = '';
+    result.forEach(function(g, idx){
+      const card = document.createElement('div');
+      card.className = 'group-card';
+      card.style.animationDelay = (idx * 0.12) + 's';
+
+      const head = document.createElement('div');
+      head.className = 'group-head';
+      head.innerHTML = '<span class="gname">모둠 ' + g.groupNumber + '</span><span class="wname">' + g.workplace.name + '</span>';
+      card.appendChild(head);
+
+      g.members.forEach(function(m){
+        const row = document.createElement('div');
+        row.className = 'member-row';
+        row.innerHTML =
+          '<div class="member-top">' +
+            '<div><div class="member-name">' + escapeHtml(m.name) + '</div><div class="member-title">' + escapeHtml(m.title) + '</div></div>' +
+            '<div class="role-badge ' + m.role + '">' + m.roleLabel + '</div>' +
+          '</div>' +
+          '<div class="member-desc">' + escapeHtml(m.desc) + '</div>';
+        card.appendChild(row);
+      });
+
+      container.appendChild(card);
+    });
+
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('resultSection').classList.add('show');
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  drawBtn.addEventListener('click', runDraw);
+
+  document.getElementById('redrawBtn').addEventListener('click', function(){
+    document.getElementById('resultSection').classList.remove('show');
+    document.getElementById('formSection').style.display = 'block';
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function(){
+    if(!lastResult) return;
+    let text = '⚖️ 직업 배정 결과\n\n';
+    lastResult.forEach(function(g){
+      text += '모둠 ' + g.groupNumber + ' · ' + g.workplace.name + '\n';
+      g.members.forEach(function(m){
+        text += '  - ' + m.name + ' : ' + m.roleLabel + ' (' + m.title + ') — ' + m.desc + '\n';
+      });
+      text += '\n';
+    });
+
+    function showToast(){
+      const toast = document.getElementById('copyToast');
+      toast.classList.add('show');
+      setTimeout(function(){ toast.classList.remove('show'); }, 2000);
+    }
+
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(showToast).catch(function(){
+        fallbackCopy(text, showToast);
+      });
+    }else{
+      fallbackCopy(text, showToast);
+    }
+  });
+
+  function fallbackCopy(text, cb){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+    cb();
+  }
+
+})();
+</script>
+</body>
+</html>
