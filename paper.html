@@ -129,6 +129,8 @@
       </div>
       <label>이름</label>
       <input type="text" id="studentName" placeholder="이름">
+      <label>담당 실무자 이름</label>
+      <input type="text" id="partnerName" placeholder="함께 협상한 실무직 노동자 이름 (실무직이면 본인 이름)">
       <label>사업장</label>
       <select id="workplaceSelect"><option value="">사업장을 선택하세요</option></select>
       <label>나의 역할</label>
@@ -137,8 +139,6 @@
         <option value="manager">관리직 노동자</option>
         <option value="worker">실무직 노동자</option>
       </select>
-      <label>나의 직책</label>
-      <select id="titleSelect"><option value="">사업장·역할을 먼저 선택하세요</option></select>
     </div>
 
     <div id="storyBox"></div>
@@ -295,7 +295,6 @@
 
   const workplaceSelect = document.getElementById('workplaceSelect');
   const roleSelect = document.getElementById('roleSelect');
-  const titleSelect = document.getElementById('titleSelect');
   const storyBox = document.getElementById('storyBox');
   const infoCardBox = document.getElementById('infoCardBox');
   const termsCard = document.getElementById('termsCard');
@@ -311,17 +310,6 @@
   });
 
   function getWorkplace(){ return WORKPLACES.find(function(w){ return w.key === workplaceSelect.value; }); }
-
-  function updateTitleOptions(){
-    const w = getWorkplace();
-    titleSelect.innerHTML = '';
-    if(!w || !roleSelect.value){
-      titleSelect.innerHTML = '<option value="">사업장·역할을 먼저 선택하세요</option>';
-      return;
-    }
-    const list = roleSelect.value === 'manager' ? w.managers : w.workers;
-    titleSelect.innerHTML = '<option value="">직책을 선택하세요</option>' + list.map(function(t){ return '<option value="'+t+'">'+t+'</option>'; }).join('');
-  }
 
   function updateStoryAndInfo(){
     const w = getWorkplace();
@@ -383,7 +371,8 @@
         '<div class="choice-group"><div class="glabel">건당 수수료</div>' + feeOpts + explainBlock('wage') + '</div>' +
         '<div class="choice-group"><div class="glabel">특약사항 (복수 선택 가능)</div>' + specialOpts + explainBlock('special') + '</div>';
     } else {
-      const wageInfo = role === 'manager' ? w.managerWage : w.workerWage;
+      // 협상 대상은 항상 '실무직 노동자'의 월급/시급입니다 — 관리직·실무직 어느 쪽에서 봐도 동일한 선택지가 나와야 해요
+      const wageInfo = w.workerWage;
       const wageOpts = wageInfo.options.map(function(v, i){
         const label = wageInfo.type === '시급' ? '시급 ' + fmtWon(v) + '원' : '월급 ' + fmtWon(v/10000) + '만원';
         return pill('wage', v, label, i===0);
@@ -462,15 +451,15 @@
       const fee = parseFloat(getSelectedPill('fee')) || 0;
       cost = fee * calls;
       laborLabel = '라이더 정산 지급액 (예상 ' + calls + '건 기준)';
-      termsSummary = '위탁계약 / ' + timeSlot + ' / 건당 ' + fee.toLocaleString() + '원 / 산재보험 ' + (getSelectedPill('injuryIns')||'') + ' / 특약: ' + getSelectedMulti('special').join(',');
+      termsSummary = '담당 실무자: ' + (document.getElementById('partnerName').value.trim() || '미기재') + ' / 위탁계약 / ' + timeSlot + ' / 건당 ' + fee.toLocaleString() + '원 / 산재보험 ' + (getSelectedPill('injuryIns')||'') + ' / 특약: ' + getSelectedMulti('special').join(',');
       wageDisplay = '건당 ' + fee.toLocaleString() + '원';
       const feeMin = Math.min.apply(null, w.feeOptions);
       const feeMax = Math.max.apply(null, w.feeOptions);
       minPossible = feeMin * 220;
       maxPossible = feeMax * 340;
-      compareBase = MIN_COST;
+      compareBase = MIN_COST; // 배달은 최저임금법 적용 제외이지만 참고용으로 동일 기준 표시
     } else {
-      const wageInfo = roleSelect.value === 'manager' ? w.managerWage : w.workerWage;
+      const wageInfo = w.workerWage; // 협상 대상은 항상 실무직 노동자의 임금
       const wageValue = parseFloat(getSelectedPill('wage')) || 0;
       let base = wageInfo.type === '시급' ? wageValue * 209 : wageValue;
       const overtime = getSelectedPill('overtime') === '포함';
@@ -480,16 +469,17 @@
       const insCost = base * insRate;
       cost = base + premium + insCost;
       laborLabel = '내가 정한 인건비 (이 직원 1명)';
-      termsSummary = [getSelectedPill('period'), getSelectedPill('schedule'), '가산수당 '+getSelectedPill('overtime'), '휴게 '+getSelectedPill('rest'), '주휴 '+getSelectedPill('holiday'), '4대보험 '+getSelectedPill('insurance'), '특약: '+getSelectedMulti('special').join(',')].join(' / ');
+      termsSummary = ['담당 실무자: ' + (document.getElementById('partnerName').value.trim() || '미기재'), getSelectedPill('period'), getSelectedPill('schedule'), '가산수당 '+getSelectedPill('overtime'), '휴게 '+getSelectedPill('rest'), '주휴 '+getSelectedPill('holiday'), '4대보험 '+getSelectedPill('insurance'), '특약: '+getSelectedMulti('special').join(',')].join(' / ');
       wageDisplay = wageInfo.type + ' ' + wageValue.toLocaleString() + '원';
 
       const wMin = Math.min.apply(null, wageInfo.options);
       const wMax = Math.max.apply(null, wageInfo.options);
       const baseMin = wageInfo.type === '시급' ? wMin * 209 : wMin;
       const baseMax = wageInfo.type === '시급' ? wMax * 209 : wMax;
-      minPossible = baseMin;
-      maxPossible = baseMax * 1.2 * 1.10;
+      minPossible = baseMin; // 최저 조건: 가산수당 없음, 보험 없음
+      maxPossible = baseMax * 1.2 * 1.10; // 최고 조건: 가산수당 + 4대보험 완전 적용
 
+      // 같은 가산수당·보험 조건에서, 임금만 법정 최저임금이었다면 나갔을 인건비
       compareBase = MIN_COST * (1 + (overtime ? 0.2 : 0)) * (1 + insRate);
     }
 
@@ -522,8 +512,8 @@
     lastCalc = { cost: Math.round(cost), termsSummary: termsSummary, wageDisplay: wageDisplay, workerScore: workerScore, managerScore: managerScore };
   }
 
-  workplaceSelect.addEventListener('change', function(){ updateTitleOptions(); updateStoryAndInfo(); });
-  roleSelect.addEventListener('change', function(){ updateTitleOptions(); updateStoryAndInfo(); });
+  workplaceSelect.addEventListener('change', function(){ updateStoryAndInfo(); });
+  roleSelect.addEventListener('change', function(){ updateStoryAndInfo(); });
   calcBtn.addEventListener('click', doCalc);
 
   confirmBtn.addEventListener('click', function(){
@@ -537,7 +527,7 @@
       document.getElementById('cf_workplace').value = w.name;
       document.getElementById('cf_role').value = roleLabel;
       document.getElementById('cf_name').value = document.getElementById('studentNum').value + ' ' + document.getElementById('studentName').value;
-      document.getElementById('cf_title').value = titleSelect.value;
+      document.getElementById('cf_title').value = roleLabel;
       document.getElementById('cf_terms').value = lastCalc.termsSummary;
       document.getElementById('cf_wage').value = lastCalc.wageDisplay;
       document.getElementById('cf_cost').value = lastCalc.cost;
@@ -546,7 +536,7 @@
     }catch(e){ console.error('구글시트 기록 실패', e); }
 
     document.getElementById('finalSummary').innerHTML =
-      w.name + ' · ' + titleSelect.value + '<br>' + roleLabel + ' 점수: <b>' + myScore + '점</b>';
+      w.name + ' · ' + roleLabel + '<br>점수: <b>' + myScore + '점</b>';
     document.getElementById('formSection').style.display = 'none';
     document.getElementById('resultSection').classList.add('show');
   });
