@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>운암고등학교 학생자치회 · 행사 기획서 제출</title>
+<style>
+  :root {
+    --paper: #F7F5EF;
+    --paper-line: #E3DECF;
+    --ink: #1C2333;
+    --ink-soft: #5B6272;
+    --navy: #1B2A4A;
+    --navy-deep: #101A30;
+    --gold: #B8863B;
+    --gold-soft: #E7D2A6;
+    --stamp-red: #A3323A;
+    --ok: #3E6B52;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Noto Sans KR', 'Pretendard', -apple-system, sans-serif;
+    background: var(--paper);
+    background-image: linear-gradient(var(--paper-line) 1px, transparent 1px);
+    background-size: 100% 32px;
+    color: var(--ink);
+  }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .masthead { border-bottom: 3px solid var(--navy); padding-bottom: 14px; margin-bottom: 22px; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.14em; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
+  h1 { font-family: 'Noto Serif KR', Georgia, serif; font-size: 25px; margin: 0; color: var(--navy-deep); letter-spacing: -0.01em; }
+  .sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; }
+
+  .card { background: #FFFEFB; border: 1px solid var(--paper-line); border-radius: 4px; box-shadow: 0 1px 0 rgba(28,35,51,0.04); padding: 26px; }
+  .section-title {
+    font-family: 'Noto Serif KR', Georgia, serif; font-size: 14px; font-weight: 700; color: var(--gold);
+    margin: 26px 0 12px; padding-top: 18px; border-top: 1px dashed var(--paper-line);
+  }
+  .section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+  .field { margin-bottom: 18px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  label { display: block; font-size: 12.5px; font-weight: 700; color: var(--navy); margin-bottom: 6px; letter-spacing: 0.01em; }
+  label .req { color: var(--stamp-red); margin-left: 2px; }
+  label .hint { font-weight: 400; color: var(--ink-soft); margin-left: 6px; font-size: 11.5px; }
+  input[type=text], input[type=date], input[type=time], input[type=number], textarea {
+    width: 100%; padding: 10px 12px; font-size: 14px; font-family: inherit;
+    border: 1px solid #D6D0BF; border-radius: 3px; background: #FCFBF7; color: var(--ink);
+  }
+  input:focus, textarea:focus {
+    outline: none; border-color: var(--navy); background: #fff; box-shadow: 0 0 0 3px rgba(27,42,74,0.08);
+  }
+  textarea { min-height: 70px; resize: vertical; line-height: 1.55; }
+
+  .checklist { display: flex; flex-direction: column; gap: 10px; }
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #D6D0BF; border-radius: 3px; background: #FCFBF7; cursor: pointer; flex-wrap: wrap; }
+  .check-item input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--navy); flex-shrink: 0; cursor: pointer; }
+  .ci-label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .ci-role { font-size: 11.5px; color: var(--ink-soft); margin-left: 4px; }
+  .etc-input { flex-basis: 100%; margin-top: 4px; display: none; }
+  .etc-input input { width: 100%; }
+
+  .process-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .process-row .rm-row { background: none; border: 1px solid var(--paper-line); color: var(--ink-soft); border-radius: 3px; width: 34px; height: 38px; cursor: pointer; font-size: 15px; }
+  .process-row .rm-row:hover { color: var(--stamp-red); border-color: var(--stamp-red); }
+  .add-row-btn { margin-top: 4px; background: none; border: 1.5px dashed var(--navy); color: var(--navy); padding: 9px; width: 100%; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 700; font-family: inherit; }
+  .add-row-btn:hover { background: rgba(27,42,74,0.05); }
+
+  .budget-block { border: 1px solid var(--paper-line); border-radius: 3px; padding: 14px; margin-bottom: 12px; background: #FCFBF7; }
+  .budget-block .bt { font-size: 12.5px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+  .budget-grid { display: grid; grid-template-columns: 140px 1fr; gap: 10px; }
+
+  .effect-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .effect-row .en { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--navy); color: var(--paper); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif KR', Georgia, serif; }
+  .effect-row input { flex: 1; }
+
+  .submit-btn { width: 100%; padding: 14px; margin-top: 24px; background: var(--navy); color: var(--paper); border: none; border-radius: 3px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.02em; }
+  .submit-btn:hover { background: var(--navy-deep); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .toast { text-align: center; font-size: 13px; font-weight: 700; color: var(--ok); margin-top: 12px; opacity: 0; transition: opacity .3s; }
+  .toast.show { opacity: 1; }
+  .toast.error { color: var(--stamp-red); }
+
+  @media (max-width: 520px) {
+    .field-row, .budget-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 20px; }
+    .process-row { grid-template-columns: 90px 1fr auto; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="masthead">
+      <div class="eyebrow">운암고등학교 학생자치회</div>
+      <h1>행사 기획서 작성 프로그램</h1>
+      <div class="sub">담당 교사: 김혜리 · 아래 항목을 작성해 제출해주세요</div>
+    </div>
+
+    <div class="card">
+
+      <div class="section-title">기본 정보</div>
+      <div class="field">
+        <label>행사 이름<span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="예: 2학기 아침 자습 챌린지">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>운영부서<span class="req">*</span></label>
+          <input type="text" id="f-dept">
+        </div>
+        <div class="field">
+          <label>제안자<span class="hint">(이름/학년반)</span></label>
+          <input type="text" id="f-author" placeholder="예: 홍길동 (2-3)">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>날짜<span class="req">*</span></label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field">
+          <label>시간<span class="req">*</span></label>
+          <input type="time" id="f-time">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>장소<span class="req">*</span></label>
+          <input type="text" id="f-place" placeholder="예: 중앙현관, 대강당">
+        </div>
+        <div class="field">
+          <label>필요한 인원</label>
+          <input type="text" id="f-people" placeholder="예: 진행요원 6명, 사회 1명">
+        </div>
+      </div>
+
+      <div class="section-title">협조 · 준비</div>
+      <div class="field">
+        <label>협조해야 할 부서</label>
+        <div class="checklist" id="coop-list">
+          <label class="check-item"><input type="checkbox" data-coop="① 학생자치회"><span class="ci-label">① 학생자치회</span></label>
+          <label class="check-item"><input type="checkbox" data-coop="② 조예은 부장님(체육관)"><span class="ci-label">② 조예은 부장님</span><span class="ci-role">체육관 사용 담당자</span></label>
+          <label class="check-item"><input type="checkbox" data-coop="③ 정재원 선생님(방송)"><span class="ci-label">③ 정재원 선생님</span><span class="ci-role">방송 담당자</span></label>
+          <label class="check-item"><input type="checkbox" data-coop="④ 김혜리 선생님(미술 재료)"><span class="ci-label">④ 김혜리 선생님</span><span class="ci-role">미술실 미술 재료 담당자</span></label>
+          <label class="check-item">
+            <input type="checkbox" id="coop-etc-check"><span class="ci-label">⑤ 기타</span>
+            <div class="etc-input" id="etc-input-wrap">
+              <input type="text" id="f-coop-etc" placeholder="협조가 필요한 부서나 담당자를 적어주세요">
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>필요한 준비물</label>
+        <textarea id="f-supplies" placeholder="예: 현수막, 마이크 2대, 스티커 300장"></textarea>
+      </div>
+
+      <div class="section-title">운영 과정</div>
+      <div class="field">
+        <div id="process-rows"></div>
+        <button type="button" class="add-row-btn" onclick="addProcessRow()">+ 줄 추가</button>
+      </div>
+
+      <div class="section-title">예산 계획</div>
+      <div class="field">
+        <div class="budget-block">
+          <div class="bt">운영 예산</div>
+          <div class="budget-grid">
+            <input type="number" id="b-op-amt" placeholder="금액 (원)">
+            <input type="text" id="b-op-purpose" placeholder="용도 (예: 물품 대여비)">
+          </div>
+        </div>
+        <div class="budget-block">
+          <div class="bt">상품 예산</div>
+          <div class="budget-grid">
+            <input type="number" id="b-pz-amt" placeholder="금액 (원)">
+            <input type="text" id="b-pz-purpose" placeholder="용도 (예: 참여 학생 간식)">
+          </div>
+        </div>
+        <div class="budget-block">
+          <div class="bt">기타 예산</div>
+          <div class="budget-grid">
+            <input type="number" id="b-etc-amt" placeholder="금액 (원)">
+            <input type="text" id="b-etc-purpose" placeholder="용도">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">기대 효과</div>
+      <div class="field" id="effect-rows"></div>
+
+      <div class="section-title">기타</div>
+      <div class="field">
+        <label>비고<span class="hint">(그 외 자유롭게 적어주세요)</span></label>
+        <textarea id="f-note" placeholder="추가로 전달하고 싶은 내용을 적어주세요"></textarea>
+      </div>
+
+      <button type="button" class="submit-btn" id="submit-btn" onclick="submitForm()">기획서 제출하기</button>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+<script>
+  // ▼▼▼ 구글 앱스 스크립트 배포 후 나오는 "웹 앱 URL"을 아래 따옴표 안에 붙여넣으세요 ▼▼▼
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1MVAUcteHkj94Qoq4BeK3osi4ldRWuJ19mxSiXOoaABqljoRrFX9SauiCQv64h_uf/exec";
+  // ▲▲▲ 예: "https://script.google.com/macros/s/AKfycb.../exec" ▲▲▲
+
+  const EFFECT_PLACEHOLDERS = ['예: 참여 학생들의 자기주도 학습 습관 형성', '기대 효과 2', '기대 효과 3', '기대 효과 4', '기대 효과 5'];
+
+  document.getElementById('coop-etc-check').addEventListener('change', function(){
+    document.getElementById('etc-input-wrap').style.display = this.checked ? 'block' : 'none';
+  });
+
+  let processRowCount = 0;
+  function addProcessRow() {
+    processRowCount++;
+    const row = document.createElement('div');
+    row.className = 'process-row';
+    row.innerHTML = `
+      <input type="time" class="proc-time">
+      <input type="text" class="proc-content" placeholder="예: 준비 및 정렬">
+      <button type="button" class="rm-row" title="삭제">×</button>
+    `;
+    row.querySelector('.rm-row').addEventListener('click', () => row.remove());
+    document.getElementById('process-rows').appendChild(row);
+  }
+
+  function buildEffectRows() {
+    const wrap = document.getElementById('effect-rows');
+    wrap.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const row = document.createElement('div');
+      row.className = 'effect-row';
+      row.innerHTML = `<div class="en">${i}</div><input type="text" class="effect-input" placeholder="${EFFECT_PLACEHOLDERS[i-1]}">`;
+      wrap.appendChild(row);
+    }
+  }
+
+  function fieldOrAlert(id) {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.focus(); el.style.borderColor = '#A3323A'; return null; }
+    el.style.borderColor = '';
+    return el.value.trim();
+  }
+
+  function resetForm() {
+    ['f-name','f-dept','f-author','f-date','f-time','f-place','f-people','f-supplies',
+     'f-coop-etc','b-op-amt','b-op-purpose','b-pz-amt','b-pz-purpose','b-etc-amt','b-etc-purpose','f-note']
+      .forEach(id => { document.getElementById(id).value = ''; });
+    document.querySelectorAll('#coop-list input[type=checkbox]').forEach(cb => cb.checked = false);
+    document.getElementById('etc-input-wrap').style.display = 'none';
+    document.getElementById('process-rows').innerHTML = '';
+    processRowCount = 0;
+    addProcessRow(); addProcessRow(); addProcessRow();
+    buildEffectRows();
+  }
+
+  function showToast(msg, isError) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', !!isError);
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  async function submitForm() {
+    if (GOOGLE_SCRIPT_URL.indexOf('script.google.com') === -1) {
+      alert('아직 구글 시트 연결이 설정되지 않았어요.\nHTML 파일 안의 GOOGLE_SCRIPT_URL 값을 배포된 웹앱 주소로 바꿔주세요.');
+      return;
+    }
+
+    const name = fieldOrAlert('f-name');
+    const dept = fieldOrAlert('f-dept');
+    const date = fieldOrAlert('f-date');
+    const time = fieldOrAlert('f-time');
+    const place = fieldOrAlert('f-place');
+    if (!name || !dept || !date || !time || !place) return;
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = '제출 중...';
+
+    const coopArr = [];
+    document.querySelectorAll('#coop-list input[type=checkbox]:checked').forEach(cb => {
+      if (cb.id === 'coop-etc-check') {
+        const etc = document.getElementById('f-coop-etc').value.trim();
+        coopArr.push('⑤ 기타' + (etc ? ': ' + etc : ''));
+      } else if (cb.dataset.coop) {
+        coopArr.push(cb.dataset.coop);
+      }
+    });
+
+    const processLines = [];
+    document.querySelectorAll('#process-rows .process-row').forEach(row => {
+      const t = row.querySelector('.proc-time').value;
+      const c = row.querySelector('.proc-content').value.trim();
+      if (t || c) processLines.push(`${t || '--:--'}  ${c}`);
+    });
+
+    const effects = Array.from(document.querySelectorAll('.effect-input')).map(el => el.value.trim());
+
+    const payload = {
+      name, dept,
+      author: document.getElementById('f-author').value.trim(),
+      date, time, place,
+      people: document.getElementById('f-people').value.trim(),
+      coopText: coopArr.join(', '),
+      supplies: document.getElementById('f-supplies').value.trim(),
+      processText: processLines.join('\n'),
+      budgetOpAmt: document.getElementById('b-op-amt').value,
+      budgetOpPurpose: document.getElementById('b-op-purpose').value.trim(),
+      budgetPrizeAmt: document.getElementById('b-pz-amt').value,
+      budgetPrizePurpose: document.getElementById('b-pz-purpose').value.trim(),
+      budgetEtcAmt: document.getElementById('b-etc-amt').value,
+      budgetEtcPurpose: document.getElementById('b-etc-purpose').value.trim(),
+      effect1: effects[0] || '', effect2: effects[1] || '', effect3: effects[2] || '',
+      effect4: effects[3] || '', effect5: effects[4] || '',
+      note: document.getElementById('f-note').value.trim()
+    };
+
+    try {
+      // Apps Script는 CORS 프리플라이트를 지원하지 않으므로 no-cors + text/plain으로 전송합니다.
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify(payload)
+      });
+      resetForm();
+      showToast('제출이 완료되었습니다. 감사합니다!', false);
+    } catch (err) {
+      console.error(err);
+      showToast('제출 중 오류가 발생했습니다. 다시 시도해주세요.', true);
+    } finally {
+      btn.disabled = false; btn.textContent = '기획서 제출하기';
+    }
+  }
+
+  addProcessRow(); addProcessRow(); addProcessRow();
+  buildEffectRows();
+</script>
+</body>
+</html>
