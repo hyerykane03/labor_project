@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>3차 회의: 위기가 찾아온다</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --ink-navy:#12172a; --ink-navy-deep:#0b0f1c; --parchment:#f1ead8; --ink-text:#211c14;
+    --gold:#c8a133; --gold-bright:#e6c25c;
+    --manager-color:#8a3636; --manager-dark:#652525;
+    --worker-color:#2f6f6b; --worker-dark:#1f4d49;
+    --line:rgba(200,161,51,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:radial-gradient(circle at 50% -10%, #1c2340 0%, var(--ink-navy) 45%, var(--ink-navy-deep) 100%);
+    color:var(--parchment); font-family:'Gowun Batang', serif; min-height:100vh;
+    padding:28px 16px 60px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+  .eyebrow{ text-align:center; letter-spacing:0.35em; font-size:14px; color:var(--gold-bright); font-family:-apple-system, sans-serif; margin-bottom:10px; opacity:0.85;}
+  h1{ font-family:'Noto Serif KR', serif; font-weight:900; font-size:26px; line-height:1.35; text-align:center; margin:0 0 6px;}
+  .subtitle{ text-align:center; font-size:14px; color:var(--gold-bright); opacity:0.75; margin-bottom:22px;}
+  .divider{ width:64px;height:2px;margin:0 auto 22px; background:linear-gradient(90deg, transparent, var(--gold), transparent);}
+
+  .card{ background:var(--parchment); color:var(--ink-text); border-radius:4px; padding:20px 18px; margin-bottom:14px;
+    box-shadow:0 12px 26px rgba(0,0,0,0.32); border:1px solid rgba(0,0,0,0.06);}
+  .card-label{ font-family:-apple-system, sans-serif; font-size:11px; letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--manager-dark); opacity:0.55; margin-bottom:10px; font-weight:600;}
+
+  label{ display:block; font-family:-apple-system, sans-serif; font-size:12.5px; color:var(--gold-bright); margin-bottom:6px; opacity:0.85;}
+  input[type=text], textarea{
+    width:100%; background:var(--parchment); color:var(--ink-text); border:1px solid rgba(0,0,0,0.15);
+    border-radius:4px; padding:11px 12px; font-family:-apple-system, sans-serif; font-size:14px; margin-bottom:14px;
+  }
+  textarea{ min-height:110px; resize:vertical; line-height:1.6; }
+  .row2{ display:flex; gap:10px; }
+  .row2 > div{ flex:1; }
+
+  .search-btn, .submit-btn, .download-btn, .action-btn{
+    width:100%; border:none; border-radius:4px; padding:15px; font-family:'Noto Serif KR', serif; font-weight:900;
+    font-size:15px; cursor:pointer; margin-bottom:10px;
+  }
+  .search-btn, .submit-btn{ background:linear-gradient(180deg, var(--gold-bright), var(--gold)); color:#2a1e05; box-shadow:0 10px 24px rgba(200,161,51,0.3);}
+  .download-btn{ background:none; border:1.5px solid var(--gold-bright); color:var(--gold-bright); font-family:-apple-system, sans-serif; font-weight:700; font-size:14px;}
+  .action-btn{ background:rgba(241,234,216,0.12); border:1.5px solid var(--gold-bright); color:var(--gold-bright); font-family:-apple-system, sans-serif; font-size:13px; padding:12px;}
+
+  .story-box{
+    background:var(--ink-navy); border:1px solid var(--line); border-radius:4px; padding:16px; margin-bottom:14px;
+    font-family:'Gowun Batang', serif; font-size:15px; line-height:1.75; color:var(--parchment);
+  }
+  .info-badge{
+    display:inline-block; font-family:-apple-system, sans-serif; font-size:11px; font-weight:700;
+    padding:4px 10px; border-radius:20px; margin-right:6px; margin-bottom:6px;
+  }
+  .badge-worker{ background:var(--worker-color); color:#fff; }
+  .badge-manager{ background:var(--manager-color); color:#fff; }
+
+  .compare-grid{ display:grid; grid-template-columns:1fr; gap:10px; }
+  .compare-box{ border-radius:4px; padding:14px; font-family:-apple-system, sans-serif; font-size:12.5px; line-height:1.7; }
+  .compare-box.good{ background:rgba(47,111,107,0.12); border-left:4px solid var(--worker-color); }
+  .compare-box.bad{ background:rgba(138,54,54,0.12); border-left:4px solid var(--manager-color); }
+  .compare-box .t{ font-family:'Noto Serif KR', serif; font-weight:700; font-size:13.5px; margin-bottom:6px; }
+
+  .terms-list{ font-family:-apple-system, sans-serif; font-size:13px; line-height:2; }
+  .terms-list span{ display:inline-block; background:rgba(0,0,0,0.05); border-radius:4px; padding:3px 9px; margin:0 4px 4px 0; }
+
+  .compare-table{ width:100%; border-collapse:collapse; font-family:-apple-system, sans-serif; font-size:12.5px; }
+  .compare-table th{ text-align:left; padding:8px 6px; font-size:11px; letter-spacing:0.05em; color:var(--manager-dark); opacity:0.7; border-bottom:2px solid rgba(0,0,0,0.15); }
+  .compare-table td{ padding:9px 6px; border-bottom:1px solid rgba(0,0,0,0.08); vertical-align:top; }
+  .compare-table tr.mismatch td{ background:rgba(138,54,54,0.1); }
+  .compare-table tr.mismatch td:first-child{ font-weight:700; color:var(--manager-dark); }
+  .compare-table tr.mismatch td:first-child::before{ content:'⚠️ '; }
+  .compare-table td:first-child{ font-weight:600; white-space:nowrap; opacity:0.75; }
+
+  .explain-text{
+    font-family:-apple-system, sans-serif; font-size:11.5px; line-height:1.6; color:var(--manager-dark);
+    opacity:0.85; background:rgba(138,54,54,0.08); border-radius:4px; padding:9px 11px;
+  }
+
+  .info-card{
+    border-radius:4px; padding:15px; margin-bottom:14px; font-family:-apple-system, sans-serif; font-size:12.5px; line-height:1.7;
+    border-left:4px solid var(--worker-color); background:rgba(47,111,107,0.1); color:var(--ink-text);
+  }
+  .info-card .info-title{ font-family:'Noto Serif KR', serif; font-weight:700; font-size:13.5px; margin-bottom:8px; color:var(--worker-dark); }
+  .info-card ul{ margin:0; padding-left:18px; }
+  .info-card li{ margin-bottom:7px; }
+
+  .choice-group{ margin-bottom:14px; }
+  .choice-group .glabel{ font-family:-apple-system, sans-serif; font-size:12.5px; color:var(--manager-dark); opacity:0.7; margin-bottom:8px; font-weight:600;}
+  .choice-pill{
+    padding:9px 14px; border-radius:20px; border:1.5px solid rgba(0,0,0,0.15); background:rgba(255,255,255,0.5);
+    font-family:-apple-system, sans-serif; font-size:12.5px; cursor:pointer; color:var(--ink-text); margin:0 6px 6px 0;
+  }
+  .choice-pill.selected{ background:var(--worker-color); border-color:var(--worker-color); color:#fff; font-weight:700; }
+  .choice-pill.selected::before{ content:'✓ '; }
+
+  .activity-tag{
+    display:inline-block; font-family:'Noto Serif KR', serif; font-weight:900; font-size:15px;
+    padding:8px 16px; border-radius:4px; margin-bottom:14px; background:var(--gold); color:#2a1e05;
+  }
+
+  .hidden{ display:none !important; }
+
+  .certificate{
+    background:var(--parchment); color:var(--ink-text); border-radius:6px; padding:30px 24px;
+    margin:20px 0; text-align:left; border:2px solid var(--gold); position:relative;
+    box-shadow:0 16px 34px rgba(0,0,0,0.35);
+  }
+  .certificate-header{ text-align:center; margin-bottom:18px; }
+  .certificate-header .ctype{ font-family:-apple-system, sans-serif; font-size:11px; letter-spacing:0.3em; color:var(--manager-dark); opacity:0.6; margin-bottom:6px;}
+  .certificate-header h2{ font-family:'Noto Serif KR', serif; font-size:22px; font-weight:900; margin:0; }
+  .certificate-divider{ width:52px; height:2px; background:var(--gold); margin:14px auto 0; }
+  .cert-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed rgba(0,0,0,0.12); font-family:-apple-system, sans-serif; font-size:12.5px; }
+  .cert-row .k{ opacity:0.6; flex-shrink:0; margin-right:10px; }
+  .cert-row .v{ font-weight:700; text-align:right; }
+  .cert-body-text{ margin-top:14px; font-family:-apple-system, sans-serif; font-size:13px; line-height:1.8; white-space:pre-wrap; }
+  .cert-date{ margin-top:18px; font-family:-apple-system, sans-serif; font-size:11px; opacity:0.5; text-align:center; }
+
+  .error-box{ background:rgba(138,54,54,0.15); border:1px solid var(--manager-color); color:#f1c9c9;
+    border-radius:4px; padding:12px 14px; font-family:-apple-system, sans-serif; font-size:13px; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">3차 회의</div>
+  <h1>위기가 찾아온다</h1>
+  <div class="subtitle">— 나의 계약서는 나를 지켜줄까? —</div>
+  <div class="divider"></div>
+
+  <div id="searchSection">
+    <div class="card">
+      <div class="card-label">Step 1 · 본인 확인</div>
+      <div class="row2">
+        <div><label>학번</label><input type="text" id="numInput" placeholder="예: 20701" inputmode="numeric" maxlength="5"></div>
+        <div><label>이름</label><input type="text" id="nameInput" placeholder="이름"></div>
+      </div>
+    </div>
+    <button class="search-btn" id="searchBtn">🔍 내 시나리오 확인하기</button>
+    <div class="error-box hidden" id="searchError"></div>
+  </div>
+
+  <div id="resultSection" class="hidden">
+
+    <div class="card">
+      <div class="card-label">Step 2 · 위기 상황</div>
+      <div id="roleBadges"></div>
+      <div class="story-box" id="scenarioBox"></div>
+    </div>
+
+    <div class="card" id="guaranteeCard">
+      <div class="card-label">Step 3 · 보장 가능 / 보장 불가</div>
+      <div class="compare-grid" id="guaranteeGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Step 4 · 근로계약서 대조 (나 ↔ 협상 상대)</div>
+      <div id="compareNote" style="font-family:-apple-system, sans-serif; font-size:12px; opacity:0.65; margin-bottom:10px;"></div>
+      <table class="compare-table" id="compareTable"></table>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Step 5 · 문서 작성</div>
+      <div class="activity-tag" id="activityTag"></div>
+      <div id="writingForm"></div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn">📝 작성 완료 · 제출</button>
+  </div>
+
+  <div id="certSection" class="hidden">
+    <div class="certificate" id="certificate">
+      <div class="certificate-header">
+        <div class="ctype" id="certType">DOCUMENT</div>
+        <h2 id="certTitleText">문서</h2>
+        <div class="certificate-divider"></div>
+      </div>
+      <div id="certMeta"></div>
+      <div class="cert-body-text" id="certBodyText"></div>
+      <div class="cert-date" id="certDate"></div>
+    </div>
+    <button class="download-btn" id="downloadBtn">📸 문서 이미지로 저장하기</button>
+    <button class="action-btn" id="restartBtn">🔄 처음으로</button>
+  </div>
+
+</div>
+
+<iframe name="crisis_hidden_iframe" id="crisis_hidden_iframe" style="display:none;"></iframe>
+<form id="crisisFormBridge" method="POST" target="crisis_hidden_iframe" style="display:none;"
+      action="https://docs.google.com/forms/d/e/1FAIpQLSdIFws0ppNRtHEr4K_Z9_hNGygt2QU4q9h5EBcuixPbZLiKPg/formResponse">
+  <input type="text" name="entry.1027985657" id="gf_num">
+  <input type="text" name="entry.1977485153" id="gf_name">
+  <input type="text" name="entry.1780722160" id="gf_class">
+  <input type="text" name="entry.496298038" id="gf_company">
+  <input type="text" name="entry.1975713155" id="gf_role">
+  <input type="text" name="entry.836023071" id="gf_activity">
+  <input type="text" name="entry.639657168" id="gf_selected">
+  <input type="text" name="entry.119526509" id="gf_freetext">
+  <input type="text" name="entry.1742719982" id="gf_partner">
+</form>
+
+<script>
+const STUDENTS = [{"class": "7", "num": "1", "studentId": "20701", "name": "강민주", "company": "대형 방송국", "role": "실무직 노동자", "partner": "김동욱", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,000,000원 / 특약: 야근수당 별도 지급, 교통비 지원", "partnerContractTerms": "", "scenario": "강민주는 대형 방송국에서 생방송 준비로 무리한 일정을 소화하다 실신했다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "7", "num": "2", "studentId": "20702", "name": "강인주", "company": "종합 건설사", "role": "실무직 노동자", "partner": "원아람", "contractTerms": "", "partnerContractTerms": "", "scenario": "(사업장 배정 또는 계약 데이터 없음)", "protected": "", "unprotected": "", "activityType": "해당없음 (참여 불가)"}, {"class": "7", "num": "3", "studentId": "20703", "name": "김민서", "company": "종합 건설사", "role": "관리직 노동자", "partner": "이영은", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 15,000원 / 특약: 교통비 지원", "partnerContractTerms": "", "scenario": "함께 협상했던 실무직 이영은이 종합 건설사에서 작업 중 발판이 무너져 아래로 추락했다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 이영은이 관리자 김민서를 상대로 고소장(진정서)을 접수했다. 관리자 김민서은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "7", "num": "4", "studentId": "20704", "name": "김서원", "company": "대형 백화점", "role": "실무직 노동자", "partner": "이수민", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 명절 상여금 지급, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 명절 상여금 지급, 식대 지원", "scenario": "김서원은 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "7", "num": "5", "studentId": "20705", "name": "김소영", "company": "IT 대기업", "role": "관리직 노동자", "partner": "이화연", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급", "scenario": "함께 협상했던 실무직 이화연이 IT 대기업에서 각각 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 김소영은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 김소영에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "6", "studentId": "20706", "name": "김수민", "company": "대형 로펌", "role": "관리직 노동자", "partner": "현재건", "contractTerms": "계약기간: 수습 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 없음", "partnerContractTerms": "계약기간: 수습 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 식대 지원", "scenario": "함께 협상했던 실무직 현재건이 대형 로펌에서 각각 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 김수민은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 김수민에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "7", "studentId": "20707", "name": "김태이", "company": "대형 로펌", "role": "관리직 노동자", "partner": "김하경", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 식대 지원", "scenario": "함께 협상했던 실무직 김하경이 대형 로펌에서 각각 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 김태이은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 김태이에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "8", "studentId": "20708", "name": "김태희", "company": "플랫폼 배달 대행사", "role": "실무직 노동자", "partner": "이준서", "contractTerms": "근무시간대: 야간주말 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "partnerContractTerms": "근무시간대: 야간주말 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "scenario": "김태희는 플랫폼 배달 대행사에서 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "9", "studentId": "20709", "name": "김하경", "company": "대형 로펌", "role": "실무직 노동자", "partner": "김태이", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 식대 지원", "scenario": "김하경은 대형 로펌에서 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "10", "studentId": "20710", "name": "명아인", "company": "대형 방송국", "role": "실무직 노동자", "partner": "이다혜", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 2,500,000원 / 특약: 명절 상여금 지급, 교통비 지원", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 2,500,000원 / 특약: 명절 상여금 지급, 교통비 지원", "scenario": "명아인은 대형 방송국에서 생방송 준비로 무리한 일정을 소화하다 실신했다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "7", "num": "11", "studentId": "20711", "name": "박민지", "company": "대학 병원", "role": "관리직 노동자", "partner": "김관우", "contractTerms": "계약기간: 6개월 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,000,000원 / 특약: 야근수당 별도 지급, 식대 지원", "partnerContractTerms": "계약기간: 6개월 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,000,000원 / 특약: 야근수당 별도 지급, 식대 지원", "scenario": "함께 협상했던 실무직 김관우가 대학 병원에서 각각 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 박민지은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 박민지에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "12", "studentId": "20712", "name": "안소연", "company": "대형 프랜차이즈", "role": "실무직 노동자", "partner": "박우현", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 야근수당 별도 지급, 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 야근수당 별도 지급, 식대 지원", "scenario": "안소연은 대형 프랜차이즈에서 진상 손님에게 폭언과 폭행을 당했다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "13", "studentId": "20713", "name": "원아람", "company": "종합 건설사", "role": "관리직 노동자", "partner": "강인주", "contractTerms": "", "partnerContractTerms": "", "scenario": "함께 협상했던 실무직 강인주가 종합 건설사에서 작업 중 발판이 무너져 아래로 추락했다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 강인주가 관리자 원아람을 상대로 고소장(진정서)을 접수했다. 관리자 원아람은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "해당없음 (참여 불가)"}, {"class": "7", "num": "14", "studentId": "20714", "name": "원예진", "company": "대형 프랜차이즈", "role": "관리직 노동자", "partner": "고호림", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 식대 지원", "scenario": "함께 협상했던 실무직 담당 실무자가 대형 프랜차이즈에서 진상 손님에게 폭언과 폭행을 당했다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 담당 실무자가 관리자 원예진을 상대로 고소장(진정서)을 접수했다. 관리자 원예진은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "7", "num": "15", "studentId": "20715", "name": "이다혜", "company": "대형 방송국", "role": "관리직 노동자", "partner": "명아인", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 2,500,000원 / 특약: 명절 상여금 지급, 교통비 지원", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 2,500,000원 / 특약: 명절 상여금 지급, 교통비 지원", "scenario": "함께 협상했던 실무직 명아인이 대형 방송국에서 생방송 준비로 무리한 일정을 소화하다 실신했다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 명아인이 관리자 이다혜를 상대로 고소장(진정서)을 접수했다. 관리자 이다혜은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "7", "num": "16", "studentId": "20716", "name": "이수민", "company": "대형 백화점", "role": "관리직 노동자", "partner": "김서원", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 명절 상여금 지급, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 명절 상여금 지급, 식대 지원", "scenario": "함께 협상했던 실무직 김서원이 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 김서원이 관리자 이수민을 상대로 고소장(진정서)을 접수했다. 관리자 이수민은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "7", "num": "17", "studentId": "20717", "name": "이영은", "company": "종합 건설사", "role": "실무직 노동자", "partner": "김민서", "contractTerms": "", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 15,000원 / 특약: 교통비 지원", "scenario": "(사업장 배정 또는 계약 데이터 없음)", "protected": "", "unprotected": "", "activityType": "해당없음 (계약 데이터 없음)"}, {"class": "7", "num": "18", "studentId": "20718", "name": "이준서", "company": "플랫폼 배달 대행사", "role": "관리직 노동자", "partner": "김태희", "contractTerms": "근무시간대: 야간주말 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "partnerContractTerms": "근무시간대: 야간주말 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "scenario": "함께 협상했던 실무직 김태희가 플랫폼 배달 대행사에서 각각 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 이준서은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 이준서에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(산재보험 특례(치료비·요양급여 등))이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "19", "studentId": "20719", "name": "이화연", "company": "IT 대기업", "role": "실무직 노동자", "partner": "김소영", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급", "scenario": "이화연은 IT 대기업에서 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "20", "studentId": "20720", "name": "정하영", "company": "대형 백화점", "role": "관리직 노동자", "partner": "박민성", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 식대 지원", "scenario": "함께 협상했던 실무직 박민성이 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 박민성이 관리자 정하영을 상대로 고소장(진정서)을 접수했다. 관리자 정하영은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "7", "num": "21", "studentId": "20721", "name": "고호림", "company": "대형 프랜차이즈", "role": "실무직 노동자", "partner": "원예진", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 식대 지원", "scenario": "고호림은 대형 프랜차이즈에서 진상 손님에게 폭언과 폭행을 당했다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "22", "studentId": "20722", "name": "김관우", "company": "대학 병원", "role": "실무직 노동자", "partner": "박민지", "contractTerms": "계약기간: 6개월 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,000,000원 / 특약: 야근수당 별도 지급, 식대 지원", "partnerContractTerms": "계약기간: 6개월 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,000,000원 / 특약: 야근수당 별도 지급, 식대 지원", "scenario": "김관우는 대학 병원에서 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "23", "studentId": "20723", "name": "김동욱", "company": "대형 방송국", "role": "관리직 노동자", "partner": "강민주", "contractTerms": "", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,000,000원 / 특약: 야근수당 별도 지급, 교통비 지원", "scenario": "함께 협상했던 실무직 강민주가 대형 방송국에서 생방송 준비로 무리한 일정을 소화하다 실신했다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 강민주가 관리자 김동욱을 상대로 고소장(진정서)을 접수했다. 관리자 김동욱은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "7", "num": "24", "studentId": "20724", "name": "김준오", "company": "플랫폼 배달 대행사", "role": "실무직 노동자", "partner": "양승훈", "contractTerms": "근무시간대: 주간 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "partnerContractTerms": "근무시간대: 주간 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "scenario": "김준오는 플랫폼 배달 대행사에서 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "25", "studentId": "20725", "name": "박민성", "company": "대형 백화점", "role": "실무직 노동자", "partner": "정하영", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 식대 지원", "scenario": "박민성은 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "7", "num": "26", "studentId": "20726", "name": "박영우", "company": "IT 대기업", "role": "실무직 노동자", "partner": "조영훈", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 교통비 지원, 식대 지원", "scenario": "박영우는 IT 대기업에서 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "7", "num": "27", "studentId": "20727", "name": "박우현", "company": "대형 프랜차이즈", "role": "관리직 노동자", "partner": "안소연", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 야근수당 별도 지급, 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 11,500원 / 특약: 야근수당 별도 지급, 식대 지원", "scenario": "함께 협상했던 실무직 안소연이 대형 프랜차이즈에서 각각 진상 손님에게 폭언과 폭행을 당했다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 박우현은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 박우현에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "28", "studentId": "20728", "name": "양승훈", "company": "플랫폼 배달 대행사", "role": "관리직 노동자", "partner": "김준오", "contractTerms": "근무시간대: 주간 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "partnerContractTerms": "근무시간대: 주간 / 수수료: 건당 3,000원 / 산재보험: 적용 / 특약: 없음", "scenario": "함께 협상했던 실무직 김준오가 플랫폼 배달 대행사에서 각각 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 양승훈은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 양승훈에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(산재보험 특례(치료비·요양급여 등))이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "29", "studentId": "20729", "name": "엄준혁", "company": "대학 병원", "role": "실무직 노동자", "partner": "이승재", "contractTerms": "계약기간: 정규직 / 근무형태: 3교대 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 근무형태: 3교대 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 식대 지원", "scenario": "엄준혁은 대학 병원에서 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "7", "num": "30", "studentId": "20730", "name": "이승재", "company": "대학 병원", "role": "관리직 노동자", "partner": "엄준혁", "contractTerms": "계약기간: 정규직 / 근무형태: 3교대 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 근무형태: 3교대 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 식대 지원", "scenario": "함께 협상했던 실무직 엄준혁이 대학 병원에서 각각 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 이승재은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 이승재에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "7", "num": "31", "studentId": "20731", "name": "이재준", "company": "종합 건설사", "role": "관리직 노동자", "partner": "이종찬", "contractTerms": "계약기간: 1년 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 18,000원 / 특약: 명절 상여금 지급, 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 1년 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 18,000원 / 특약: 명절 상여금 지급, 교통비 지원, 식대 지원", "scenario": "함께 협상했던 실무직 이종찬이 종합 건설사에서 작업 중 발판이 무너져 아래로 추락했다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 이종찬이 관리자 이재준을 상대로 고소장(진정서)을 접수했다. 관리자 이재준은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "7", "num": "32", "studentId": "20732", "name": "이종찬", "company": "종합 건설사", "role": "실무직 노동자", "partner": "이재준", "contractTerms": "계약기간: 1년 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 18,000원 / 특약: 명절 상여금 지급, 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 1년 / 근무형태: 3교대 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 18,000원 / 특약: 명절 상여금 지급, 교통비 지원, 식대 지원", "scenario": "이종찬은 종합 건설사에서 작업 중 발판이 무너져 아래로 추락했다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "7", "num": "33", "studentId": "20733", "name": "조영훈", "company": "IT 대기업", "role": "관리직 노동자", "partner": "박영우", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 교통비 지원, 식대 지원", "scenario": "함께 협상했던 실무직 박영우가 IT 대기업에서 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 박영우가 관리자 조영훈을 상대로 고소장(진정서)을 접수했다. 관리자 조영훈은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "7", "num": "34", "studentId": "20734", "name": "현재건", "company": "대형 로펌", "role": "실무직 노동자", "partner": "김수민", "contractTerms": "계약기간: 수습 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 수습 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 없음", "scenario": "현재건은 대형 로펌에서 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "1", "studentId": "20501", "name": "김수진", "company": "대학 병원", "role": "관리직 노동자", "partner": "박시연", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급", "partnerContractTerms": "계약기간: 1년 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급", "scenario": "함께 협상했던 실무직 박시연이 대학 병원에서 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 박시연이 관리자 김수진을 상대로 고소장(진정서)을 접수했다. 관리자 김수진은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "5", "num": "2", "studentId": "20502", "name": "노서현", "company": "대형 백화점", "role": "실무직 노동자", "partner": "박도현", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 없음", "partnerContractTerms": "계약기간: 수습 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 교통비 지원, 식대 지원", "scenario": "노서현은 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "5", "num": "3", "studentId": "20503", "name": "박세은", "company": "종합 건설사", "role": "관리직 노동자", "partner": "주영제", "contractTerms": "계약기간: 1년 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 12,000원 / 특약: 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 18,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "scenario": "함께 협상했던 실무직 주영제가 종합 건설사에서 각각 작업 중 발판이 무너져 아래로 추락했다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 박세은은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 박세은에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "5", "num": "4", "studentId": "20504", "name": "박소정", "company": "대형 프랜차이즈", "role": "관리직 노동자", "partner": "천아영", "contractTerms": "계약기간: 6개월 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 없음", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 없음", "scenario": "함께 협상했던 실무직 천아영이 대형 프랜차이즈에서 진상 손님에게 폭언과 폭행을 당했다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 천아영이 관리자 박소정을 상대로 고소장(진정서)을 접수했다. 관리자 박소정은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "5", "num": "5", "studentId": "20505", "name": "박시연", "company": "대학 병원", "role": "실무직 노동자", "partner": "김수진", "contractTerms": "계약기간: 1년 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급", "scenario": "박시연은 대학 병원에서 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "5", "num": "6", "studentId": "20506", "name": "박여진", "company": "대형 백화점", "role": "관리직 노동자", "partner": "이서연", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 10,320원 / 특약: 없음", "partnerContractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 야근수당 별도 지급", "scenario": "함께 협상했던 실무직 담당 실무자가 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 담당 실무자가 관리자 박여진을 상대로 고소장(진정서)을 접수했다. 관리자 박여진은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "5", "num": "7", "studentId": "20507", "name": "방민서", "company": "IT 대기업", "role": "관리직 노동자", "partner": "석주호", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 9,000,000원 / 특약: 명절 상여금 지급, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "scenario": "함께 협상했던 실무직 석주호가 IT 대기업에서 각각 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 방민서은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 방민서에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "5", "num": "8", "studentId": "20508", "name": "서아린", "company": "플랫폼 배달 대행사", "role": "실무직 노동자", "partner": "하혜림", "contractTerms": "근무시간대: 주간 / 수수료: 건당 4,000원 / 산재보험: 적용 / 특약: 사고 시 지원금", "partnerContractTerms": "근무시간대: 주간 / 수수료: 건당 3,500원 / 산재보험: 적용 / 특약: 안전장비 지원", "scenario": "서아린은 플랫폼 배달 대행사에서 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "9", "studentId": "20509", "name": "아브리아나", "company": "IT 대기업", "role": "관리직 노동자", "partner": "석주호", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 없음", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "scenario": "함께 협상했던 실무직 담당 실무자가 IT 대기업에서 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 담당 실무자가 관리자 아브리아나를 상대로 고소장(진정서)을 접수했다. 관리자 아브리아나은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "5", "num": "10", "studentId": "20510", "name": "윤지연", "company": "플랫폼 배달 대행사", "role": "실무직 노동자", "partner": "하혜림", "contractTerms": "근무시간대: 주간 / 수수료: 건당 4,000원 / 산재보험: 적용 / 특약: 안전장비 지원", "partnerContractTerms": "근무시간대: 주간 / 수수료: 건당 3,500원 / 산재보험: 적용 / 특약: 안전장비 지원", "scenario": "윤지연은 플랫폼 배달 대행사에서 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "11", "studentId": "20511", "name": "이가희", "company": "IT 대기업", "role": "관리직 노동자", "partner": "석주호", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 교통비 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "scenario": "함께 협상했던 실무직 아브리가 IT 대기업에서 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 아브리가 관리자 이가희를 상대로 고소장(진정서)을 접수했다. 관리자 이가희은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "5", "num": "12", "studentId": "20512", "name": "이민서", "company": "대학 병원", "role": "관리직 노동자", "partner": "", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급", "partnerContractTerms": "", "scenario": "함께 협상했던 실무직 김민규가 대학 병원에서 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 김민규가 관리자 이민서를 상대로 고소장(진정서)을 접수했다. (그리고 같은 팀 김민기도 동일한 문제를 겪었다.) 관리자 이민서은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "5", "num": "13", "studentId": "20513", "name": "이서연", "company": "대형 백화점", "role": "실무직 노동자", "partner": "박여진", "contractTerms": "계약기간: 1년 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 야근수당 별도 지급", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 10,320원 / 특약: 없음", "scenario": "이서연은 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "5", "num": "14", "studentId": "20514", "name": "이서진", "company": "플랫폼 배달 대행사", "role": "실무직 노동자", "partner": "하혜림", "contractTerms": "근무시간대: 주간 / 수수료: 건당 4,000원 / 산재보험: 적용 / 특약: 안전장비 지원", "partnerContractTerms": "근무시간대: 주간 / 수수료: 건당 3,500원 / 산재보험: 적용 / 특약: 안전장비 지원", "scenario": "이서진은 플랫폼 배달 대행사에서 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "15", "studentId": "20515", "name": "이은서", "company": "대형 로펌", "role": "관리직 노동자", "partner": "", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 4,000,000원 / 특약: 식대 지원", "partnerContractTerms": "", "scenario": "함께 협상했던 실무직 정윤옥이 대형 로펌에서 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 정윤옥이 관리자 이은서를 상대로 고소장(진정서)을 접수했다. 관리자 이은서은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "5", "num": "16", "studentId": "20516", "name": "임가희", "company": "종합 건설사", "role": "실무직 노동자", "partner": "김기훈", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 적용 / 임금: 시급 12,000원 / 특약: 명절 상여금 지급", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 15,000원 / 특약: 없음", "scenario": "임가희는 종합 건설사에서 작업 중 발판이 무너져 아래로 추락했다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "17", "studentId": "20517", "name": "정윤옥", "company": "대형 로펌", "role": "관리직 노동자", "partner": "", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 5,000,000원 / 특약: 없음", "partnerContractTerms": "", "scenario": "함께 협상했던 실무직 담당 실무자가 대형 로펌에서 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 담당 실무자가 관리자 정윤옥을 상대로 고소장(진정서)을 접수했다. 관리자 정윤옥은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "5", "num": "18", "studentId": "20518", "name": "천아영", "company": "대형 프랜차이즈", "role": "실무직 노동자", "partner": "박소정", "contractTerms": "계약기간: 6개월 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 없음", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 없음", "scenario": "천아영은 대형 프랜차이즈에서 진상 손님에게 폭언과 폭행을 당했다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "5", "num": "19", "studentId": "20519", "name": "최지현", "company": "대학 병원", "role": "실무직 노동자", "partner": "", "contractTerms": "계약기간: 6개월 / 근무형태: 3교대 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,000,000원 / 특약: 명절 상여금 지급, 교통비 지원", "partnerContractTerms": "", "scenario": "최지현은 대학 병원에서 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "20", "studentId": "20520", "name": "하혜림", "company": "플랫폼 배달 대행사", "role": "관리직 노동자", "partner": "윤지연", "contractTerms": "근무시간대: 주간 / 수수료: 건당 3,500원 / 산재보험: 적용 / 특약: 안전장비 지원", "partnerContractTerms": "근무시간대: 주간 / 수수료: 건당 4,000원 / 산재보험: 적용 / 특약: 안전장비 지원", "scenario": "함께 협상했던 실무직 윤지연, 이서진들이 플랫폼 배달 대행사에서 각각 빗길 배달 중 오토바이가 미끄러져 크게 다쳤다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 하혜림은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 하혜림에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(산재보험 특례(치료비·요양급여 등))이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "산재보험 특례(치료비·요양급여 등)", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "5", "num": "21", "studentId": "20521", "name": "금동훈", "company": "대형 방송국", "role": "관리직 노동자", "partner": "김건목", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 2,000,000원 / 특약: 없음", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "scenario": "함께 협상했던 실무직 금동훈(김건목 관리자)가 대형 방송국에서 생방송 준비로 무리한 일정을 소화하다 실신했다 그런데 계약에 해당없음 항목이 빠져 있었다는 이유로, 금동훈(김건목 관리자)가 관리자 금동훈을 상대로 고소장(진정서)을 접수했다. 관리자 금동훈은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "", "unprotected": "", "activityType": "변론서"}, {"class": "5", "num": "22", "studentId": "20522", "name": "김건목", "company": "대형 방송국", "role": "실무직 노동자", "partner": "금동훈", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 2,000,000원 / 특약: 없음", "scenario": "김건목은 대형 방송국에서 생방송 준비로 무리한 일정을 소화하다 실신했다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "23", "studentId": "20523", "name": "김기훈", "company": "종합 건설사", "role": "관리직 노동자", "partner": "임가희", "contractTerms": "계약기간: 6개월 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 15,000원 / 특약: 없음", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 적용 / 임금: 시급 12,000원 / 특약: 명절 상여금 지급", "scenario": "함께 협상했던 실무직 임가희가 종합 건설사에서 각각 작업 중 발판이 무너져 아래로 추락했다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 김기훈은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 김기훈에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "5", "num": "24", "studentId": "20524", "name": "김민규", "company": "대형 로펌", "role": "실무직 노동자", "partner": "", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 5,000,000원 / 특약: 식대 지원", "partnerContractTerms": "", "scenario": "김민규는 대형 로펌에서 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "5", "num": "25", "studentId": "20525", "name": "김민기", "company": "대형 로펌", "role": "실무직 노동자", "partner": "", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 5,000,000원 / 특약: 식대 지원", "partnerContractTerms": "", "scenario": "김민기는 대형 로펌에서 야근을 강행하다 과로로 쓰러져 응급실에 실려갔다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "5", "num": "26", "studentId": "20526", "name": "박도현", "company": "대형 백화점", "role": "관리직 노동자", "partner": "노서현", "contractTerms": "계약기간: 수습 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 없음", "scenario": "함께 협상했던 실무직 노서현이 대형 백화점에서 장시간 서서 응대하다 다리에 심한 부상을 입었다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 노서현이 관리자 박도현을 상대로 고소장(진정서)을 접수했다. 관리자 박도현은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "5", "num": "27", "studentId": "20527", "name": "박민수", "company": "대형 프랜차이즈", "role": "실무직 노동자", "partner": "안이준", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 명절 상여금 지급", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 명절 상여금 지급", "scenario": "박민수는 대형 프랜차이즈에서 진상 손님에게 폭언과 폭행을 당했다. 그런데 계약을 보니 4대보험 중 산재보험 미적용 등이 보장되지 않아, 정당한 보상을 받기 어려운 상황이다.", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "고소장(진정서)"}, {"class": "5", "num": "28", "studentId": "20528", "name": "방선우", "company": "대형 방송국", "role": "실무직 노동자", "partner": "이정민", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 없음", "partnerContractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 없음", "scenario": "방선우는 대형 방송국에서 생방송 준비로 무리한 일정을 소화하다 실신했다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "29", "studentId": "20529", "name": "서현준", "company": "대학 병원", "role": "실무직 노동자", "partner": "서휘성", "contractTerms": "계약기간: 정규직 / 근무형태: 3교대 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급", "scenario": "서현준은 대학 병원에서 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "30", "studentId": "20530", "name": "서휘성", "company": "대학 병원", "role": "관리직 노동자", "partner": "서현준", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 야근수당 별도 지급", "partnerContractTerms": "계약기간: 정규직 / 근무형태: 3교대 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,000,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 식대 지원", "scenario": "함께 협상했던 실무직 서현준이 대학 병원에서 각각 장시간 근무 중 갑자기 어지럼증으로 쓰러졌다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 서휘성은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 서휘성에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "5", "num": "31", "studentId": "20531", "name": "석주호", "company": "IT 대기업", "role": "실무직 노동자", "partner": "방민서", "contractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 4,500,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 9,000,000원 / 특약: 명절 상여금 지급, 식대 지원", "scenario": "석주호는 IT 대기업에서 밤샘 마감을 반복하다 손목 통증과 극심한 번아웃을 겪었다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}, {"class": "5", "num": "32", "studentId": "20532", "name": "안이준", "company": "대형 프랜차이즈", "role": "관리직 노동자", "partner": "박민수", "contractTerms": "계약기간: 정규직 / 가산수당: 미포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 11,500원 / 특약: 명절 상여금 지급", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 시급 10,320원 / 특약: 명절 상여금 지급", "scenario": "함께 협상했던 실무직 박민수가 대형 프랜차이즈에서 진상 손님에게 폭언과 폭행을 당했다 그런데 계약에 4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음 항목이 빠져 있었다는 이유로, 박민수가 관리자 안이준을 상대로 고소장(진정서)을 접수했다. 관리자 안이준은(는) 이 고소에 대해 어떻게 변론할 것인가?", "protected": "건강보험 (4대보험 중 일부 적용), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "4대보험 중 산재보험 미적용 — 업무 중 다쳐도 산재로 인정받지 못해 치료비·휴업급여 등 핵심 보호를 받을 수 없음", "activityType": "변론서"}, {"class": "5", "num": "33", "studentId": "20533", "name": "이정민", "company": "대형 방송국", "role": "관리직 노동자", "partner": "방선우", "contractTerms": "계약기간: 6개월 / 가산수당: 포함 / 휴게: 미준수 / 주휴: 부여 / 4대보험: 일부 / 임금: 월급 3,500,000원 / 특약: 없음", "partnerContractTerms": "계약기간: 정규직 / 가산수당: 포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 월급 3,500,000원 / 특약: 없음", "scenario": "함께 협상했던 실무직 방선우가 대형 방송국에서 각각 생방송 준비로 무리한 일정을 소화하다 실신했다 다행히 계약 조건이 탄탄해 아무 문제 없이 정당하게 보상받으며 상황이 마무리됐다. 이 소식이 알려지며 관리자 이정민은(는) 이번 학기 '청렴한 관리자상' 후보로 올랐다. 심사위원회는 이정민에게 다음 질문에 대한 소감문을 요청한다: '당신이 협상한 근로조건(4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당)이 왜 법적·윤리적으로 올바른 선택이었는지, 근거자료(헌법·근로기준법 등)를 들어 서술하시오.'", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "청렴한 관리자상 소감문"}, {"class": "5", "num": "34", "studentId": "20534", "name": "주영제", "company": "종합 건설사", "role": "실무직 노동자", "partner": "박세은", "contractTerms": "계약기간: 1년 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 부여 / 4대보험: 적용 / 임금: 시급 18,000원 / 특약: 야근수당 별도 지급, 명절 상여금 지급, 교통비 지원, 식대 지원", "partnerContractTerms": "계약기간: 1년 / 가산수당: 미포함 / 휴게: 준수 / 주휴: 미부여 / 4대보험: 일부 / 임금: 시급 12,000원 / 특약: 식대 지원", "scenario": "주영제는 종합 건설사에서 작업 중 발판이 무너져 아래로 추락했다. 다행히 계약 조건을 탄탄하게 갖춰둬서, 이 사고에 대해 정당하게 보상을 요구할 수 있는 상황이다.", "protected": "4대보험 전체(국민연금·건강보험·고용보험·산재보험), 휴게시간 보장, 주휴수당, 연장·야간 가산수당", "unprotected": "없음", "activityType": "보상 요구서"}];
+
+(function(){
+  const numInput = document.getElementById('numInput');
+  const nameInput = document.getElementById('nameInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const searchError = document.getElementById('searchError');
+  const searchSection = document.getElementById('searchSection');
+  const resultSection = document.getElementById('resultSection');
+  const certSection = document.getElementById('certSection');
+
+  let current = null;
+
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  searchBtn.addEventListener('click', function(){
+    const num = numInput.value.trim();
+    const name = nameInput.value.trim();
+    searchError.classList.add('hidden');
+    if(!num || !name){
+      searchError.textContent = '5자리 학번(예: 20701)과 이름을 모두 입력해주세요.';
+      searchError.classList.remove('hidden');
+      return;
+    }
+    const found = STUDENTS.find(function(s){ return s.studentId === num && s.name === name; });
+    if(!found){
+      searchError.textContent = '일치하는 학생 정보를 찾을 수 없어요. 학번·이름을 다시 확인해주세요.';
+      searchError.classList.remove('hidden');
+      return;
+    }
+    current = found;
+    renderResult(found);
+  });
+
+  function renderResult(s){
+    searchSection.classList.add('hidden');
+    resultSection.classList.remove('hidden');
+
+    const badgeClass = s.role === '관리직 노동자' ? 'badge-manager' : 'badge-worker';
+    document.getElementById('roleBadges').innerHTML =
+      '<span class="info-badge ' + badgeClass + '">' + esc(s.company) + '</span>' +
+      '<span class="info-badge ' + badgeClass + '">' + esc(s.role) + '</span>';
+
+    document.getElementById('scenarioBox').textContent = s.scenario || '시나리오 정보가 없습니다.';
+
+    const gGrid = document.getElementById('guaranteeGrid');
+    if(!s.protected && !s.unprotected){
+      document.getElementById('guaranteeCard').classList.add('hidden');
+    } else {
+      let html = '';
+      if(s.protected){
+        html += '<div class="compare-box good"><div class="t">✅ 보장 가능</div>' + esc(s.protected) + '</div>';
+      }
+      if(s.unprotected){
+        html += '<div class="compare-box bad"><div class="t">❌ 보장 불가</div>' + esc(s.unprotected) + '</div>';
+      }
+      gGrid.innerHTML = html;
+    }
+
+    const compareNote = document.getElementById('compareNote');
+    const compareTable = document.getElementById('compareTable');
+
+    function parseTerms(str){
+      const map = {};
+      if(!str) return map;
+      str.split('/').forEach(function(part){
+        const idx = part.indexOf(':');
+        if(idx === -1) return;
+        const k = part.slice(0, idx).trim();
+        const v = part.slice(idx+1).trim();
+        if(k) map[k] = v;
+      });
+      return map;
+    }
+
+    const myLabel = s.role === '관리직 노동자' ? '나 (관리직)' : '나 (실무직)';
+    const partnerLabel = s.role === '관리직 노동자' ? (s.partner || '실무직 상대') + ' (실무직)' : (s.partner || '관리직 상대') + ' (관리직)';
+
+    if(!s.contractTerms){
+      compareNote.textContent = '나의 계약 데이터가 없습니다.';
+      compareTable.innerHTML = '';
+    } else if(!s.partnerContractTerms){
+      compareNote.textContent = '협상 상대의 계약 데이터를 찾을 수 없어 나의 계약만 표시합니다.';
+      const mine = parseTerms(s.contractTerms);
+      compareTable.innerHTML = '<tr><th>항목</th><th>' + esc(myLabel) + '</th></tr>' +
+        Object.keys(mine).map(function(k){ return '<tr><td>'+esc(k)+'</td><td>'+esc(mine[k])+'</td></tr>'; }).join('');
+    } else {
+      const mine = parseTerms(s.contractTerms);
+      const theirs = parseTerms(s.partnerContractTerms);
+      const allKeys = Array.from(new Set(Object.keys(mine).concat(Object.keys(theirs))));
+      let mismatchCount = 0;
+      let rows = '<tr><th>항목</th><th>' + esc(myLabel) + '</th><th>' + esc(partnerLabel) + '</th></tr>';
+      allKeys.forEach(function(k){
+        const v1 = mine[k] || '(미기재)';
+        const v2 = theirs[k] || '(미기재)';
+        const mismatch = v1 !== v2;
+        if(mismatch) mismatchCount++;
+        rows += '<tr class="' + (mismatch?'mismatch':'') + '"><td>' + esc(k) + '</td><td>' + esc(v1) + '</td><td>' + esc(v2) + '</td></tr>';
+      });
+      compareTable.innerHTML = rows;
+      compareNote.textContent = mismatchCount > 0
+        ? '⚠️ 서로 다르게 기억하거나 기재한 항목이 ' + mismatchCount + '개 있어요. 빨간 줄을 확인하세요.'
+        : '✅ 두 계약서 내용이 정확히 일치해요.';
+    }
+
+    currentMismatches = getMismatches(s);
+    document.getElementById('activityTag').textContent = s.activityType;
+    renderWritingForm(s);
+  }
+
+  let currentMismatches = [];
+
+  function parseTermsGlobal(str){
+    const map = {};
+    if(!str) return map;
+    str.split('/').forEach(function(part){
+      const idx = part.indexOf(':');
+      if(idx === -1) return;
+      const k = part.slice(0, idx).trim();
+      const v = part.slice(idx+1).trim();
+      if(k) map[k] = v;
+    });
+    return map;
+  }
+
+  function getMismatches(s){
+    if(!s.contractTerms || !s.partnerContractTerms) return [];
+    const mine = parseTermsGlobal(s.contractTerms);
+    const theirs = parseTermsGlobal(s.partnerContractTerms);
+    const allKeys = Array.from(new Set(Object.keys(mine).concat(Object.keys(theirs))));
+    const list = [];
+    allKeys.forEach(function(k){
+      const v1 = mine[k] || '(미기재)';
+      const v2 = theirs[k] || '(미기재)';
+      if(v1 !== v2){
+        list.push(k + ' 불일치 (나: ' + v1 + ' / 상대: ' + v2 + ')');
+      }
+    });
+    return list;
+  }
+
+  const AWARD_LEGAL_BASIS = [
+    '헌법 제10조 (인간의 존엄과 가치) — "모든 국민은 인간으로서의 존엄과 가치를 가지며, 행복을 추구할 권리를 가진다."',
+    '헌법 제32조 1항 (근로의 권리와 적정임금) — "모든 국민은 근로의 권리를 가진다. 국가는 사회적·경제적 방법으로 근로자의 고용의 증진과 적정임금의 보장에 노력하여야 하며, 법률이 정하는 바에 의하여 최저임금제를 시행하여야 한다."',
+    '근로기준법 제54조 (휴게) — 4시간마다 30분, 8시간마다 1시간의 휴게시간을 근로시간 도중에 주어야 한다.',
+    '근로기준법 제55조 (휴일) — 사용자는 근로자에게 1주에 평균 1회 이상의 유급휴일을 보장하여야 한다.',
+    '근로기준법 제56조 (연장·야간·휴일 근로) — 연장·야간·휴일 근로에 대하여는 통상임금의 100분의 50 이상을 가산하여 지급하여야 한다.',
+    '국민연금법·국민건강보험법·고용보험법·산업재해보상보험법 — 일정 요건을 충족하는 근로자는 4대보험 가입이 원칙적으로 의무이다.'
+  ];
+
+  function pillGroup(name, items){
+    return items.map(function(item, i){
+      return '<button type="button" class="choice-pill" data-group="' + name + '" data-value="' + esc(item) + '">' + esc(item) + '</button>';
+    }).join('');
+  }
+
+  function bindPills(container){
+    container.querySelectorAll('.choice-pill').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btn.classList.toggle('selected');
+      });
+    });
+  }
+
+  function renderWritingForm(s){
+    const box = document.getElementById('writingForm');
+    const unprotectedItems = (s.unprotected||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
+    const protectedItems = (s.protected||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
+    const mismatchItems = currentMismatches || [];
+
+    if(s.activityType === '고소장(진정서)'){
+      const violationItems = mismatchItems.concat(unprotectedItems);
+      box.innerHTML =
+        (mismatchItems.length ? '<div class="explain-text" style="margin-bottom:10px;">💡 협상 상대와 계약 내용이 다르게 기재되어 있어요. 이것도 위반 항목으로 선택할 수 있어요.</div>' : '') +
+        '<div class="choice-group"><div class="glabel">위반 항목 선택 (해당되는 것 모두 선택)</div>' + pillGroup('violation', violationItems) + '</div>' +
+        '<div class="choice-group"><div class="glabel">요구사항 선택</div>' + pillGroup('demand', ['치료비 보상','미지급 수당 지급','재발방지 대책 마련','정당한 계약 재체결']) + '</div>' +
+        '<label>사건 경위 및 상세 진술</label><textarea id="freeText" placeholder="어떤 일이 있었는지, 왜 부당하다고 생각하는지 구체적으로 작성해주세요."></textarea>';
+    } else if(s.activityType === '보상 요구서'){
+      box.innerHTML =
+        '<div class="choice-group"><div class="glabel">청구 근거 선택 (해당되는 것 모두 선택)</div>' + pillGroup('basis', protectedItems) + '</div>' +
+        '<div class="choice-group"><div class="glabel">요구사항 선택</div>' + pillGroup('demand', ['치료비 지급','정당한 수당 지급','휴양 기간 보장','기타 정당한 조치']) + '</div>' +
+        '<label>상세 진술</label><textarea id="freeText" placeholder="어떤 근거로 이 보상을 요구하는지 구체적으로 작성해주세요."></textarea>';
+    } else if(s.activityType === '변론서'){
+      box.innerHTML =
+        (mismatchItems.length ? '<div class="choice-group"><div class="glabel">계약 내용 불일치 항목 (인지 및 해명 필요)</div>' + pillGroup('mismatch', mismatchItems) + '</div>' : '') +
+        '<div class="choice-group"><div class="glabel">대응 방향 선택</div>' + pillGroup('response', ['정당한 계약이었음을 주장','일부 인정 및 재발방지 약속','추가 보상 제공 제안']) + '</div>' +
+        '<label>변론 내용</label><textarea id="freeText" placeholder="고소 내용에 대해 관리자 입장에서 어떻게 반박·해명할지 작성해주세요."></textarea>';
+    } else if(s.activityType === '청렴한 관리자상 소감문'){
+      box.innerHTML =
+        '<div class="info-card"><div class="info-title">📚 참고할 법적 근거자료</div><ul>' +
+          AWARD_LEGAL_BASIS.map(function(item){ return '<li>' + esc(item) + '</li>'; }).join('') +
+        '</ul></div>' +
+        '<label>소감문</label><textarea id="freeText" placeholder="당신이 협상한 근로조건이 왜 법적·윤리적으로 올바른 선택이었는지, 위 근거자료를 인용해서 서술해주세요."></textarea>';
+    } else {
+      box.innerHTML = '<p style="font-family:-apple-system, sans-serif; font-size:13px; opacity:0.7;">해당 활동에 대한 데이터가 없습니다. 선생님께 문의해주세요.</p>';
+    }
+    bindPills(box);
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', function(){
+    if(!current) return;
+    const freeTextEl = document.getElementById('freeText');
+    const freeText = freeTextEl ? freeTextEl.value.trim() : '';
+    if(freeTextEl && freeText.length < 10){
+      alert('내용을 조금 더 구체적으로 작성해주세요 (10자 이상).');
+      return;
+    }
+    const selectedPills = Array.from(document.querySelectorAll('#writingForm .choice-pill.selected')).map(function(b){ return b.dataset.value; });
+
+    let typeEn = 'DOCUMENT';
+    if(current.activityType==='고소장(진정서)') typeEn='COMPLAINT';
+    else if(current.activityType==='보상 요구서') typeEn='COMPENSATION CLAIM';
+    else if(current.activityType==='변론서') typeEn='DEFENSE STATEMENT';
+    else if(current.activityType==='청렴한 관리자상 소감문') typeEn='AWARD SPEECH';
+
+    document.getElementById('certType').textContent = typeEn;
+    document.getElementById('certTitleText').textContent = current.activityType;
+    document.getElementById('certMeta').innerHTML =
+      '<div class="cert-row"><span class="k">학번/이름</span><span class="v">' + esc(current.num + ' ' + current.name) + '</span></div>' +
+      '<div class="cert-row"><span class="k">사업장</span><span class="v">' + esc(current.company) + '</span></div>' +
+      '<div class="cert-row"><span class="k">역할</span><span class="v">' + esc(current.role) + '</span></div>' +
+      (selectedPills.length ? '<div class="cert-row"><span class="k">선택 항목</span><span class="v">' + esc(selectedPills.join(', ')) + '</span></div>' : '');
+
+    document.getElementById('certBodyText').textContent = freeText || '(작성 내용 없음)';
+
+    const today = new Date();
+    document.getElementById('certDate').textContent = today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일 제출';
+
+    try{
+      document.getElementById('gf_num').value = current.studentId || current.num;
+      document.getElementById('gf_name').value = current.name;
+      document.getElementById('gf_class').value = current.class;
+      document.getElementById('gf_company').value = current.company;
+      document.getElementById('gf_role').value = current.role;
+      document.getElementById('gf_activity').value = current.activityType;
+      document.getElementById('gf_selected').value = selectedPills.join(', ');
+      document.getElementById('gf_freetext').value = freeText;
+      document.getElementById('gf_partner').value = current.partner || '';
+      document.getElementById('crisisFormBridge').submit();
+    }catch(e){ console.error('구글시트 기록 실패', e); }
+
+    resultSection.classList.add('hidden');
+    certSection.classList.remove('hidden');
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', function(){
+    const target = document.getElementById('certificate');
+    html2canvas(target, { backgroundColor: '#f1ead8', scale: 2 }).then(function(canvas){
+      const link = document.createElement('a');
+      const nameForFile = (current ? current.name : '학생');
+      link.download = (current ? current.activityType : '문서') + '_' + nameForFile + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).catch(function(e){
+      console.error(e);
+      alert('이미지 저장에 실패했어요. 화면을 길게 눌러 캡처해 저장해주세요.');
+    });
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', function(){
+    certSection.classList.add('hidden');
+    searchSection.classList.remove('hidden');
+    numInput.value=''; nameInput.value='';
+    current = null;
+  });
+
+})();
+</script>
+</body>
+</html>
