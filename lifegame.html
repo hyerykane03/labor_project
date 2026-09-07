@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인생통장 — 시간과 돈으로 사는 6개월</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --bg:#2E1F14; --bg2:#402A1A;
+    --paper:#F6E9C9; --paper-line:#C9A25B; --ink:#2B1B0E;
+    --muted:#7A5A32; --gold:#FFC94A; --gold-deep:#C9860F;
+    --green:#4CD97B; --green-deep:#1E8449; --brick:#E15554; --sky:#4FC1E9; --purple:#B98CF0;
+    --radius:5px;
+    --pxb: 3px solid #2B1B0E;
+    --pxs: 4px 4px 0 #2B1B0E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard',-apple-system,sans-serif;font-size:17px;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0 2px, transparent 2px 4px),
+      radial-gradient(circle at 20% 0%, #4A3320 0%, transparent 50%), var(--bg);
+    color:var(--paper); min-height:100vh; padding:28px 16px 70px;}
+  .wrap{max-width:980px;margin:0 auto;}
+  .pixel{font-family:'Pretendard',-apple-system,sans-serif;}
+
+  .cover{padding:6px 6px 22px;border-bottom:4px dashed rgba(246,233,201,0.25);margin-bottom:24px;}
+  .cover .eyebrow{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;color:var(--gold);margin-bottom:8px;letter-spacing:0.02em;}
+  .cover h1{font-family:'Pretendard',-apple-system,sans-serif;font-size:38px;font-weight:700;margin:0 0 10px;color:#FFF6E0;
+    text-shadow:3px 3px 0 #2B1B0E;}
+  .cover p{font-size:16.5px;color:#E9DCC0;max-width:640px;line-height:1.75;margin:0;}
+
+  /* ---------- 패스북(HUD) ---------- */
+  .passbook{background:var(--paper);color:var(--ink);border-radius:var(--radius);border:var(--pxb);box-shadow:var(--pxs);
+    padding:18px;display:none;flex-direction:column;gap:14px;margin-bottom:22px;
+    position:sticky;top:10px;z-index:20;}
+  .passbook.show{display:flex;}
+  .pb-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .pb-id{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .month-badge{background:var(--ink);color:var(--gold);border-radius:4px;padding:10px 13px;text-align:center;min-width:62px;
+    font-family:'Pretendard',-apple-system,sans-serif;border:2px solid #000;}
+  .month-badge .n{font-size:21px;font-weight:700;}
+  .month-badge .l{font-size:10.5px;opacity:0.75;}
+  .job-tag{font-size:14px;color:var(--muted);}
+  .job-tag b{color:var(--ink);}
+
+  .pb-wealth{flex:1;min-width:220px;}
+  .pb-wealth-label{font-family:'Pretendard',-apple-system,sans-serif;font-size:15px;color:var(--gold-deep);margin-bottom:2px;}
+  .pb-wealth-val{font-family:'Pretendard',-apple-system,sans-serif;font-size:34px;font-weight:700;color:var(--ink);
+    font-variant-numeric:tabular-nums;line-height:1.1;}
+  .pb-wealth-bar{height:20px;background:#E7D6A6;border:2px solid var(--ink);border-radius:3px;margin-top:6px;overflow:hidden;
+    box-shadow:inset 0 0 0 2px #FFF8E8;}
+  .pb-wealth-bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--gold) 0 8px,var(--gold-deep) 8px 16px);}
+
+  .pb-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .stat{text-align:left;background:#EFE0B8;border:2px solid var(--paper-line);border-radius:4px;padding:8px 10px;}
+  .stat .label{font-size:12.5px;color:var(--muted);margin-bottom:2px;font-weight:700;}
+  .stat .val{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .stat.health .val{color:var(--green-deep);}
+  .stat.happy .val{color:#2A7CA6;}
+  .stat.time .val{color:#6B4FA0;}
+  .stat .bar{height:9px;border-radius:3px;background:#DCC98F;margin-top:5px;overflow:hidden;border:1.5px solid var(--ink);}
+  .stat .bar i{display:block;height:100%;}
+  .stat.health .bar i{background:var(--green);}
+  .stat.happy .bar i{background:var(--sky);}
+  .stat.time .bar i{background:var(--purple);}
+
+  /* ---------- 공통 카드 ---------- */
+  .card{background:var(--paper);color:var(--ink);border-radius:var(--radius);border:var(--pxb);box-shadow:var(--pxs);padding:26px;}
+  #startScreen .card{padding:34px;}
+  #startScreen h2{font-family:'Pretendard',-apple-system,sans-serif;font-size:22px;margin:0 0 12px;}
+  #startScreen p{color:var(--muted);line-height:1.75;font-size:16px;margin:0 0 20px;}
+  .job-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:20px;}
+  .job-card{border:2.5px solid var(--paper-line);border-radius:4px;padding:16px 18px;cursor:pointer;background:#FBF3DD;
+    box-shadow:3px 3px 0 rgba(43,27,14,0.25);}
+  .job-card:hover{border-color:var(--gold-deep);transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(43,27,14,0.3);}
+  .job-card.picked{border-color:var(--green-deep);background:#E4F5E7;box-shadow:3px 3px 0 var(--green-deep);}
+  .job-card .jn{font-family:'Pretendard',-apple-system,sans-serif;font-weight:700;font-size:16.5px;margin-bottom:6px;}
+  .job-card .jd{font-size:13.5px;color:var(--muted);line-height:1.55;}
+  .job-card .js{font-size:13.5px;color:#4B3820;line-height:1.6;margin-top:10px;padding-top:10px;border-top:2px dashed var(--paper-line);}
+
+  button{font-family:inherit;border:none;cursor:pointer;border-radius:4px;font-weight:700;transition:transform .06s,filter .12s;}
+  button:active{transform:translate(2px,2px);}
+  .btn-primary{background:var(--gold);color:var(--ink);padding:14px 28px;font-size:16.5px;border:2.5px solid var(--ink);
+    box-shadow:3px 3px 0 var(--ink);font-family:'Pretendard',-apple-system,sans-serif;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-primary:active{box-shadow:1px 1px 0 var(--ink);}
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;box-shadow:3px 3px 0 var(--ink);transform:none;}
+  .btn-ghost{background:#FBF3DD;border:2.5px solid var(--ink);color:var(--ink);padding:10px 18px;font-size:14.5px;
+    box-shadow:2px 2px 0 var(--ink);}
+  .btn-ghost:active{box-shadow:0 0 0 var(--ink);}
+  .btn-ghost:disabled{opacity:0.4;cursor:not-allowed;}
+
+  .receipt{background:#F1E2B8;border:2.5px solid var(--paper-line);border-radius:4px;padding:16px 20px;margin-bottom:18px;font-size:14.5px;color:#3A2B14;}
+  .receipt .rtitle{font-family:'Pretendard',-apple-system,sans-serif;font-weight:700;font-size:15px;margin-bottom:10px;color:var(--ink);}
+  .receipt .rline{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1.5px dashed var(--paper-line);}
+  .receipt .rline.total{font-weight:800;border-bottom:none;margin-top:6px;padding-top:8px;border-top:2px solid var(--ink);}
+
+  .event-banner{display:none;background:#FCE8B0;border:2.5px solid var(--gold-deep);
+    color:var(--ink);padding:15px 18px;border-radius:4px;font-size:14.5px;margin-bottom:16px;box-shadow:3px 3px 0 rgba(43,27,14,0.2);}
+  .event-banner.show{display:block;}
+  .event-banner b{display:block;font-family:'Pretendard',-apple-system,sans-serif;font-size:16px;margin-bottom:3px;}
+  .event-banner.crisis{border-color:var(--brick);background:#FADAD6;}
+
+  .group{margin-bottom:18px;}
+  .group h3{font-family:'Pretendard',-apple-system,sans-serif;font-size:14.5px;color:#FFD98A;margin:0 0 10px;padding-left:2px;
+    text-shadow:2px 2px 0 #2B1B0E;}
+  .cat-block{background:var(--paper);border:2.5px solid var(--paper-line);border-radius:4px;padding:16px 18px;color:var(--ink);margin-bottom:10px;}
+  .cat-block.done{border-color:var(--green-deep);box-shadow:3px 3px 0 var(--green-deep);}
+  .cat-block .chead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:4px;}
+  .cat-block .cname{font-family:'Pretendard',-apple-system,sans-serif;font-weight:700;font-size:16px;}
+  .cat-block .cdone{font-size:12.5px;color:var(--green-deep);font-weight:800;display:none;}
+  .cat-block.done .cdone{display:inline;}
+  .opt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+  .opt{border:2px solid var(--paper-line);border-radius:4px;padding:12px 14px;cursor:pointer;background:#FBF3DD;}
+  .opt:hover{border-color:var(--gold-deep);box-shadow:2px 2px 0 rgba(43,27,14,0.25);}
+  .opt.chosen{border-color:var(--green-deep);background:#E4F5E7;box-shadow:2px 2px 0 var(--green-deep);}
+  .opt.disabled{opacity:0.4;cursor:not-allowed;}
+  .opt .oname{font-size:14.5px;font-weight:700;margin-bottom:4px;}
+  .opt .ometa{font-size:12.5px;color:var(--muted);margin-bottom:6px;font-weight:700;}
+  .opt .odesc{font-size:12.8px;color:#4B3820;line-height:1.5;}
+  .opt .otags{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{padding:2px 8px;border-radius:20px;font-weight:700;font-size:11.5px;border:1.5px solid rgba(0,0,0,0.15);}
+  .tag.h{background:#D3F3DE;color:var(--green-deep);}
+  .tag.p{background:#D3EEFA;color:#2A5878;}
+  .tag.risk{background:#FBD9D5;color:var(--brick);}
+  .tag.s{background:#FCEBC0;color:var(--gold-deep);}
+
+  .footer-bar{display:flex;justify-content:flex-end;margin:16px 0 8px;}
+  #logCard{margin-top:20px;}
+  #logCard h3{font-family:'Pretendard',-apple-system,sans-serif;font-size:14.5px;margin:0 0 10px;color:var(--muted);}
+  .log-list{max-height:170px;overflow-y:auto;font-size:13px;color:var(--muted);}
+  .log-list div{padding:5px 0;border-bottom:1.5px dashed var(--paper-line);}
+  .log-list div b{color:var(--ink);}
+
+  #resultScreen{display:none;}
+  #resultScreen .card{padding:36px;}
+  .grade-hero{text-align:center;margin-bottom:26px;}
+  .grade-hero .g{font-family:'Pretendard',-apple-system,sans-serif;font-size:64px;font-weight:700;color:var(--gold-deep);line-height:1;
+    text-shadow:3px 3px 0 rgba(43,27,14,0.2);}
+  .grade-hero .g-label{font-size:14.5px;color:var(--muted);margin-top:8px;}
+  .final-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px;}
+  .fstat{background:#F1E2B8;border:2.5px solid var(--paper-line);border-radius:4px;padding:16px;text-align:center;}
+  .fstat .l{font-size:12.5px;color:var(--muted);margin-bottom:5px;font-weight:700;}
+  .fstat .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .crisis-log{margin-bottom:22px;}
+  .crisis-log h4{font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;color:var(--muted);margin:0 0 9px;}
+  .crisis-item{background:#FBD9D5;border:2px solid var(--brick);border-radius:4px;padding:11px 15px;font-size:13.5px;margin-bottom:7px;color:#5C2B1E;}
+  .brow{display:grid;grid-template-columns:120px 1fr 90px;align-items:center;gap:10px;font-size:13px;margin-bottom:8px;}
+  .brow .track{height:10px;background:var(--paper-line);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;}
+  .brow .track i{display:block;height:100%;background:var(--gold-deep);}
+  .brow .amt{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700;}
+  .reflect{background:#F1E2B8;border:2.5px solid var(--paper-line);border-radius:4px;padding:17px 19px;font-size:13.8px;line-height:1.75;color:#3A2B14;}
+  .reflect b{color:var(--ink);}
+
+  @media(max-width:760px){
+    .pb-row{grid-template-columns:1fr;}
+    .final-stats{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <div class="eyebrow pixel">▸ 진로 수업 · 경제 시뮬레이션 v2</div>
+    <h1 class="pixel">인생통장</h1>
+    <p>직업 카드를 뽑고, 6개월 동안 <b style="color:#FFF">돈</b>과 <b style="color:#FFF">시간</b> 두 자원을 동시에 관리합니다. 이번 달에 무엇을 챙기고 무엇을 포기할지가 그대로 데이터로 쌓이고, 그 선택이 3개월·6개월 차에 각자 다른 위기로 되돌아옵니다.</p>
+  </div>
+
+  <div class="passbook" id="passbook">
+    <div class="pb-top">
+      <div class="pb-id">
+        <div class="month-badge"><div class="n" id="pbMonth">1</div><div class="l">/ 6개월</div></div>
+        <div class="job-tag" id="pbJob"></div>
+      </div>
+      <div class="pb-wealth">
+        <div class="pb-wealth-label pixel">💰 재산</div>
+        <div class="pb-wealth-val" id="pbWealth">0</div>
+        <div class="pb-wealth-bar"><i id="pbWealthBar" style="width:20%"></i></div>
+      </div>
+    </div>
+    <div class="pb-row">
+      <div class="stat health"><div class="label">❤ 건강</div><div class="val" id="pbHealth">70</div><div class="bar"><i id="pbHealthBar" style="width:70%"></i></div></div>
+      <div class="stat happy"><div class="label">☺ 행복</div><div class="val" id="pbHappy">70</div><div class="bar"><i id="pbHappyBar" style="width:70%"></i></div></div>
+      <div class="stat time"><div class="label">⏱ 남은 시간</div><div class="val" id="pbTime">150</div><div class="bar"><i id="pbTimeBar" style="width:100%"></i></div></div>
+    </div>
+  </div>
+
+  <!-- 시작 화면 -->
+  <div id="startScreen">
+    <div class="card">
+      <h2 class="pixel"><span id="roundLabel">라운드 1</span> — 직업 카드를 뽑아보세요</h2>
+      <p>모두 월급 250만원, 자산 한 푼 없이 나란히 출발합니다. 매달 기본급이 3만원씩 조금씩 오르지만, 어떤 카드를 뽑느냐에 따라 이번 6개월의 사연이 완전히 달라집니다.</p>
+      <div class="job-grid" id="jobGrid"></div>
+      <button class="btn-primary" id="startGameBtn" disabled>게임 시작 (6개월)</button>
+    </div>
+  </div>
+
+  <!-- 게임 화면 -->
+  <div id="gameScreen" style="display:none;">
+    <div class="event-banner" id="eventBanner">
+      <b id="evTitle"></b><span id="evDesc"></span>
+    </div>
+
+    <div class="receipt" id="prevSummaryCard" style="display:none;">
+      <div class="rtitle">📋 월별 지출 히스토리</div>
+      <div id="prevSummaryList" style="max-height:150px;overflow-y:auto;"></div>
+    </div>
+
+    <div class="receipt" id="receiptCard">
+      <div class="rtitle">이번 달 고정비 영수증 — 금액은 정해져 있지만, 직접 눌러서 확인해야 다음 달로 넘어갈 수 있어요</div>
+      <div id="receiptLines"></div>
+      <div style="margin-top:10px;">
+        <button class="btn-primary" id="ackFixedBtn" style="padding:9px 16px;font-size:13px;">💸 이번 달 고정비 납부 확인하기</button>
+      </div>
+    </div>
+
+    <div id="groupsHost"></div>
+
+    <div class="card" style="margin-top:16px;background:#EFE0B8;">
+      <div id="missingHint" style="display:none;color:var(--gold-deep);font-size:12.5px;font-weight:700;margin-bottom:8px;"></div>
+      <div style="font-size:13.5px;font-weight:700;margin-bottom:8px;">🔒 이번 달을 마치려면 선생님이 알려주는 코드를 입력하세요</div>
+      <div class="footer-bar" style="justify-content:flex-start;gap:10px;">
+        <input type="text" id="monthCode" placeholder="이번 달 진행 코드"
+          style="flex:1;max-width:220px;padding:10px 13px;border:2.5px solid var(--ink);border-radius:4px;font-size:14px;font-family:inherit;">
+        <button class="btn-ghost" id="nextMonthBtn" disabled>다음 달로 →</button>
+      </div>
+      <div id="monthCodeError" style="display:none;color:var(--brick);font-size:12.5px;font-weight:700;margin-top:6px;">코드가 올바르지 않습니다.</div>
+    </div>
+
+    <div class="card" id="logCard">
+      <h3>이번 게임 선택·지출 기록</h3>
+      <div class="log-list" id="logList"></div>
+    </div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="resultScreen">
+    <div class="card">
+      <div class="grade-hero">
+        <div class="g" id="finalGrade">A</div>
+        <div class="g-label" id="gradeLabel">6개월 인생 성적표</div>
+      </div>
+      <div class="final-stats">
+        <div class="fstat"><div class="l">최종 재산</div><div class="v" id="fWealth">0</div></div>
+        <div class="fstat"><div class="l">최종 건강</div><div class="v" id="fHealth">0</div></div>
+        <div class="fstat"><div class="l">최종 행복</div><div class="v" id="fHappy">0</div></div>
+      </div>
+      <div class="crisis-log">
+        <h4>내가 겪은 위기</h4>
+        <div id="crisisHost"></div>
+      </div>
+      <div class="breakdown" style="margin-bottom:22px;">
+        <h4 style="font-size:13.5px;color:var(--muted);margin:0 0 10px;">카테고리별 지출 분석 (6개월 총합)</h4>
+        <div id="breakdownHost"></div>
+      </div>
+      <div class="reflect" id="homeGoalHost" style="margin-bottom:16px;"></div>
+      <div class="reflect" id="reflectHost"></div>
+
+      <div style="text-align:center;margin-top:22px;">
+        <button class="btn-primary" id="unlockBtn">다음 라운드 시작하기 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 파산 엔딩 화면 -->
+  <div id="bankruptScreen" style="display:none;">
+    <div class="card" style="border-color:var(--brick);box-shadow:4px 4px 0 var(--brick);">
+      <div class="grade-hero">
+        <div class="g" style="color:var(--brick);">💥 파산</div>
+        <div class="g-label" id="bankruptLabel"></div>
+      </div>
+      <div class="reflect" id="bankruptStoryHost" style="background:#FBD9D5;color:#5C2B1E;margin-bottom:18px;"></div>
+      <div class="final-stats">
+        <div class="fstat"><div class="l">파산 시점 재산</div><div class="v" id="bWealth" style="color:var(--brick);">0</div></div>
+        <div class="fstat"><div class="l">건강</div><div class="v" id="bHealth">0</div></div>
+        <div class="fstat"><div class="l">행복</div><div class="v" id="bHappy">0</div></div>
+      </div>
+      <div class="reflect" id="bankruptReflectHost"></div>
+      <div style="text-align:center;margin-top:22px;">
+        <button class="btn-primary" id="bankruptRestartBtn">처음부터 다시 시작하기 →</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let roundNumber = 1;
+
+// 매달 "다음 달로" 넘어갈 때 요구되는 코드 — 순서대로 사용되고, 부족하면 마지막 값을 반복 사용합니다.
+// 필요하면 개수를 늘리거나 값을 바꿔서 쓰세요.
+const MONTH_UNLOCK_CODES = ["11", "22", "33", "44", "55", "66"];
+
+function currentMonthCode(){
+  const idx = state.month - 1;
+  return idx < MONTH_UNLOCK_CODES.length ? MONTH_UNLOCK_CODES[idx] : MONTH_UNLOCK_CODES[MONTH_UNLOCK_CODES.length-1];
+}
+
+/* ========================= 데이터 ========================= */
+const JOBS = [
+  {name:"회사원 A (도심 오피스직)", desc:"특별한 반전은 없습니다. 그게 이 카드의 매력입니다.", trait:"none",
+    scenario:"졸업과 동시에 붙은 첫 직장. 사무실 바로 옆 오피스텔을 잡아서 출근길엔 커피 한 잔 사 갈 여유까지 있습니다."},
+  {name:"회사원 B (외곽 통근직)", desc:"특별한 이벤트는 없지만, 매일 아침 지하철과의 사투가 기다립니다.", trait:"none",
+    scenario:"같은 회사, 다른 선택. 월세를 아끼려 외곽에 자리를 잡았더니 출근길이 매일 왕복 2시간짜리 서바이벌이 되었습니다."},
+  {name:"카페 직원", desc:"이달의 스케줄은 이달이 되어봐야 압니다. (매달 자유시간 ±20시간 변동)", trait:"irregular",
+    scenario:"동네 카페에 취직했습니다. 손님이 몰리는 주말과 한산한 평일이 뒤섞이며, 이번 달 내 자유시간이 얼마나 될지는 사장님 스케줄표에 달려 있습니다."},
+  {name:"스타트업 주니어", desc:"이번 달 실적이 곧 이번 달 월급입니다. (매달 급여 ±15% 변동)", trait:"variance15",
+    scenario:"'초기 멤버'라는 말에 혹해서 합류한 스타트업. 대박이 나면 보너스가, 매출이 주춤하면 월급도 같이 주춤합니다."},
+  {name:"콘텐츠 크리에이터(프리랜서)", desc:"조회수가 곧 이번 달 통장 잔고입니다. (매달 급여 ±30% 변동)", trait:"variance30",
+    scenario:"혼자 기획하고 찍고 편집하는 1인 크리에이터. 영상 하나가 터지면 그 달은 풍족하고, 알고리즘이 외면하면 그 달은 라면입니다."},
+  {name:"간호직(3교대)", desc:"3교대의 굴레 속에 삽니다. (매달 건강 추가 -3, 자유시간 -10시간)", trait:"shift",
+    scenario:"병원에서 3교대로 근무하는 신입 간호사입니다. 밤을 새우고 낮에 자는 생활이 반복되지만, 그만큼 야간·연장수당은 꼬박꼬박 챙깁니다."},
+];
+const SALARY = 2500000, START_ASSET = 0, TAX = 250000;
+const FIXED_BASE = {월세:450000, 관리비:80000, 전기세:40000, 수도세:20000, 가스비:30000, 학자금대출:70000};
+const BASE_TIME = 150;
+const TOTAL_MONTHS = 6;
+const BANKRUPTCY_LIMIT = -2000000; // 이 밑으로 재산이 떨어지면 파산 처리
+const WINTER = [1,2], SUMMER = [6];
+const FAMILY_EVENT_MONTHS = {2:"설날", 5:"가정의 달(어린이날·어버이날)"};
+
+// 특정 달에 반드시 발생하는 고정 지출 이벤트 (선택 불가, 자동 차감)
+const FIXED_MONTH_EVENTS = {
+  3: {title:"치과 치료비", desc:"어금니 치료로 목돈이 나갔습니다.", cost:350000},
+  4: {title:"친구 결혼식 축의금", desc:"가장 친한 친구의 결혼식에 다녀왔습니다.", cost:300000},
+  6: {title:"핸드폰 액정 수리비", desc:"액정이 깨져 급하게 수리했습니다.", cost:320000},
+};
+
+// 매달 자동으로 발생하는 소소한 사건 (선택 불가, 매달 1개 랜덤 발생)
+const SMALL_EVENTS = [
+  {title:"동전 노래방에서 마이크 잡음", desc:"스트레스가 풀렸습니다.", w:-8000, p:2},
+  {title:"버스 카드 잔액 부족", desc:"급하게 충전했습니다.", w:-10000},
+  {title:"편의점 1+1 이벤트", desc:"운 좋게 득템했습니다.", w:-5000, p:1},
+  {title:"택배 파손 배상", desc:"주문한 물건이 파손돼 일부 환불받았습니다.", w:-15000},
+  {title:"친구에게 커피 쏨", desc:"기분 좋게 한 턱 냈습니다.", w:-6000, p:2},
+  {title:"동네 마트 세일", desc:"필요한 걸 싸게 샀습니다.", w:-4000},
+  {title:"연말정산·환급금 소액 입금", desc:"뜻밖의 용돈이 들어왔습니다.", w:12000},
+  {title:"과속 범칙금", desc:"딱지를 뗐습니다.", w:-40000, p:-2},
+  {title:"중고거래로 잡동사니 처분", desc:"안 쓰는 물건을 팔았습니다.", w:18000},
+  {title:"핸드폰 액정 살짝 파손", desc:"수리비가 나갔습니다.", w:-25000, p:-1},
+  {title:"카페 쿠폰 적립 완료", desc:"공짜 음료를 받았습니다.", w:0, p:2},
+  {title:"길에서 소액을 주움", desc:"소소하게 운이 좋았습니다.", w:5000, p:1},
+];
+
+// 선택형 지출 카테고리 (10)
+const SPEND_CATS = [
+  {id:"food", group:"생존 필수", name:"식비", opts:[
+    {label:"편의점·간편식", cost:250000, time:6, h:-4, p:2, desc:"빠르고 편하지만 영양이 부족합니다."},
+    {label:"집밥·장보기", cost:350000, time:30, h:4, p:0, desc:"손이 가지만 건강에는 가장 좋습니다."},
+    {label:"배달음식 위주", cost:450000, time:4, h:-6, p:8, desc:"편하고 만족스럽지만 비용도 건강 부담도 큽니다."},
+  ]},
+  {id:"telecom", group:"생존 필수", name:"통신비", opts:[
+    {label:"LTE", cost:45000, time:0, h:0, p:0, stab:-1, desc:"느리지만 저렴합니다. 정보 습득 속도가 느려 안정성에 살짝 불리합니다."},
+    {label:"5G", cost:65000, time:0, h:0, p:0, desc:"무난한 표준형입니다."},
+    {label:"5G 무제한", cost:89000, time:0, h:0, p:2, desc:"여유롭게 쓸 수 있습니다."},
+  ]},
+  {id:"health", group:"생존 필수", name:"병원·건강관리비", opts:[
+    {label:"방치한다", cost:0, time:0, h:-8, p:0, flag:"healthNeglect", desc:"당장은 아끼지만 건강이 누적으로 나빠집니다."},
+    {label:"일반 진료", cost:80000, time:6, h:8, p:0, desc:"아픈 곳을 바로 치료합니다."},
+    {label:"정기 건강검진", cost:150000, time:10, h:5, p:0, stab:2, desc:"미리 확인해 큰 병을 예방합니다."},
+    {label:"헬스장 등록", cost:120000, time:24, h:6, p:4, desc:"꾸준한 운동으로 체력을 기릅니다."},
+  ]},
+  {id:"family", group:"의무 지출", name:"가족·경조사 지원", note:"설(2월)·추석(9월)엔 비용 1.5배", opts:[
+    {label:"최소한만", cost:100000, time:0, h:0, p:-5, desc:"마음의 부담이 남습니다."},
+    {label:"평범하게", cost:200000, time:0, h:0, p:0, desc:"무난한 수준입니다."},
+    {label:"넉넉하게", cost:300000, time:0, h:0, p:8, desc:"관계도 마음도 든든해집니다."},
+  ]},
+  {id:"transport", group:"의무 지출", name:"교통비·주유비 (이동 수단)", opts:[
+    {label:"대중교통 위주", cost:100000, time:24, h:0, p:-4, desc:"환승과 대기시간이 반복되어 시간이 많이 들고 지칩니다."},
+    {label:"자차 이용", cost:200000, time:10, h:0, p:3, desc:"대중교통보다 빠르고 편하지만 유지비가 듭니다."},
+    {label:"고급 외제차", cost:600000, time:4, h:0, p:15, desc:"이동이 가장 빠르고 만족감도 크지만 비용이 매우 큽니다."},
+  ]},
+  {id:"selfdev", group:"자기계발·미래대비", name:"자격증·학원", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:0, desc:"지금은 여유를 택합니다."},
+    {label:"온라인 강의", cost:80000, time:18, h:0, p:-3, stab:3, flag:"prep", desc:"가볍게 준비하지만 퇴근 후 시간을 쓰는 게 피곤합니다."},
+    {label:"학원 등록", cost:180000, time:46, h:0, p:-6, stab:7, flag:"prep", desc:"본격적으로 미래를 준비하는 만큼 몸도 마음도 지칩니다."},
+  ]},
+  {id:"insurance", group:"자기계발·미래대비", name:"보험 가입", opts:[
+    {label:"미가입", cost:0, time:0, h:0, p:0, desc:"위기 때 손실을 그대로 떠안습니다."},
+    {label:"실손보험", cost:60000, time:0, h:0, p:0, stab:8, flag:"insured", desc:"의료비 부담을 크게 줄여줍니다."},
+    {label:"종합보험", cost:150000, time:0, h:0, p:0, stab:12, flag:"insured", desc:"폭넓게 대비합니다."},
+  ]},
+  {id:"goods", group:"간접 재테크", name:"소비재~투자재 (쇼핑)", opts:[
+    {label:"저가 생필품", cost:50000, time:0, h:0, p:1, desc:"그냥 쓰는 소모품입니다.", wealthRange:[0,0]},
+    {label:"준수한 브랜드 아이템", cost:200000, time:0, h:0, p:6, desc:"품질도 만족도도 적당합니다.", wealthRange:[-0.1,0.15]},
+    {label:"리셀 아이템(한정판 등)", cost:500000, time:0, h:0, p:9, desc:"시세차익을 노리지만 변동이 큽니다.", wealthRange:[-0.4,0.4]},
+    {label:"실물자산(그림·골동품)", cost:800000, time:0, h:0, p:5, desc:"장기 보유를 전제로 한 자산입니다.", wealthRange:[-0.1,0.25]},
+  ]},
+  {id:"joy", group:"행복", name:"여행·취미·반려동물", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:-3, desc:"이번 달은 참습니다."},
+    {label:"소소한 취미", cost:100000, time:18, h:0, p:8, desc:"작은 즐거움을 챙깁니다.", flag:"joy"},
+    {label:"여행", cost:300000, time:36, h:2, p:18, desc:"크게 재충전합니다.", flag:"joy"},
+    {label:"반려동물 돌봄", cost:150000, time:30, h:1, p:15, desc:"정서적으로 큰 위안이 됩니다.", flag:"joy"},
+  ]},
+  {id:"date", group:"행복", name:"친구·연인 만나기", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:-4, desc:"이번 달은 아무도 만나지 않습니다."},
+    {label:"가볍게 만나기", cost:100000, time:12, h:0, p:5, desc:"부담 없이 친구나 연인을 만납니다.", flag:"joy"},
+    {label:"제대로 챙기기", cost:200000, time:22, h:0, p:9, desc:"약속과 만남을 여유 있게 즐깁니다.", flag:"joy"},
+    {label:"특별한 날로 만들기", cost:300000, time:30, h:0, p:13, desc:"기념일급으로 크게 챙깁니다.", flag:"joy"},
+  ]},
+];
+
+// 투자처 (5, 각각 3단계 금액 + 안한다) — 시간 소모 없음(0시간)
+const INVEST_CATS = [
+  {id:"saving", group:"투자처", name:"예금·적금", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:0, desc:"이번 달은 하지 않습니다."},
+    {label:"소액 예치 (10만원)", cost:100000, time:0, risk:"안전", range:[0.02,0.04], flag:"safeInvest", desc:"확정에 가까운 낮은 수익입니다."},
+    {label:"표준 예치 (30만원)", cost:300000, time:0, risk:"안전", range:[0.02,0.04], flag:"safeInvest", desc:"확정에 가까운 낮은 수익입니다."},
+    {label:"고액 예치 (60만원)", cost:600000, time:0, risk:"안전", range:[0.02,0.04], flag:"safeInvest", desc:"확정에 가까운 낮은 수익입니다."},
+  ]},
+  {id:"reit", group:"투자처", name:"부동산·리츠", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:0, desc:"이번 달은 하지 않습니다."},
+    {label:"소액 투자 (50만원)", cost:500000, time:0, risk:"중위험", range:[-0.10,0.20], flag:"invest", desc:"목돈이 들지만 비교적 안정적입니다."},
+    {label:"표준 투자 (100만원)", cost:1000000, time:0, risk:"중위험", range:[-0.10,0.20], flag:"invest", desc:"목돈이 들지만 비교적 안정적입니다."},
+    {label:"고액 투자 (200만원)", cost:2000000, time:0, risk:"중위험", range:[-0.10,0.20], flag:"invest", desc:"목돈이 들지만 비교적 안정적입니다."},
+  ]},
+  {id:"stock", group:"투자처", name:"주식", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:0, desc:"이번 달은 하지 않습니다."},
+    {label:"소액 투자 (20만원)", cost:200000, time:0, risk:"고위험", range:[-0.35,0.30], flag:"riskyInvest", desc:"공부한 만큼 보이는 듯하지만, 평균적으로는 벌기 어려운 변동성입니다."},
+    {label:"표준 투자 (50만원)", cost:500000, time:0, risk:"고위험", range:[-0.35,0.30], flag:"riskyInvest", desc:"공부한 만큼 보이는 듯하지만, 평균적으로는 벌기 어려운 변동성입니다."},
+    {label:"고액 투자 (100만원)", cost:1000000, time:0, risk:"고위험", range:[-0.35,0.30], flag:"riskyInvest", desc:"공부한 만큼 보이는 듯하지만, 평균적으로는 벌기 어려운 변동성입니다."},
+  ]},
+  {id:"crypto", group:"투자처", name:"암호화폐", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:0, desc:"이번 달은 하지 않습니다."},
+    {label:"소액 투자 (10만원)", cost:100000, time:0, risk:"초고위험", range:[-0.55,0.40], flag:"riskyInvest", desc:"극단적으로 오르내리며, 장기적으로는 잃을 확률이 더 높습니다."},
+    {label:"표준 투자 (30만원)", cost:300000, time:0, risk:"초고위험", range:[-0.55,0.40], flag:"riskyInvest", desc:"극단적으로 오르내리며, 장기적으로는 잃을 확률이 더 높습니다."},
+    {label:"고액 투자 (60만원)", cost:600000, time:0, risk:"초고위험", range:[-0.55,0.40], flag:"riskyInvest", desc:"극단적으로 오르내리며, 장기적으로는 잃을 확률이 더 높습니다."},
+  ]},
+  {id:"lotto", group:"투자처", name:"로또", opts:[
+    {label:"안 한다", cost:0, time:0, h:0, p:0, desc:"이번 달은 하지 않습니다."},
+    {label:"5,000원 베팅", cost:5000, time:0, risk:"당첨 5%", win:10, flag:"lotto", desc:"당첨 시 10배, 그 외 전액 손실."},
+    {label:"10,000원 베팅", cost:10000, time:0, risk:"당첨 5%", win:10, flag:"lotto", desc:"당첨 시 10배, 그 외 전액 손실."},
+    {label:"50,000원 베팅", cost:50000, time:0, risk:"당첨 5%", win:10, flag:"lotto", desc:"당첨 시 10배, 그 외 전액 손실."},
+  ]},
+];
+
+const ALL_CATS = [...SPEND_CATS, ...INVEST_CATS];
+
+/* ========================= 유틸 ========================= */
+function fmt(n){const s=n<0?"-":"";return s+Math.abs(Math.round(n)).toLocaleString("ko-KR")+"원";}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function rand(min,max){return min+Math.random()*(max-min);}
+
+/* ========================= 시작 화면 ========================= */
+let pickedJob = null;
+const jobGrid = document.getElementById("jobGrid");
+JOBS.forEach(job=>{
+  const el = document.createElement("div");
+  el.className="job-card";
+  el.innerHTML = `<div class="jn">${job.name}</div><div class="jd">${job.desc}</div><div class="js">📖 ${job.scenario}</div>`;
+  el.addEventListener("click", ()=>{
+    document.querySelectorAll(".job-card").forEach(c=>c.classList.remove("picked"));
+    el.classList.add("picked");
+    pickedJob = job;
+    document.getElementById("startGameBtn").disabled=false;
+  });
+  jobGrid.appendChild(el);
+});
+document.getElementById("startGameBtn").addEventListener("click", ()=>startGame(pickedJob));
+
+document.getElementById("ackFixedBtn").addEventListener("click", ()=>{
+  if(!state || state.fixedAcked) return;
+  state.fixedAcked = true;
+  const btn = document.getElementById("ackFixedBtn");
+  btn.disabled = true;
+  btn.textContent = "✔ 납부 확인 완료";
+  addLog(`고정비 ${fmt(Object.values(FIXED_BASE).reduce((a,b)=>a+b,0)+TAX)} 안팎을 직접 확인했습니다.`);
+  updateNextButtonState();
+});
+
+function updateNextButtonState(){
+  const total = ALL_CATS.length;
+  const done = Object.keys(state.doneThisMonth).length;
+  const remaining = total - done;
+  const hint = document.getElementById("missingHint");
+  if(remaining>0){
+    hint.style.display="block";
+    hint.textContent = `아직 선택하지 않은 항목이 ${remaining}개 남았어요. 필요 없다면 "안 한다" 옵션이라도 선택해주세요.`;
+  } else {
+    hint.style.display="none";
+  }
+  document.getElementById("nextMonthBtn").disabled = !(state.fixedAcked && remaining===0);
+}
+
+/* ========================= 상태 ========================= */
+let state=null;
+
+function startGame(job){
+  state = {
+    job, month:1, wealth:START_ASSET, health:70, happiness:70,
+    timeLeft:BASE_TIME, timeBudget:BASE_TIME,
+    doneThisMonth:{}, log:[],
+    healthNeglectCount:0, investRiskAmount:0, safeInvestAmount:0,
+    lottoCount:0, overworkMonths:0, prepCount:0, insured:false,
+    noJoyMonths:0, monthsPassed:0,
+    pendingSalaryCutMonths:0, pendingSalaryCutRate:0,
+    timePenaltyMonths:0, timePenaltyAmount:0,
+    moodPenaltyMonths:0,
+    crisisHistory:[],
+    monthSpent:0, lastFixedTotal:0, lastTaxPaid:0, lastFixedEventCost:0, monthlyHistory:[],
+    spendByGroup:{},
+    pendingReturns:[], pendingIdCounter:0,
+    riskyComboStreak:0,
+  };
+  document.getElementById("startScreen").style.display="none";
+  document.getElementById("passbook").classList.add("show");
+  document.getElementById("pbJob").innerHTML = "직업: <b>"+job.name+"</b>";
+  document.getElementById("gameScreen").style.display="block";
+  renderGroups();
+  const bankrupt = beginMonth(true);
+  if(!bankrupt) renderAll();
+}
+
+/* ========================= 월 시작 처리 ========================= */
+function beginMonth(isFirst){
+  const job=state.job, m=state.month;
+
+  // 지난달 요약 (이번 달 급여 반영 전, 지난달 말 상태 기준) — 월별 히스토리에 누적
+  const summaryHost = document.getElementById("prevSummaryCard");
+  if(!isFirst){
+    const prevSpentTotal = (state.lastFixedTotal||0) + (state.lastTaxPaid||0) + (state.monthSpent||0) + (state.lastFixedEventCost||0);
+    state.monthlyHistory.push({month: m-1, spent: prevSpentTotal, remain: state.wealth});
+    document.getElementById("prevSummaryList").innerHTML = state.monthlyHistory.map(e=>
+      `<div class="rline"><span>${e.month}월 — 지출 ${fmt(e.spent)}</span><span>잔액 ${fmt(e.remain)}</span></div>`
+    ).join("");
+    summaryHost.style.display = "block";
+  } else {
+    summaryHost.style.display = "none";
+  }
+  state.monthSpent = 0; // 이번 달 선택 지출 누적 초기화
+
+  // 지난달 만기된 투자 수익 정산
+  const matured = state.pendingReturns.filter(p=>p.maturesMonth===m);
+  if(matured.length){
+    matured.forEach(p=>{
+      state.wealth += p.amount;
+      addLog(`${p.label} 만기 → ${fmt(p.amount)} 입금`);
+    });
+    state.pendingReturns = state.pendingReturns.filter(p=>p.maturesMonth!==m);
+  }
+
+  // 급여 변동
+  let salary=SALARY + (m-1)*30000; // 재직 기간에 따라 매달 3만원씩 기본급 인상
+  if(job.trait==="variance15") salary=Math.round(SALARY*(1+rand(-0.15,0.15)));
+  if(job.trait==="variance30") salary=Math.round(SALARY*(1+rand(-0.30,0.30)));
+  if(state.pendingSalaryCutMonths>0){
+    salary=Math.round(salary*(1-state.pendingSalaryCutRate));
+    state.pendingSalaryCutMonths--;
+  }
+
+  // 고정비 계산 (계절 반영)
+  const f={...FIXED_BASE};
+  if(WINTER.includes(m)) f["가스비"]+=15000;
+  if(SUMMER.includes(m)) f["전기세"]+=15000;
+  const fixedTotal = Object.values(f).reduce((a,b)=>a+b,0);
+  state.lastFixedTotal = fixedTotal; // 다음 달 요약에서 "지난달 고정비"로 사용
+  state.lastTaxPaid = TAX;
+  state.lastFixedEventCost = FIXED_MONTH_EVENTS[m] ? FIXED_MONTH_EVENTS[m].cost : 0;
+
+  state.wealth += salary - fixedTotal - TAX;
+
+  // 시간 예산
+  let timeBudget=BASE_TIME;
+  if(job.trait==="shift") timeBudget-=10;
+  if(job.trait==="irregular") timeBudget+=Math.round(rand(-20,20));
+  if(state.timePenaltyMonths>0){ timeBudget-=state.timePenaltyAmount; state.timePenaltyMonths--; }
+  timeBudget=Math.max(40,timeBudget);
+  state.timeBudget=timeBudget;
+  state.timeLeft=timeBudget;
+
+  if(!isFirst){
+    let hDecay=4, pDecay=4;
+    if(job.trait==="shift"){ hDecay+=3; pDecay+=2; }
+    if(job.trait==="irregular") pDecay+=1;
+    if(job.trait==="variance30") pDecay+=1;
+    state.health=clamp(state.health-hDecay,0,100);
+    state.happiness=clamp(state.happiness-pDecay,0,100);
+  }
+
+  state.doneThisMonth={};
+
+  // 이번 달 소소한 사건 (자동 적용)
+  const smallEvent = SMALL_EVENTS[Math.floor(Math.random()*SMALL_EVENTS.length)];
+  state.wealth += smallEvent.w;
+  if(smallEvent.p) state.happiness = clamp(state.happiness + smallEvent.p, 0, 100);
+  addLog(`🎲 ${smallEvent.title} — ${smallEvent.desc} (${smallEvent.w>=0?"+":""}${fmt(smallEvent.w)})`);
+
+  // 이번 달 확정 지출 이벤트 (3월·4월·6월, 자동 차감)
+  const fixedEvent = FIXED_MONTH_EVENTS[m];
+  const fixedEventCost = fixedEvent ? fixedEvent.cost : 0;
+  if(fixedEvent){
+    state.wealth -= fixedEventCost;
+    addLog(`💥 ${fixedEvent.title} — ${fixedEvent.desc} (-${fmt(fixedEventCost)})`);
+  }
+
+  // 영수증 렌더
+  const receiptHost=document.getElementById("receiptLines");
+  const netChange = salary-fixedTotal-TAX+smallEvent.w-fixedEventCost;
+  receiptHost.innerHTML = `
+    <div class="rline"><span>월급</span><span>+${fmt(salary)}</span></div>
+    ${Object.entries(f).map(([k,v])=>`<div class="rline"><span>${k}</span><span>-${fmt(v)}</span></div>`).join("")}
+    <div class="rline"><span>세금·4대보험</span><span>-${fmt(TAX)}</span></div>
+    <div class="rline"><span>🎲 이번 달 소소한 사건: ${smallEvent.title}</span><span>${smallEvent.w>=0?"+":""}${fmt(smallEvent.w)}</span></div>
+    ${fixedEvent ? `<div class="rline"><span>💥 ${fixedEvent.title}</span><span>-${fmt(fixedEventCost)}</span></div>` : ""}
+    <div class="rline total"><span>고정비 반영 후 순변동 (선택 지출 전)</span><span>${netChange>=0?"+":""}${fmt(netChange)}</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;">※ ${smallEvent.desc}${fixedEvent?` · ${fixedEvent.desc}`:""} · 이 아래에서 식비·여가·투자 등을 선택하면 재산이 추가로 더 오르내립니다.</div>
+  `;
+
+  addLog(`${m}월 급여 ${fmt(salary)} / 고정비+세금 ${fmt(fixedTotal+TAX)} 차감`);
+
+  refreshFamilyPricing();
+
+  // 고정비 확인 버튼 초기화 (직접 눌러야 다음 달로 넘어갈 수 있음)
+  state.fixedAcked = false;
+  const ackBtn = document.getElementById("ackFixedBtn");
+  ackBtn.disabled = false;
+  ackBtn.textContent = "💸 이번 달 고정비 납부 확인하기";
+  document.getElementById("nextMonthBtn").disabled = true;
+  document.getElementById("monthCode").value = "";
+  document.getElementById("monthCodeError").style.display = "none";
+
+  // 명절 배너
+  const banner=document.getElementById("eventBanner");
+  banner.classList.remove("crisis");
+  if(FAMILY_EVENT_MONTHS[m]){
+    document.getElementById("evTitle").textContent="🎊 "+FAMILY_EVENT_MONTHS[m];
+    document.getElementById("evDesc").textContent=" — 가족·경조사 지원 비용이 이번 달엔 1.5배입니다.";
+    banner.classList.add("show");
+  } else {
+    banner.classList.remove("show");
+  }
+
+  // 3개월·6개월 차 위기 판정 (해당 월 시작 시, 명절 배너보다 우선 표시)
+  if(m===3 || m===6){
+    runCrisis(m);
+  }
+
+  state.monthsPassed = m-1; // 이번 달 시작 시점까지 "완료된" 개월 수
+
+  // 파산 판정 — 이번 달 자동 차감(고정비·세금·사건·위기)만으로 한계선을 넘었는지 확인
+  if(state.wealth < BANKRUPTCY_LIMIT){
+    triggerBankruptcy("debt");
+    return true; // 파산으로 게임 종료됨을 호출부에 알림
+  }
+  return false;
+}
+
+function triggerBankruptcy(reason){
+  document.getElementById("gameScreen").style.display="none";
+  document.getElementById("passbook").classList.remove("show");
+  document.getElementById("bankruptScreen").style.display="block";
+
+  document.getElementById("bWealth").textContent = fmt(state.wealth);
+  document.getElementById("bHealth").textContent = state.health;
+  document.getElementById("bHappy").textContent = state.happiness;
+
+  if(reason==="addiction"){
+    document.getElementById("bankruptLabel").textContent = `${state.job.name} · ${state.month}개월 차 (사행성 중독)`;
+    document.getElementById("bankruptStoryHost").innerHTML = `
+      <b>🎰 ${state.month}월, 도박 같은 삶에 완전히 빠졌습니다.</b><br><br>
+      주식·암호화폐·복권까지, 매달 고를 수 있는 가장 큰 금액을 두 달 연속으로 전부 쏟아부었습니다.
+      한 번의 대박을 좇는 습관이 반복되면서 돈뿐 아니라 생활 리듬 자체가 무너졌고,
+      ${state.job.name}(으)로서의 일상은 더 이상 유지될 수 없었습니다. 재산이 얼마가 남았든, 이런 방식은 지속 가능하지 않습니다.
+    `;
+    document.getElementById("bankruptReflectHost").innerHTML = `
+      <b>생각해볼 질문</b> — 왜 한 번 크게 딴 돈은 또 다른 도박으로 이어지기 쉬울까요? 같은 돈을 예금·적금처럼 느리지만 확실한 곳에 나눠 넣었다면 6개월 뒤는 어떻게 달라졌을까요?
+    `;
+  } else {
+    document.getElementById("bankruptLabel").textContent = `${state.job.name} · ${state.month}개월 차`;
+    document.getElementById("bankruptStoryHost").innerHTML = `
+      <b>📉 ${state.month}월, 통장이 완전히 바닥났습니다.</b><br><br>
+      카드값 독촉 문자가 하루에도 몇 통씩 쌓이고, 통신비마저 밀려 휴대폰이 정지될 위기에 놓였습니다.
+      ${state.job.name}(으)로 하루하루를 버텨왔지만, 벌어들이는 돈보다 빠져나가는 돈이 늘 더 많았습니다.
+      결국 빚이 ${fmt(Math.abs(BANKRUPTCY_LIMIT))}을 넘어서면서, 이번 인생은 여기서 파산으로 막을 내렸습니다.
+    `;
+    document.getElementById("bankruptReflectHost").innerHTML = `
+      <b>생각해볼 질문</b> — 어느 달부터 지출이 소득을 넘어서기 시작했나요? 그때로 돌아간다면 어떤 카테고리의 선택을 가장 먼저 바꾸고 싶나요?
+    `;
+  }
+}
+
+function addLog(text){ state.log.unshift(`[${state.month}월] ${text}`); }
+
+/* ========================= 카테고리 렌더 ========================= */
+function renderGroups(){
+  const host=document.getElementById("groupsHost");
+  host.innerHTML="";
+  const groupOrder=["생존 필수","의무 지출","자기계발·미래대비","간접 재테크","행복","투자처"];
+  groupOrder.forEach(gname=>{
+    const cats=ALL_CATS.filter(c=>c.group===gname);
+    if(!cats.length) return;
+    const gdiv=document.createElement("div");
+    gdiv.className="group";
+    gdiv.innerHTML=`<h3>${gname}</h3>`;
+    cats.forEach(cat=>{
+      const block=document.createElement("div");
+      block.className="cat-block";
+      block.dataset.cat=cat.id;
+      const noteHtml = cat.note ? `<span style="font-size:11px;color:var(--muted);">(${cat.note})</span>` : "";
+      block.innerHTML = `<div class="chead"><span class="cname">${cat.name} ${noteHtml}</span><span class="cdone">✔ 선택됨 · 같은 항목 다시 클릭 시 취소, 다른 항목 클릭 시 변경</span></div>
+        <div class="opt-grid"></div>`;
+      const grid=block.querySelector(".opt-grid");
+      cat.opts.forEach((opt,idx)=>{
+        const oel=document.createElement("div");
+        oel.className="opt";
+        oel.dataset.cat=cat.id; oel.dataset.idx=idx;
+        let costLabel = fmt(opt.cost);
+        let tags="";
+        if(opt.h) tags+=`<span class="tag h">건강 ${opt.h>0?"+":""}${opt.h}</span>`;
+        if(opt.p) tags+=`<span class="tag p">행복 ${opt.p>0?"+":""}${opt.p}</span>`;
+        if(opt.stab) tags+=`<span class="tag s">안정성 +${opt.stab}</span>`;
+        if(opt.range) tags+=`<span class="tag risk">${opt.risk} 수익률 ${Math.round(opt.range[0]*100)}%~${Math.round(opt.range[1]*100)}%</span><span class="tag s">다음 달 초 만기</span>`;
+        if(opt.win) tags+=`<span class="tag risk">${opt.risk}, 당첨시 ${opt.win}배</span>`;
+        if(opt.wealthRange && (opt.wealthRange[0]!==0||opt.wealthRange[1]!==0)) tags+=`<span class="tag risk">가치변동 ${Math.round(opt.wealthRange[0]*100)}%~${Math.round(opt.wealthRange[1]*100)}%</span><span class="tag s">다음 달 초 정산</span>`;
+        oel.innerHTML=`
+          <div class="oname">${opt.label}</div>
+          <div class="ometa" data-basecost="${opt.cost}">${costLabel} · ${opt.time}시간</div>
+          <div class="odesc">${opt.desc}</div>
+          <div class="otags">${tags}</div>
+        `;
+        oel.addEventListener("click", ()=>chooseOption(cat, opt, idx));
+        grid.appendChild(oel);
+      });
+      gdiv.appendChild(block);
+    });
+    host.appendChild(gdiv);
+  });
+}
+
+function refreshFamilyPricing(){
+  const isEvent = !!FAMILY_EVENT_MONTHS[state.month];
+  const familyCat = SPEND_CATS.find(c=>c.id==="family");
+  document.querySelectorAll('.opt[data-cat="family"]').forEach(oel=>{
+    const idx = Number(oel.dataset.idx);
+    const opt = familyCat.opts[idx];
+    const cost = isEvent ? Math.round(opt.cost*1.5) : opt.cost;
+    const metaEl = oel.querySelector(".ometa");
+    metaEl.textContent = `${fmt(cost)}${isEvent ? " (명절 1.5배 적용됨)" : ""} · ${opt.time}시간`;
+  });
+}
+
+/* ========================= 선택 처리 ========================= */
+function revertCategory(cat){
+  const prev = state.doneThisMonth[cat.id];
+  if(!prev) return;
+  const d = prev.delta;
+  state.wealth -= d.wealth;
+  state.health = clamp(state.health - d.health, 0, 100);
+  state.happiness = clamp(state.happiness - d.happiness, 0, 100);
+  state.timeLeft += d.time;
+  const f = d.flags||{};
+  if(f.healthNeglectCount) state.healthNeglectCount -= f.healthNeglectCount;
+  if(f.prepCount) state.prepCount -= f.prepCount;
+  if(f.lottoCount) state.lottoCount -= f.lottoCount;
+  if(f.investRiskAmount) state.investRiskAmount -= f.investRiskAmount;
+  if(f.safeInvestAmount) state.safeInvestAmount -= f.safeInvestAmount;
+  if(f.insuredWasSetNow) state.insured = f.insuredPrevValue;
+  if(f.joySet!==undefined) state._joyThisMonth = f.joyPrevValue;
+  state.monthSpent -= (d.costPaid||0);
+  if(d.group) state.spendByGroup[d.group] = (state.spendByGroup[d.group]||0) - (d.costPaid||0);
+  if(d.pendingId) state.pendingReturns = state.pendingReturns.filter(p=>p.id!==d.pendingId);
+  delete state.doneThisMonth[cat.id];
+  addLog(`${cat.name} 선택을 취소했습니다.`);
+}
+
+function chooseOption(cat, opt, idx){
+  const already = state.doneThisMonth[cat.id];
+  if(already && already.idx===idx){
+    revertCategory(cat);
+    renderAll();
+    return;
+  }
+  if(already){ revertCategory(cat); }
+
+  let cost = opt.cost;
+  if(cat.id==="family" && FAMILY_EVENT_MONTHS[state.month]) cost=Math.round(cost*1.5);
+
+  if(state.wealth - cost < -1500000){
+    addLog(`⚠ ${cat.name} - ${opt.label} 선택 실패 — 자산이 부족합니다.`);
+    flash(cat.id, idx, true);
+    return;
+  }
+  if(state.timeLeft - opt.time < 0){
+    addLog(`⚠ ${cat.name} - ${opt.label} 선택 실패 — 시간이 부족합니다.`);
+    flash(cat.id, idx, true);
+    return;
+  }
+
+  let wealthDelta = -cost;
+  state.wealth -= cost;
+  state.monthSpent += cost;
+  state.spendByGroup[cat.group] = (state.spendByGroup[cat.group]||0) + cost;
+  state.timeLeft -= opt.time;
+  const healthDelta = opt.h||0;
+  state.health = clamp(state.health + healthDelta, 0, 100);
+  let pDelta = opt.p||0;
+  if(state.moodPenaltyMonths>0 && pDelta>0) pDelta = Math.round(pDelta*0.5);
+  state.happiness = clamp(state.happiness + pDelta, 0, 100);
+
+  let resultText = `${cat.name} - ${opt.label} 선택, ${fmt(cost)} 지출`;
+  const flags = {};
+  let pendingId = null;
+
+  if(opt.range){
+    // 예금·적금·부동산·주식·암호화폐: 이번 달엔 원금만 빠지고, 수익/손실은 다음 달 초에 정산됩니다.
+    const rate = rand(opt.range[0], opt.range[1]);
+    const ret = Math.round(cost*(1+rate));
+    pendingId = ++state.pendingIdCounter;
+    state.pendingReturns.push({id:pendingId, maturesMonth: state.month+1, amount: ret, label:`${cat.name} - ${opt.label}`});
+    resultText += ` → 원금 즉시 차감, 다음 달 초 만기 예정 (예상 수익률 ${(rate*100).toFixed(1)}%, 만기 시 ${fmt(ret)} 입금 예정)`;
+    if(opt.flag==="safeInvest"){ state.safeInvestAmount += cost; flags.safeInvestAmount=cost; }
+    if(opt.flag==="riskyInvest"){ state.investRiskAmount += cost; flags.investRiskAmount=cost; }
+  }
+  if(opt.wealthRange){
+    // 소비재~투자재: 구매 즉시 돈은 나가고, 되팔았을 때의 가치변동은 다음 달 초에 정산됩니다.
+    const rate = rand(opt.wealthRange[0], opt.wealthRange[1]);
+    const ret = Math.round(cost*(1+rate));
+    if(rate===0){
+      state.wealth += ret; wealthDelta += ret; // 순수 소모품: 되팔 가치 없이 그대로 지출
+    } else {
+      pendingId = ++state.pendingIdCounter;
+      state.pendingReturns.push({id:pendingId, maturesMonth: state.month+1, amount: ret, label:`${cat.name} - ${opt.label}`});
+      resultText += ` → 구매금 즉시 차감, 다음 달 초 되팔았을 때 가치 정산 예정 (예상 변동률 ${(rate*100).toFixed(1)}%, 정산 시 ${fmt(ret)} 회수 예정)`;
+    }
+  }
+  if(opt.win){
+    const success = Math.random()<0.05;
+    if(success){ const gain=cost*opt.win; state.wealth+=gain; wealthDelta+=gain; resultText+=` → 당첨! ${fmt(gain)} 획득`; }
+    else{ resultText+=` → 낙첨, 전액 손실`; }
+    state.lottoCount++; flags.lottoCount=1;
+  }
+
+  if(opt.flag==="healthNeglect"){ state.healthNeglectCount++; flags.healthNeglectCount=1; }
+  if(opt.flag==="prep"){ state.prepCount++; flags.prepCount=1; }
+  if(opt.flag==="insured"){ flags.insuredWasSetNow=true; flags.insuredPrevValue=state.insured; state.insured=true; }
+  if(cat.id==="joy" || cat.id==="date"){
+    flags.joyPrevValue = state._joyThisMonth||false;
+    if(opt.flag==="joy"){ state._joyThisMonth=true; flags.joySet=true; }
+  }
+
+  state.doneThisMonth[cat.id] = {idx, delta:{wealth:wealthDelta, health:healthDelta, happiness:pDelta, time:opt.time, flags, costPaid:cost, pendingId, group:cat.group}};
+  addLog(resultText);
+  renderAll();
+}
+
+function flash(catId, idx, bad){
+  const el=document.querySelector(`.opt[data-cat="${catId}"][data-idx="${idx}"]`);
+  if(el){ el.style.borderColor= bad? "var(--brick)":"var(--green)"; setTimeout(()=>{el.style.borderColor="";},400);}
+}
+
+/* ========================= 위기 판정 ========================= */
+function runCrisis(turn){
+  const isTurn3 = turn===3;
+  const th = isTurn3
+    ? {health:1, invest:400000, lotto:1, overwork:1, noPrepMonths:2, noJoy:1}
+    : {health:2, invest:900000, lotto:2, overwork:2, noPrepMonths:4, noJoy:2};
+
+  const candidates = [
+    {key:"health", ratio: state.healthNeglectCount/th.health},
+    {key:"invest", ratio: state.investRiskAmount/th.invest},
+    {key:"overwork", ratio: state.overworkMonths/th.overwork},
+    {key:"noPrep", ratio: (state.prepCount===0 && state.monthsPassed>=th.noPrepMonths) ? 1 : 0},
+    {key:"noJoy", ratio: state.noJoyMonths/th.noJoy},
+    {key:"lotto", ratio: state.lottoCount/th.lotto},
+  ];
+  candidates.sort((a,b)=>b.ratio-a.ratio);
+  const top = candidates[0];
+
+  const banner=document.getElementById("eventBanner");
+  banner.classList.add("show","crisis");
+
+  if(!top || top.ratio < 1){
+    state.happiness=clamp(state.happiness+5,0,100);
+    document.getElementById("evTitle").textContent="🌤 무난한 한 달";
+    document.getElementById("evDesc").textContent=" — 골고루 준비해온 덕분에 큰 위기 없이 넘어갑니다. (행복 +5)";
+    state.crisisHistory.push({turn, title:"무난한 한 달", desc:"골고루 균형 있게 선택해온 덕분에 위기를 약하게 넘겼습니다."});
+    addLog(`${turn}월 위기 판정 — 무난하게 지나감`);
+    return;
+  }
+
+  let title="", desc="";
+  if(top.key==="health"){
+    const cost = state.insured? 200000: 500000;
+    state.wealth-=cost; state.health=clamp(state.health-15,0,100);
+    title="🏥 건강 방치의 대가"; desc=`병원비를 자주 미룬 대가로 큰 병치레를 했습니다. ${fmt(cost)} 지출, 건강 -15.${state.insured?" (보험 덕에 그나마 적게 냈습니다)":" (보험이 없어 목돈이 나갔습니다)"}`;
+  } else if(top.key==="invest"){
+    const crashPct=rand(0.3,0.5);
+    const loss=Math.round(state.investRiskAmount*crashPct);
+    state.wealth-=loss; state.happiness=clamp(state.happiness-10,0,100);
+    let extra="";
+    if(state.safeInvestAmount===0){ state.wealth-=200000; extra=" 안전자산이 하나도 없어 대출 이자까지 추가로 나갔습니다."; }
+    title="📉 투자 몰빵의 대가"; desc=`고위험 자산 비중이 컸던 탓에 시장 급락으로 ${fmt(loss)}를 잃었습니다.${extra}`;
+  } else if(top.key==="overwork"){
+    state.health=clamp(state.health-20,0,100); state.happiness=clamp(state.happiness-15,0,100);
+    state.timePenaltyMonths=2; state.timePenaltyAmount=30;
+    title="🔥 번아웃"; desc="쉬는 시간 없이 달려온 끝에 몸과 마음이 무너졌습니다. 건강 -20, 행복 -15, 앞으로 2개월간 자유시간 -30시간.";
+  } else if(top.key==="noPrep"){
+    const severity = state.prepCount>0? 1:2;
+    state.pendingSalaryCutMonths=severity; state.pendingSalaryCutRate=0.7;
+    title="📉 무급휴직 통보"; desc=`아무 준비 없이 위기를 맞아 소득이 ${severity}개월간 70% 줄어듭니다.`;
+  } else if(top.key==="noJoy"){
+    state.happiness=clamp(state.happiness-25,0,100); state.moodPenaltyMonths=1;
+    title="😔 정서적 번아웃"; desc="즐거움 없이 버텨온 끝에 행복이 크게 무너졌습니다. 행복 -25, 다음 달 행복 회복 효과 절반.";
+  } else if(top.key==="lotto"){
+    const win=Math.random()<0.05;
+    if(win){ state.wealth+=3000000; title="🎰 인생 역전!"; desc="큰 판돈을 걸었다가 기적적으로 당첨되어 300만원을 얻었습니다."; }
+    else{ state.wealth-=300000; title="🎰 한탕의 유혹"; desc="반복된 로또 구매 끝에 더 크게 걸었다가 30만원을 잃었습니다."; }
+  }
+
+  document.getElementById("evTitle").textContent=title;
+  document.getElementById("evDesc").textContent=" — "+desc;
+  state.crisisHistory.push({turn, title, desc});
+  addLog(`${turn}월 위기 발생 — ${title}`);
+}
+
+/* ========================= 렌더 ========================= */
+function renderAll(){
+  document.getElementById("pbMonth").textContent=state.month;
+  document.getElementById("pbWealth").textContent=fmt(state.wealth);
+  const wealthPct = clamp(((state.wealth+3000000)/15000000)*100, 3, 100);
+  document.getElementById("pbWealthBar").style.width=wealthPct+"%";
+  document.getElementById("pbHealth").textContent=state.health;
+  document.getElementById("pbHappy").textContent=state.happiness;
+  document.getElementById("pbHealthBar").style.width=state.health+"%";
+  document.getElementById("pbHappyBar").style.width=state.happiness+"%";
+  document.getElementById("pbTime").textContent=state.timeLeft;
+  document.getElementById("pbTimeBar").style.width=Math.round(state.timeLeft/state.timeBudget*100)+"%";
+
+  document.querySelectorAll(".cat-block").forEach(block=>{
+    const id=block.dataset.cat;
+    const entry = state.doneThisMonth[id];
+    block.classList.toggle("done", !!entry);
+    block.querySelectorAll(".opt").forEach(oel=>{
+      const idx=Number(oel.dataset.idx);
+      const isChosen = entry && entry.idx===idx;
+      oel.classList.toggle("chosen", !!isChosen);
+    });
+  });
+
+  document.getElementById("logList").innerHTML =
+    state.log.slice(0,50).map(t=>`<div>${t}</div>`).join("");
+
+  updateNextButtonState();
+}
+
+/* ========================= 다음 달 ========================= */
+document.getElementById("nextMonthBtn").addEventListener("click", ()=>{
+  // 이번 달 진행 코드 확인
+  const monthCodeInput = document.getElementById("monthCode").value.trim();
+  if(monthCodeInput !== currentMonthCode()){
+    document.getElementById("monthCodeError").style.display="block";
+    return;
+  }
+  document.getElementById("monthCodeError").style.display="none";
+
+  // 이번 달 과로/무기쁨 집계
+  const used = state.timeBudget - state.timeLeft;
+  if(used >= state.timeBudget*0.85) state.overworkMonths++;
+  if(!state._joyThisMonth) state.noJoyMonths++;
+  state._joyThisMonth=false;
+
+  // 사행성 몰빵 콤보 판정 — 주식·암호화폐·복권을 전부 최고액으로 같은 달에 몰아넣는 경우
+  const stockMax = state.doneThisMonth["stock"] && state.doneThisMonth["stock"].idx===3;
+  const cryptoMax = state.doneThisMonth["crypto"] && state.doneThisMonth["crypto"].idx===3;
+  const lottoMax = state.doneThisMonth["lotto"] && state.doneThisMonth["lotto"].idx===3;
+  if(stockMax && cryptoMax && lottoMax){
+    state.riskyComboStreak = (state.riskyComboStreak||0) + 1;
+  } else {
+    state.riskyComboStreak = 0;
+  }
+  if(state.riskyComboStreak >= 2){
+    triggerBankruptcy("addiction");
+    return;
+  }
+
+  if(state.month>=TOTAL_MONTHS){ finishGame(); return; }
+  state.month+=1;
+  const bankrupt = beginMonth(false);
+  if(!bankrupt) renderAll();
+});
+
+/* ========================= 결과 ========================= */
+function finishGame(){
+  document.getElementById("gameScreen").style.display="none";
+  document.getElementById("passbook").classList.remove("show");
+  document.getElementById("resultScreen").style.display="block";
+
+  // 게임 종료 시점까지 만기가 안 된 투자금도 정산 (마지막 달 투자분 등)
+  if(state.pendingReturns.length){
+    state.pendingReturns.forEach(p=>{
+      state.wealth += p.amount;
+      addLog(`${p.label} 만기 정산(게임 종료) → ${fmt(p.amount)} 입금`);
+    });
+    state.pendingReturns = [];
+  }
+
+  const wealthScore=clamp(((state.wealth+5000000)/15000000)*100,0,100);
+  const total=wealthScore*0.4+state.health*0.3+state.happiness*0.3;
+  let grade="D";
+  if(total>=80) grade="S"; else if(total>=68) grade="A"; else if(total>=54) grade="B"; else if(total>=40) grade="C";
+
+  document.getElementById("finalGrade").textContent=grade;
+  document.getElementById("finalGrade").style.color = "var(--gold-deep)";
+  document.getElementById("gradeLabel").textContent = "6개월 인생 성적표";
+  document.getElementById("fWealth").textContent=fmt(state.wealth);
+  document.getElementById("fHealth").textContent=state.health;
+  document.getElementById("fHappy").textContent=state.happiness;
+
+  const cHost=document.getElementById("crisisHost");
+  cHost.innerHTML = state.crisisHistory.map(c=>`<div class="crisis-item"><b>${c.turn}월 — ${c.title}</b><br>${c.desc}</div>`).join("")
+    || `<div class="crisis-item">이번 플레이에서는 별다른 위기가 기록되지 않았습니다.</div>`;
+
+  // 카테고리별 지출 분석
+  const groupLabels = {"생존 필수":"생존 필수","의무 지출":"의무 지출","자기계발·미래대비":"자기계발·미래대비","간접 재테크":"간접 재테크(쇼핑)","행복":"행복","투자처":"투자처"};
+  const totalSpend = Object.values(state.spendByGroup).reduce((a,b)=>a+b,0) || 1;
+  const bHost=document.getElementById("breakdownHost");
+  bHost.innerHTML = Object.keys(groupLabels).map(k=>{
+    const amt = state.spendByGroup[k]||0;
+    const pct = Math.round(amt/totalSpend*100);
+    return `<div class="brow"><div>${groupLabels[k]}</div><div class="track"><i style="width:${pct}%"></i></div><div class="amt">${fmt(amt)}</div></div>`;
+  }).join("");
+
+  // 내 집 마련(4억 원) 전망
+  const HOME_GOAL = 400000000;
+  const monthlyAvg = state.wealth / TOTAL_MONTHS;
+  let homeMsg;
+  if(monthlyAvg <= 0){
+    homeMsg = `이번 6개월 동안 재산이 늘지 않았거나 오히려 줄었습니다 (월평균 ${fmt(monthlyAvg)}). 이 페이스라면 <b>4억 원 내 집 마련은 기약할 수 없습니다</b> — 고정비를 제외한 돈 중 얼마를 저축·투자로 돌릴지부터 다시 설계해야 합니다.`;
+  } else {
+    const totalMonthsNeeded = HOME_GOAL / monthlyAvg;
+    const remainingMonths = Math.max(totalMonthsNeeded - TOTAL_MONTHS, 0);
+    const remainingYears = (remainingMonths/12).toFixed(1);
+    const totalYears = (totalMonthsNeeded/12).toFixed(1);
+    homeMsg = `이번 6개월 동안 평균적으로 매달 <b>${fmt(monthlyAvg)}</b>씩 재산이 늘었습니다. 이 속도를 그대로 유지한다면 4억 원을 모으는 데 총 <b>${totalYears}년</b>이 걸리는 셈이고, 이미 지나온 6개월을 빼면 <b>앞으로 약 ${remainingYears}년을 지금과 같은 페이스로 더 일하고 모아야</b> 내 집 마련 목표(4억 원)에 도달합니다.`;
+  }
+  document.getElementById("homeGoalHost").innerHTML = `<b>🏠 내 집 마련(4억 원 기준) 전망</b><br>${homeMsg}`;
+
+  document.getElementById("reflectHost").innerHTML = `
+    <b>${state.job.name}</b>으로 6개월을 살아보니, 매달 시간과 돈을 동시에 확인하며 우선순위를 정해야 했습니다.
+    특히 3개월 차와 6개월 차에 나에게 닥친 위기는 무작위가 아니라, 그동안 내가 반복해온 선택 패턴에서 비롯된 것이었습니다.<br><br>
+    <b>생각해볼 질문</b> — 내가 이번 게임에서 가장 많이 포기했던 항목은 무엇인가요? 실제 내 삶에서도 비슷하게 밀려나는 것이 있다면 무엇일까요?
+  `;
+}
+
+document.getElementById("unlockBtn").addEventListener("click", ()=>{
+  roundNumber += 1;
+
+  // 다음 라운드 준비
+  document.getElementById("resultScreen").style.display="none";
+  document.getElementById("startScreen").style.display="block";
+  document.querySelectorAll(".job-card").forEach(c=>c.classList.remove("picked"));
+  document.getElementById("startGameBtn").disabled=true;
+  pickedJob=null;
+  document.getElementById("roundLabel").textContent = `라운드 ${roundNumber}`;
+});
+
+document.getElementById("bankruptRestartBtn").addEventListener("click", ()=>{
+  // 파산 시엔 라운드를 이어가지 않고, 완전히 처음(라운드 1)부터 다시 시작
+  roundNumber = 1;
+  document.getElementById("bankruptScreen").style.display="none";
+  document.getElementById("startScreen").style.display="block";
+  document.querySelectorAll(".job-card").forEach(c=>c.classList.remove("picked"));
+  document.getElementById("startGameBtn").disabled=true;
+  pickedJob=null;
+  document.getElementById("roundLabel").textContent = `라운드 ${roundNumber}`;
+});
+</script>
+</body>
+</html>
