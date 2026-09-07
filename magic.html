@@ -392,9 +392,18 @@ document.getElementById("recommendBtn").addEventListener("click", ()=>{
 
 renderCounter();
 
-// 구글 시트로 소원을 전송하는 부분입니다.
-// 선생님께서 Google Apps Script 웹앱을 배포하신 뒤, 그 URL을 아래에 붙여넣어야 실제로 시트에 기록됩니다.
-const SHEET_WEBHOOK_URL = "여기에_배포한_웹앱_URL을_붙여넣으세요";
+// 구글폼으로 소원을 전송합니다. 구글폼 응답이 자동으로 연결된 구글시트에 쌓입니다.
+const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeRf9b7esqH1SjrBOsQMbkx98km-o-izEzO5zMYfRnG4rXzSA/formResponse";
+const FORM_ENTRIES = {
+  studentId: "entry.1222059408",
+  name: "entry.1742273633",
+  keywords: "entry.1770079470",
+  q1: "entry.412131570",
+  q2: "entry.1685957101",
+  q3: "entry.2003884498",
+  unexpected: "entry.905728961",
+  agreed: "entry.772436444",
+};
 
 document.getElementById("wishSubmitBtn").addEventListener("click", async ()=>{
   const btn = document.getElementById("wishSubmitBtn");
@@ -404,19 +413,15 @@ document.getElementById("wishSubmitBtn").addEventListener("click", async ()=>{
   statusEl.classList.remove("show");
 
   const name = document.getElementById("wishName").value.trim();
-  const className = document.getElementById("wishClass").value.trim();
+  const studentId = document.getElementById("wishClass").value.trim();
   const q1 = document.getElementById("wishQ1").value.trim();
   const q2 = document.getElementById("wishQ2").value.trim();
   const q3 = document.getElementById("wishQ3").value.trim();
+  const unexpected = document.getElementById("unexpectedNote").value.trim();
+  const agreed = document.getElementById("agreedNote").value.trim();
 
-  if(!name || !className || !q1 || !q2 || !q3){
-    errorEl.textContent = "이름, 반, 그리고 세 가지 소원을 모두 적어주세요.";
-    errorEl.classList.add("show");
-    return;
-  }
-
-  if(SHEET_WEBHOOK_URL.includes("여기에_")){
-    errorEl.textContent = "아직 구글 시트 연결이 설정되지 않았어요. 선생님께 문의해주세요.";
+  if(!name || !studentId || !q1 || !q2 || !q3){
+    errorEl.textContent = "학번, 이름, 그리고 세 가지 소원을 모두 적어주세요.";
     errorEl.classList.add("show");
     return;
   }
@@ -424,18 +429,22 @@ document.getElementById("wishSubmitBtn").addEventListener("click", async ()=>{
   btn.disabled = true;
   btn.textContent = "전하는 중...";
 
-  const payload = {
-    name, className,
-    keywords: selected.join(", "),
-    q1, q2, q3,
-  };
+  const formData = new URLSearchParams();
+  formData.append(FORM_ENTRIES.studentId, studentId);
+  formData.append(FORM_ENTRIES.name, name);
+  formData.append(FORM_ENTRIES.keywords, selected.join(", "));
+  formData.append(FORM_ENTRIES.q1, q1);
+  formData.append(FORM_ENTRIES.q2, q2);
+  formData.append(FORM_ENTRIES.q3, q3);
+  formData.append(FORM_ENTRIES.unexpected, unexpected);
+  formData.append(FORM_ENTRIES.agreed, agreed);
 
   try{
-    await fetch(SHEET_WEBHOOK_URL, {
+    await fetch(GOOGLE_FORM_ACTION_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData.toString(),
     });
     statusEl.textContent = "🔮 마법사가 소원을 잘 받았다는군요. 제출 완료!";
     statusEl.classList.add("show");
