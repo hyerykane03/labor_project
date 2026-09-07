@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>엉성한 마법사의 진로 점술소</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    --bg:#241533; --paper:#F6E9C9; --paper-line:#C9A25B; --ink:#2B1B0E;
+    --muted:#7A5A32; --gold:#FFC94A; --gold-deep:#C9860F;
+    --green:#4CD97B; --green-deep:#1E8449; --brick:#E15554;
+    --radius:5px; --pxb: 3px solid #2B1B0E; --pxs: 4px 4px 0 #2B1B0E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Pretendard',-apple-system,sans-serif;font-size:17px;
+    background:radial-gradient(circle at 20% 0%, #4A2E63 0%, transparent 50%), var(--bg);
+    color:var(--paper);padding:28px 16px 70px;}
+  .wrap{max-width:880px;margin:0 auto;}
+  .cover{margin-bottom:26px;padding-bottom:16px;border-bottom:4px dashed rgba(246,233,201,0.25);}
+  .cover .eyebrow{font-size:14px;color:var(--gold);font-weight:700;margin-bottom:8px;}
+  .cover h1{font-size:30px;font-weight:800;margin:0 0 16px;color:#FFF6E0;text-shadow:3px 3px 0 #2B1B0E;}
+  .cover p{font-size:15px;color:#E9DCC0;line-height:1.75;max-width:640px;margin:14px 0 0;}
+
+  .wizard-box{display:flex;gap:14px;align-items:flex-start;background:#3A2352;border:2.5px solid var(--gold-deep);
+    border-radius:var(--radius);padding:16px 18px;box-shadow:3px 3px 0 rgba(0,0,0,0.3);}
+  .wizard-avatar{font-size:34px;flex-shrink:0;line-height:1;}
+  .wizard-say{font-size:14.5px;color:#F6E9C9;line-height:1.7;font-style:italic;padding-top:4px;}
+
+  .counter{position:sticky;top:12px;z-index:10;background:var(--paper);color:var(--ink);
+    border:var(--pxb);box-shadow:var(--pxs);border-radius:var(--radius);
+    padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+  .counter .txt{font-size:14.5px;color:var(--muted);}
+  .counter .txt b{color:var(--gold-deep);font-size:17px;}
+  .counter button{border:2.5px solid var(--ink);border-radius:4px;padding:12px 22px;font-size:15px;font-weight:700;
+    cursor:pointer;background:var(--gold);color:var(--ink);box-shadow:3px 3px 0 var(--ink);
+    transition:transform .06s;font-family:inherit;}
+  .counter button:hover{filter:brightness(1.06);}
+  .counter button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .counter button:disabled{background:#C7BFA0;box-shadow:3px 3px 0 var(--ink);cursor:not-allowed;transform:none;}
+
+  .category{margin-bottom:20px;background:var(--paper);border:2.5px solid var(--paper-line);
+    border-radius:var(--radius);padding:16px 18px;}
+  .category h3{font-size:14.5px;color:var(--gold-deep);margin:0 0 10px;font-weight:700;}
+  .chip-grid{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{background:#FBF3DD;color:var(--ink);border:2px solid var(--paper-line);border-radius:20px;padding:8px 16px;
+    font-size:14px;cursor:pointer;user-select:none;transition:all .1s;}
+  .chip:hover{border-color:var(--gold-deep);}
+  .chip.selected{background:var(--green-deep);border-color:var(--green-deep);color:#fff;font-weight:700;
+    box-shadow:2px 2px 0 rgba(43,27,14,0.3);}
+  .chip.disabled{opacity:0.35;cursor:not-allowed;}
+  .chip.disabled:hover{border-color:var(--paper-line);}
+
+  #resultCard{display:none;margin-top:10px;}
+  .loading{display:none;text-align:center;padding:40px 20px;color:#E9DCC0;font-size:14.5px;}
+  .loading.show{display:block;}
+  .spinner{width:28px;height:28px;border:4px solid var(--paper-line);border-top-color:var(--gold);
+    border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .rec-card{background:var(--paper);border:2.5px solid var(--paper-line);border-radius:var(--radius);
+    padding:18px 22px;margin-bottom:12px;box-shadow:3px 3px 0 rgba(43,27,14,0.2);position:relative;}
+  .rec-card::before{content:"✦";position:absolute;top:14px;right:18px;color:var(--gold-deep);font-size:16px;}
+  .rec-card .jn{font-size:19px;font-weight:800;color:var(--gold-deep);margin-bottom:6px;}
+  .rec-card .jr{font-size:14.5px;color:var(--ink);line-height:1.65;}
+
+  .keywords-used{font-size:13px;color:#E9DCC0;margin:18px 0 4px;}
+  .keywords-used b{color:#FFF6E0;}
+
+  .reflect-box{background:#F1E2B8;border:2.5px solid var(--paper-line);border-radius:var(--radius);
+    padding:20px 22px;margin-top:22px;}
+  .reflect-box h4{font-size:15px;margin:0 0 12px;color:#5C3D0A;}
+  .reflect-box label{display:block;font-size:13.5px;font-weight:700;margin:14px 0 6px;color:#3A2B10;}
+  .reflect-box textarea{width:100%;min-height:70px;padding:10px 12px;border:2px solid var(--paper-line);
+    border-radius:4px;font-family:inherit;font-size:14px;resize:vertical;box-sizing:border-box;}
+
+  .wish-box{background:#3A2352;border:2.5px solid var(--gold-deep);border-radius:var(--radius);
+    padding:20px 22px;margin-top:24px;}
+  .wish-box h4{font-size:15px;margin:0 0 14px;color:#FFF6E0;}
+  .wish-box label{display:block;font-size:13.5px;font-weight:700;margin:14px 0 6px;color:#F0E4CE;}
+  .wish-box textarea, .wish-box input{width:100%;padding:10px 12px;border:2px solid var(--gold-deep);
+    border-radius:4px;font-family:inherit;font-size:14px;box-sizing:border-box;background:#FBF3DD;color:var(--ink);}
+  .wish-box textarea{min-height:70px;resize:vertical;}
+  .wish-row{display:flex;gap:14px;flex-wrap:wrap;}
+  .wish-field{flex:1;min-width:160px;}
+  .wish-error{display:none;color:#FFB4B0;font-size:13px;font-weight:700;margin-top:10px;}
+  .wish-error.show{display:block;}
+  .wish-status{font-size:13.5px;margin-top:12px;color:#D8F5DE;display:none;}
+  .wish-status.show{display:block;}
+  #wishSubmitBtn{margin-top:18px;border:2.5px solid var(--ink);border-radius:4px;padding:12px 22px;
+    font-size:15px;font-weight:700;cursor:pointer;background:var(--gold);color:var(--ink);
+    box-shadow:3px 3px 0 var(--ink);transition:transform .06s;font-family:inherit;}
+  #wishSubmitBtn:hover{filter:brightness(1.06);}
+  #wishSubmitBtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  #wishSubmitBtn:disabled{background:#C7BFA0;box-shadow:3px 3px 0 var(--ink);cursor:not-allowed;transform:none;}
+
+  .error-box{display:none;background:#FADAD6;border:2px solid var(--brick);border-radius:var(--radius);
+    padding:14px 18px;font-size:13.5px;color:#5C2B1E;margin-top:12px;}
+  .error-box.show{display:block;}
+
+  @media(max-width:600px){
+    .counter{position:static;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="cover">
+    <div class="eyebrow">진로 활동 · 키워드 추천</div>
+    <h1>진로 키워드 추천기</h1>
+    <p>아래 100개 키워드 중에서 나를 가장 잘 나타내는 것을 10~20개 정도 골라보세요. 고른 키워드와 가장 잘 맞는 직업 5가지를 찾아드립니다.</p>
+  </div>
+
+  <div class="cover">
+    <div class="eyebrow">진로 활동 · 마법사의 진로 점술소</div>
+    <h1>🔮 엉성한 마법사의 진로 점술소</h1>
+    <div class="wizard-box">
+      <div class="wizard-avatar">🧙</div>
+      <div class="wizard-say">"어이쿠, 손님이시구먼! 나는 이 동네에서 조금... 아주 조금 용한 마법사라네. 수정구슬이 가끔 삐끗하긴 해도, 자네가 어떤 사람인지 조각을 보여주면 그럭저럭 괜찮은 길을 점쳐줄 수 있을 걸세. 아마도."</div>
+    </div>
+    <p>아래 100개 키워드 중에서 나를 가장 잘 나타내는 조각을 10~20개 골라 마법사에게 건네보세요.</p>
+  </div>
+
+  <div class="counter">
+    <div class="txt">마법사에게 건넨 조각: <b id="countTxt">0</b> / 20 <span id="hintTxt" style="margin-left:8px;"></span></div>
+    <button id="recommendBtn" disabled>🔮 엉성한 마법사에게 길을 보여달라 하기</button>
+  </div>
+
+  <div id="categoriesHost"></div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="loading" id="loadingBox">
+    <div class="spinner"></div>
+    마법사가 수정구슬을 이리저리 닦아가며 뭔가 열심히 들여다보고 있어요...
+  </div>
+
+  <div id="resultCard">
+    <div class="wizard-box" style="margin:26px 0 14px;">
+      <div class="wizard-avatar">🧙</div>
+      <div class="wizard-say">"으흠, 흠흠... 수정구슬이 좀 뿌옇긴 한데, 그래도 얼추 다섯 가지 길이 보이는구먼! 하나씩 들어보게, 밑져야 본전 아니겠나."</div>
+    </div>
+    <div class="keywords-used" id="keywordsUsedTxt"></div>
+    <div id="recListHost" style="margin-top:14px;"></div>
+
+    <div class="reflect-box">
+      <h4>🕯 마법사의 마지막 질문</h4>
+      <label>다섯 가지 예언 중, 가장 뜻밖이었던 길과 그 이유는 무엇인가요?</label>
+      <textarea id="unexpectedNote" placeholder="예: 나는 배우 같은 직업이 나올 줄은 몰랐는데, 생각해보니 발표를 좋아하는 성향과 관련이 있는 것 같다."></textarea>
+      <label>가장 고개가 끄덕여졌던 길과, 그 이유는 무엇인가요?</label>
+      <textarea id="agreedNote" placeholder="예: 디자이너는 평소에 그림 그리기를 좋아해서 납득이 됐다."></textarea>
+    </div>
+
+    <div class="wish-box">
+      <div class="wizard-box" style="margin-bottom:16px;">
+        <div class="wizard-avatar">🧙</div>
+        <div class="wizard-say">"자, 마지막으로 소원 하나만 들려주게. 내가 마법으로 이뤄줄 수는... 없지만, 그래도 잘 들어는 두겠네."</div>
+      </div>
+      <h4>🕯 엉성한 마법사에게 소원 빌기</h4>
+
+      <div class="wish-row">
+        <div class="wish-field">
+          <label>학번</label>
+          <input type="text" id="wishClass" placeholder="예: 20315">
+        </div>
+        <div class="wish-field">
+          <label>이름</label>
+          <input type="text" id="wishName" placeholder="이름을 적어주세요">
+        </div>
+      </div>
+
+      <label>어떤 직업을 갖고 싶나요? 그 이유는 무엇인가요?</label>
+      <textarea id="wishQ1" placeholder="예: 디자이너가 되고 싶다. 어릴 때부터 그림 그리는 걸 좋아했고, 사람들에게 좋은 인상을 주는 걸 만들고 싶기 때문이다."></textarea>
+
+      <label>나는 어떤 어른이 되고 싶나요?</label>
+      <textarea id="wishQ2" placeholder="예: 남에게 도움이 되면서도 내 삶의 여유를 잃지 않는 어른이 되고 싶다."></textarea>
+
+      <label>그 꿈을 위해 지금부터 무엇을 해보고 싶나요?</label>
+      <textarea id="wishQ3" placeholder="예: 관련 동아리에 들어가거나, 포트폴리오를 조금씩 만들어보고 싶다."></textarea>
+
+      <div id="wishError" class="wish-error"></div>
+
+      <button id="wishSubmitBtn">🔮 마법사에게 소원 전하기(제출하기)</button>
+      <div id="wishStatus" class="wish-status"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const KEYWORD_CATEGORIES = [
+  {title:"① 성향·기질", words:["활동적인","차분한","도전적인","신중한","즉흥적인","계획적인","사교적인","내향적인","리더십 있는","협력적인"]},
+  {title:"② 좋아하는 활동", words:["손으로 만들기","그림 그리기","글쓰기","말하기·발표","숫자 다루기","컴퓨터·코딩","요리","운동","음악","관찰·탐구"]},
+  {title:"③ 관심 분야", words:["과학","예술","의료·건강","법·정의","교육","환경","스포츠","IT·기술","경영·경제","미디어·콘텐츠"]},
+  {title:"④ 가치관", words:["안정성","도전","성취","자율성","사회적 기여","명예","경제적 보상","워라밸","창의성","전문성"]},
+  {title:"⑤ 근무 스타일 선호", words:["팀워크","독립적 업무","실외활동","실내활동","규칙적인 스케줄","유동적인 스케줄","사람 상대하기","데이터·자료 다루기","이동이 많은 일","한자리에서 집중하는 일"]},
+  {title:"⑥ 강점·능력", words:["문제해결력","공감능력","설득력","분석력","창의력","손재주","체력","집중력","순발력","기획력"]},
+  {title:"⑦ 미래지향 키워드", words:["AI·인공지능","지속가능성","글로벌","디지털 전환","1인기업","원격근무","평생학습","융합","빅데이터","자동화"]},
+  {title:"⑧ 사회적 관심사", words:["인권","동물","환경보호","지역사회","국제협력","아동·청소년","노인복지","문화유산","정신건강","다양성"]},
+  {title:"⑨ 성격 키워드", words:["꼼꼼한","유연한","인내심 있는","호기심 많은","배려심 있는","책임감 있는","자신감 있는","겸손한","유머러스한","완벽주의적인"]},
+  {title:"⑩ 라이프스타일", words:["여행","자기계발","가족중심","취미생활","미니멀리즘","소셜미디어","반려동물","재테크","건강관리","봉사활동"]},
+];
+const MIN_SELECT = 10;
+const MAX_SELECT = 20;
+
+const JOBS = [
+  {name:"의사", tags:["의료·건강","문제해결력","책임감 있는","전문성","체력"], desc:"환자를 진단하고 치료하는 의료 전문직입니다."},
+  {name:"간호사", tags:["의료·건강","공감능력","체력","사람 상대하기","팀워크"], desc:"환자를 가까이서 돌보고 회복을 돕는 일입니다."},
+  {name:"약사", tags:["의료·건강","꼼꼼한","전문성","규칙적인 스케줄"], desc:"약을 정확히 조제하고 복약을 안내하는 전문직입니다."},
+  {name:"물리치료사", tags:["의료·건강","체력","공감능력","손재주"], desc:"몸의 기능 회복을 돕는 재활 전문가입니다."},
+  {name:"수의사", tags:["동물","의료·건강","손재주","문제해결력"], desc:"동물을 진료하고 치료하는 의료 전문직입니다."},
+  {name:"한의사", tags:["의료·건강","관찰·탐구","전문성","인내심 있는"], desc:"한방 원리로 몸의 균형을 살펴 치료합니다."},
+  {name:"심리상담사", tags:["정신건강","공감능력","인내심 있는","사람 상대하기"], desc:"마음의 어려움을 들어주고 함께 풀어가는 일입니다."},
+  {name:"사회복지사", tags:["사회적 기여","봉사활동","공감능력","지역사회"], desc:"어려운 이웃을 돕고 지역사회를 지원합니다."},
+  {name:"특수교사", tags:["아동·청소년","인내심 있는","배려심 있는","교육"], desc:"저마다 다른 속도로 배우는 학생을 돕는 교사입니다."},
+  {name:"초등교사", tags:["교육","아동·청소년","사교적인","계획적인"], desc:"어린 학생들의 배움과 성장을 이끄는 일입니다."},
+  {name:"대학교수", tags:["전문성","관찰·탐구","평생학습","독립적 업무"], desc:"한 분야를 깊이 연구하고 가르치는 일입니다."},
+  {name:"변호사", tags:["법·정의","설득력","분석력","명예"], desc:"법으로 사람의 권리를 지키고 다투는 일입니다."},
+  {name:"판사", tags:["법·정의","신중한","분석력","책임감 있는"], desc:"사건을 신중히 살펴 옳고 그름을 가립니다."},
+  {name:"검사", tags:["법·정의","도전적인","분석력","책임감 있는"], desc:"범죄를 수사하고 법정에서 공소를 담당합니다."},
+  {name:"경찰관", tags:["법·정의","체력","리더십 있는","지역사회"], desc:"시민의 안전을 지키고 질서를 유지합니다."},
+  {name:"소방관", tags:["체력","도전적인","사회적 기여","순발력"], desc:"위급한 순간 생명과 재산을 지키는 일입니다."},
+  {name:"군인", tags:["체력","규칙적인 스케줄","리더십 있는","책임감 있는"], desc:"국가와 국민을 지키는 조직적인 임무를 수행합니다."},
+  {name:"외교관", tags:["국제협력","글로벌","설득력","말하기·발표"], desc:"나라를 대표해 다른 나라와 관계를 만들어갑니다."},
+  {name:"공무원", tags:["안정성","규칙적인 스케줄","책임감 있는","사회적 기여"], desc:"공공서비스를 통해 시민의 삶을 지원합니다."},
+  {name:"회계사", tags:["숫자 다루기","꼼꼼한","전문성","경영·경제"], desc:"기업의 돈의 흐름을 꼼꼼히 확인하고 관리합니다."},
+  {name:"세무사", tags:["숫자 다루기","꼼꼼한","경영·경제","전문성"], desc:"세금 관련 업무를 정확하게 처리하는 전문직입니다."},
+  {name:"은행원", tags:["숫자 다루기","경영·경제","사람 상대하기","안정성"], desc:"고객의 금융 업무를 돕고 상담합니다."},
+  {name:"금융투자분석가", tags:["경영·경제","분석력","재테크","데이터·자료 다루기"], desc:"시장을 분석해 투자 방향을 제안합니다."},
+  {name:"경영컨설턴트", tags:["경영·경제","문제해결력","기획력","설득력"], desc:"기업의 문제를 진단하고 해법을 제시합니다."},
+  {name:"마케터", tags:["미디어·콘텐츠","창의력","소셜미디어","기획력"], desc:"제품과 브랜드를 사람들에게 매력적으로 알립니다."},
+  {name:"광고기획자", tags:["미디어·콘텐츠","창의력","설득력","기획력"], desc:"인상적인 광고 아이디어를 기획합니다."},
+  {name:"PD(방송연출)", tags:["미디어·콘텐츠","창의력","리더십 있는","팀워크"], desc:"방송 프로그램을 기획하고 연출합니다."},
+  {name:"기자", tags:["미디어·콘텐츠","글쓰기","호기심 많은","순발력"], desc:"사실을 취재하고 세상에 알리는 일입니다."},
+  {name:"아나운서", tags:["말하기·발표","자신감 있는","미디어·콘텐츠","꼼꼼한"], desc:"정확하고 또렷하게 정보를 전달합니다."},
+  {name:"소설가", tags:["글쓰기","창의력","독립적 업무","호기심 많은"], desc:"이야기를 상상하고 글로 풀어냅니다."},
+  {name:"시나리오작가", tags:["글쓰기","창의력","미디어·콘텐츠","호기심 많은"], desc:"영화나 드라마의 이야기를 씁니다."},
+  {name:"카피라이터", tags:["글쓰기","창의력","미디어·콘텐츠","유연한"], desc:"짧은 문장으로 마음을 움직이는 일입니다."},
+  {name:"웹툰작가", tags:["그림 그리기","창의력","독립적 업무","미디어·콘텐츠"], desc:"그림과 이야기로 웹툰을 연재합니다."},
+  {name:"일러스트레이터", tags:["그림 그리기","창의력","예술","독립적 업무"], desc:"그림으로 메시지와 감성을 전달합니다."},
+  {name:"그래픽디자이너", tags:["그림 그리기","창의력","IT·기술","꼼꼼한"], desc:"시각적으로 정보를 디자인합니다."},
+  {name:"UX/UI디자이너", tags:["IT·기술","창의력","문제해결력","디지털 전환"], desc:"사용하기 편한 화면과 경험을 설계합니다."},
+  {name:"건축가", tags:["그림 그리기","손재주","창의력","문제해결력"], desc:"공간을 구상하고 건물을 설계합니다."},
+  {name:"인테리어디자이너", tags:["그림 그리기","창의력","손재주","미니멀리즘"], desc:"공간을 아름답고 쓰기 좋게 꾸밉니다."},
+  {name:"패션디자이너", tags:["그림 그리기","창의력","예술","소셜미디어"], desc:"옷과 스타일로 개성을 표현합니다."},
+  {name:"헤어디자이너", tags:["손재주","창의력","사람 상대하기","소셜미디어"], desc:"머리 스타일로 사람의 매력을 살립니다."},
+  {name:"메이크업아티스트", tags:["손재주","창의력","사람 상대하기","예술"], desc:"메이크업으로 이미지를 완성합니다."},
+  {name:"사진작가", tags:["예술","창의력","관찰·탐구","독립적 업무"], desc:"순간을 포착해 사진으로 남깁니다."},
+  {name:"영화감독", tags:["창의력","리더십 있는","미디어·콘텐츠","팀워크"], desc:"영화 전체를 이끌고 완성해갑니다."},
+  {name:"배우", tags:["말하기·발표","자신감 있는","미디어·콘텐츠","창의력"], desc:"인물이 되어 이야기를 표현합니다."},
+  {name:"가수·뮤지션", tags:["음악","창의력","자신감 있는","미디어·콘텐츠"], desc:"음악으로 감정을 전달하고 무대에 섭니다."},
+  {name:"작곡가", tags:["음악","창의력","독립적 업무","집중력"], desc:"멜로디와 곡을 만들어내는 일입니다."},
+  {name:"뮤지컬배우", tags:["음악","말하기·발표","체력","예술"], desc:"노래와 연기로 무대를 채웁니다."},
+  {name:"큐레이터(학예사)", tags:["예술","문화유산","관찰·탐구","기획력"], desc:"전시를 기획하고 작품을 연구합니다."},
+  {name:"문화재보존전문가", tags:["문화유산","손재주","꼼꼼한","집중력"], desc:"소중한 문화유산을 보존하고 복원합니다."},
+  {name:"사서", tags:["독립적 업무","꼼꼼한","평생학습","지역사회"], desc:"책과 자료로 사람들의 배움을 돕습니다."},
+  {name:"통번역가", tags:["글로벌","글쓰기","꼼꼼한","독립적 업무"], desc:"언어 사이를 정확하게 이어줍니다."},
+  {name:"여행가이드", tags:["여행","사교적인","글로벌","사람 상대하기"], desc:"여행지의 매력을 안내하고 소개합니다."},
+  {name:"승무원", tags:["여행","사람 상대하기","체력","유연한"], desc:"이동 중인 승객의 안전과 편의를 돌봅니다."},
+  {name:"호텔리어", tags:["사람 상대하기","사교적인","배려심 있는","글로벌"], desc:"손님이 편안히 머물도록 서비스를 제공합니다."},
+  {name:"요리사(셰프)", tags:["요리","손재주","창의력","체력"], desc:"맛과 정성을 담아 요리를 만듭니다."},
+  {name:"파티시에", tags:["요리","손재주","꼼꼼한","창의력"], desc:"빵과 디저트를 정교하게 만듭니다."},
+  {name:"바리스타", tags:["요리","손재주","사람 상대하기","사교적인"], desc:"커피로 사람들에게 작은 즐거움을 줍니다."},
+  {name:"농부(스마트팜 경영자)", tags:["환경","자율성","체력","지속가능성"], desc:"땅과 기술로 먹거리를 길러냅니다."},
+  {name:"조경사", tags:["환경","손재주","관찰·탐구","창의력"], desc:"자연과 공간을 아름답게 설계합니다."},
+  {name:"환경컨설턴트", tags:["환경","환경보호","지속가능성","분석력"], desc:"환경 문제를 진단하고 해법을 제안합니다."},
+  {name:"기후과학자", tags:["과학","환경","관찰·탐구","분석력"], desc:"기후 변화를 연구하고 예측합니다."},
+  {name:"해양생물학자", tags:["과학","동물","관찰·탐구","호기심 많은"], desc:"바다 생물의 생태를 연구합니다."},
+  {name:"동물조련사", tags:["동물","인내심 있는","손재주","배려심 있는"], desc:"동물과 교감하며 훈련시킵니다."},
+  {name:"반려동물훈련사", tags:["동물","반려동물","인내심 있는","사람 상대하기"], desc:"반려동물의 행동을 교정하고 돌봅니다."},
+  {name:"물리학자", tags:["과학","분석력","집중력","호기심 많은"], desc:"자연의 원리를 깊이 파고듭니다."},
+  {name:"화학자", tags:["과학","꼼꼼한","분석력","집중력"], desc:"물질의 성질을 연구하고 실험합니다."},
+  {name:"생명공학연구원", tags:["과학","의료·건강","관찰·탐구","집중력"], desc:"생명 현상을 연구해 기술로 발전시킵니다."},
+  {name:"데이터분석가", tags:["데이터·자료 다루기","숫자 다루기","분석력","빅데이터"], desc:"데이터 속에서 의미 있는 패턴을 찾습니다."},
+  {name:"AI엔지니어", tags:["AI·인공지능","컴퓨터·코딩","분석력","문제해결력"], desc:"인공지능 모델을 만들고 개선합니다."},
+  {name:"소프트웨어개발자", tags:["컴퓨터·코딩","문제해결력","집중력","IT·기술"], desc:"프로그램과 서비스를 만드는 일입니다."},
+  {name:"게임개발자", tags:["컴퓨터·코딩","창의력","IT·기술","팀워크"], desc:"재미있는 게임 세계를 만들어냅니다."},
+  {name:"사이버보안전문가", tags:["IT·기술","분석력","꼼꼼한","문제해결력"], desc:"시스템을 위협으로부터 지켜냅니다."},
+  {name:"로봇공학자", tags:["IT·기술","손재주","자동화","문제해결력"], desc:"로봇을 설계하고 만들어냅니다."},
+  {name:"항공우주공학자", tags:["과학","문제해결력","도전","IT·기술"], desc:"항공기와 우주 기술을 연구합니다."},
+  {name:"자동차정비사", tags:["손재주","문제해결력","자동화","체력"], desc:"자동차의 문제를 찾아 고칩니다."},
+  {name:"전기·전자기술자", tags:["손재주","문제해결력","꼼꼼한","IT·기술"], desc:"전기·전자 설비를 설치하고 관리합니다."},
+  {name:"목수(가구제작자)", tags:["손재주","창의력","독립적 업무","집중력"], desc:"나무로 가구와 구조물을 만듭니다."},
+  {name:"물류관리사", tags:["데이터·자료 다루기","기획력","이동이 많은 일","계획적인"], desc:"물건이 제때 이동하도록 관리합니다."},
+  {name:"스포츠트레이너", tags:["스포츠","체력","공감능력","건강관리"], desc:"운동으로 몸을 관리하도록 돕습니다."},
+  {name:"프로운동선수", tags:["스포츠","체력","도전","순발력"], desc:"운동 실력으로 경쟁하고 성취합니다."},
+  {name:"유튜버·크리에이터", tags:["미디어·콘텐츠","창의력","소셜미디어","자율성"], desc:"콘텐츠로 사람들과 소통합니다."},
+  {name:"창업가(스타트업)", tags:["1인기업","도전","리더십 있는","자율성"], desc:"새로운 아이디어로 사업을 일굽니다."},
+  {name:"사회적기업가", tags:["사회적 기여","도전","지속가능성","리더십 있는"], desc:"사회 문제를 사업으로 풀어갑니다."},
+  {name:"NGO활동가", tags:["인권","국제협력","봉사활동","사회적 기여"], desc:"어려운 이들을 위해 목소리를 냅니다."},
+  {name:"노인복지사", tags:["노인복지","배려심 있는","공감능력","인내심 있는"], desc:"어르신의 삶을 살피고 돌봅니다."},
+  {name:"청소년상담사", tags:["아동·청소년","공감능력","정신건강","인내심 있는"], desc:"청소년의 고민을 함께 나눕니다."},
+];
+
+function recommendJobs(sel){
+  const scored = JOBS.map(j=>{
+    const overlap = j.tags.filter(t=>sel.includes(t));
+    return {...j, score:overlap.length, overlap};
+  });
+  scored.sort((a,b)=> b.score - a.score || Math.random()-0.5);
+  return scored.slice(0,5);
+}
+
+let selected = [];
+
+const host = document.getElementById("categoriesHost");
+KEYWORD_CATEGORIES.forEach(cat=>{
+  const catDiv = document.createElement("div");
+  catDiv.className = "category";
+  catDiv.innerHTML = `<h3>${cat.title}</h3><div class="chip-grid"></div>`;
+  const grid = catDiv.querySelector(".chip-grid");
+  cat.words.forEach(word=>{
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.textContent = word;
+    chip.dataset.word = word;
+    chip.addEventListener("click", ()=>toggleWord(word, chip));
+    grid.appendChild(chip);
+  });
+  host.appendChild(catDiv);
+});
+
+function toggleWord(word, chip){
+  const idx = selected.indexOf(word);
+  if(idx>=0){
+    selected.splice(idx,1);
+    chip.classList.remove("selected");
+  } else {
+    if(selected.length>=MAX_SELECT) return;
+    selected.push(word);
+    chip.classList.add("selected");
+  }
+  renderCounter();
+}
+
+function renderCounter(){
+  document.getElementById("countTxt").textContent = selected.length;
+  const hint = document.getElementById("hintTxt");
+  const btn = document.getElementById("recommendBtn");
+  if(selected.length >= MAX_SELECT){
+    hint.textContent = "(최대 개수에 도달했어요)";
+    document.querySelectorAll(".chip:not(.selected)").forEach(c=>c.classList.add("disabled"));
+  } else {
+    hint.textContent = selected.length < MIN_SELECT ? `(최소 ${MIN_SELECT}개 이상 골라주세요)` : "";
+    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("disabled"));
+  }
+  btn.disabled = selected.length < MIN_SELECT;
+}
+
+document.getElementById("recommendBtn").addEventListener("click", ()=>{
+  const btn = document.getElementById("recommendBtn");
+  const errorBox = document.getElementById("errorBox");
+  const loadingBox = document.getElementById("loadingBox");
+  const resultCard = document.getElementById("resultCard");
+  errorBox.classList.remove("show");
+  resultCard.style.display = "none";
+  loadingBox.classList.add("show");
+  btn.disabled = true;
+
+  setTimeout(()=>{
+    try{
+      const recs = recommendJobs(selected);
+      if(!recs.length) throw new Error("추천 결과를 만들 수 없습니다.");
+
+      document.getElementById("keywordsUsedTxt").innerHTML = `그대가 건넨 조각: <b>${selected.join(", ")}</b>`;
+      const listHost = document.getElementById("recListHost");
+      listHost.innerHTML = recs.map(r=>{
+        const matchLine = r.overlap.length
+          ? `"${r.overlap.join('", "')}" 조각을 보니... 이 길이 얼추 맞는 것 같구먼.`
+          : `겹치는 조각은 좀 적네만, 수정구슬이 뜬금없이 이 길을 보여주는군. 왜인지는 나도 모르겠네.`;
+        return `
+          <div class="rec-card">
+            <div class="jn">${r.name}</div>
+            <div class="jr">${matchLine} ${r.desc}</div>
+          </div>
+        `;
+      }).join("");
+
+      resultCard.style.display = "block";
+      resultCard.scrollIntoView({behavior:"smooth", block:"start"});
+    } catch(err){
+      errorBox.textContent = "추천을 만드는 중 문제가 생겼어요. 다시 시도해주세요. (" + err.message + ")";
+      errorBox.classList.add("show");
+    } finally {
+      loadingBox.classList.remove("show");
+      btn.disabled = selected.length < MIN_SELECT;
+    }
+  }, 500);
+});
+
+renderCounter();
+
+// 구글 시트로 소원을 전송하는 부분입니다.
+// 선생님께서 Google Apps Script 웹앱을 배포하신 뒤, 그 URL을 아래에 붙여넣어야 실제로 시트에 기록됩니다.
+const SHEET_WEBHOOK_URL = "여기에_배포한_웹앱_URL을_붙여넣으세요";
+
+document.getElementById("wishSubmitBtn").addEventListener("click", async ()=>{
+  const btn = document.getElementById("wishSubmitBtn");
+  const errorEl = document.getElementById("wishError");
+  const statusEl = document.getElementById("wishStatus");
+  errorEl.classList.remove("show");
+  statusEl.classList.remove("show");
+
+  const name = document.getElementById("wishName").value.trim();
+  const className = document.getElementById("wishClass").value.trim();
+  const q1 = document.getElementById("wishQ1").value.trim();
+  const q2 = document.getElementById("wishQ2").value.trim();
+  const q3 = document.getElementById("wishQ3").value.trim();
+
+  if(!name || !className || !q1 || !q2 || !q3){
+    errorEl.textContent = "이름, 반, 그리고 세 가지 소원을 모두 적어주세요.";
+    errorEl.classList.add("show");
+    return;
+  }
+
+  if(SHEET_WEBHOOK_URL.includes("여기에_")){
+    errorEl.textContent = "아직 구글 시트 연결이 설정되지 않았어요. 선생님께 문의해주세요.";
+    errorEl.classList.add("show");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "전하는 중...";
+
+  const payload = {
+    name, className,
+    keywords: selected.join(", "),
+    q1, q2, q3,
+  };
+
+  try{
+    await fetch(SHEET_WEBHOOK_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    });
+    statusEl.textContent = "🔮 마법사가 소원을 잘 받았다는군요. 제출 완료!";
+    statusEl.classList.add("show");
+    btn.textContent = "전달 완료";
+  } catch(err){
+    errorEl.textContent = "소원을 전하는 중 문제가 생겼어요. 다시 시도해주세요.";
+    errorEl.classList.add("show");
+    btn.disabled = false;
+    btn.textContent = "🔮 마법사에게 소원 전하기(제출하기)";
+  }
+});
+</script>
+</body>
+</html>
