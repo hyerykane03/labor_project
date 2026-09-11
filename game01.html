@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>고2 일본어 회화 게임 - 교사용</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;font-family:Arial,"Noto Sans KR",sans-serif;color:#26324d}
+.wrap{max-width:1100px;margin:auto;padding:22px}.top{background:#fff;border-radius:22px;padding:24px;box-shadow:0 5px 22px #0001}
+h1{margin:0 0 5px}.muted{color:#748096}.tabs{display:flex;gap:8px;margin:15px 0}.tab,.btn{border:0;border-radius:11px;padding:11px 16px;cursor:pointer;font-weight:bold}.on{background:#5368dc;color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.box{background:#fff;border-radius:20px;padding:20px;box-shadow:0 5px 20px #0001;margin-bottom:15px}
+.full{grid-column:1/-1}.q{text-align:center;font-size:25px;font-weight:bold;margin:20px 0 7px}.kr{text-align:center;color:#69758b}
+.mic{display:block;margin:18px auto;width:95px;height:95px;border:0;border-radius:50%;background:#5368dc;color:#fff;font-size:38px;cursor:pointer}.listen{background:#df5270;animation:p 1s infinite}@keyframes p{50%{transform:scale(1.06)}}
+.status{text-align:center;min-height:25px}.answer{background:#f5f7fb;border-radius:12px;padding:14px;text-align:center;font-size:19px;min-height:50px}
+.actions{text-align:center}.actions button{margin:4px}.next{background:#26324d;color:#fff}.feedback{background:#eef3ff;border-radius:14px;padding:15px;margin-top:14px}.hidden{display:none}
+.score{text-align:center;font-size:34px;font-weight:800}.good{color:#16855e}.mid{color:#b97700}.bad{color:#c44158}
+.bar{height:9px;background:#e6eaf2;border-radius:9px;overflow:hidden}.bar div{height:100%;background:#5368dc}
+input{padding:12px;border:1px solid #dce1eb;border-radius:10px;width:100%;font-size:16px;margin:5px 0}
+table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #e8ebf1;text-align:center}th{background:#f5f7fb}
+.small{font-size:13px;color:#7b8495}.tag{display:inline-block;padding:6px 10px;border-radius:99px;background:#eef1f8;margin:3px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top">
+<h1>👩‍🏫 고2 일본어 회화 미션 게임 — 교사용</h1>
+<div class="muted">학생별 기록을 남기고, 교사는 결과를 한눈에 확인하는 수업용 버전</div>
+<div class="tabs">
+<button class="tab on" onclick="setMode('plan',this)">① 주말 계획</button>
+<button class="tab" onclick="setMode('can',this)">② 가능 표현</button>
+</div>
+</div>
+
+<div class="grid">
+<div class="box">
+<h2>👤 학생 정보</h2>
+<input id="student" placeholder="학생 이름 또는 번호 입력">
+<button class="btn" onclick="startStudent()">학생 시작</button>
+<button class="btn" onclick="clearStudent()">초기화</button>
+<p id="current" class="small">현재 학생: 없음</p>
+</div>
+
+<div class="box">
+<h2>📌 수업 진행</h2>
+<div><span class="tag">🎤 말하기</span><span class="tag">⭐ 자동 채점</span><span class="tag">💬 개별 피드백</span></div>
+<p class="small">학생이 마이크로 말한 뒤 점수와 피드백을 확인합니다.</p>
+</div>
+
+<div class="box full">
+<div class="small">MISSION <span id="num">1</span> / <span id="total">6</span></div>
+<div class="bar"><div id="bar"></div></div>
+<div id="q" class="q"></div><div id="kr" class="kr"></div>
+<button id="mic" class="mic" onclick="mic()">🎤</button>
+<div id="status" class="status">마이크를 누르고 일본어로 말해 보세요.</div>
+<div id="ans" class="answer">인식된 말이 여기에 표시됩니다.</div>
+<div class="actions">
+<button class="btn" onclick="listen()">🔊 질문 듣기</button>
+<button class="btn" onclick="hint()">💡 힌트</button>
+<button class="btn next" onclick="next()">➡️ 다음 미션</button>
+</div>
+<div id="fb" class="feedback hidden"></div>
+</div>
+
+<div class="box">
+<h2>📊 현재 학생 성취도</h2>
+<div id="avg" class="score">0점</div>
+<table><thead><tr><th>미션</th><th>점수</th><th>결과</th></tr></thead><tbody id="studentRows"></tbody></table>
+</div>
+
+<div class="box">
+<h2>👥 반 전체 기록</h2>
+<table><thead><tr><th>학생</th><th>응답 수</th><th>평균</th><th>최고점</th></tr></thead><tbody id="classRows"></tbody></table>
+<button class="btn" onclick="downloadCSV()">⬇️ 교사용 CSV 저장</button>
+<button class="btn" onclick="clearAll()">🗑 전체 기록 초기화</button>
+</div>
+</div>
+</div>
+
+<script>
+const D={
+plan:[
+["しゅうまつ、なにを する よていですか。","주말에 무엇을 할 예정입니까?",["えいがを みる よていです","かいものを する よていです","ほんを よむ よていです","うんどうを する よていです"],"활동 + を + 동사 + よていです"],
+["どこへ いく よていですか。","어디에 갈 예정입니까?",["えいがかんへ いく よていです","でぱーとへ いく よていです","としょかんへ いく よていです","こうえんへ いく よていです"],"장소 + へ + いく よていです"],
+["だれと いく よていですか。","누구와 갈 예정입니까?",["ともだちと いく よていです","かぞくと いく よていです","ひとりで いく よていです"],"사람 + と + いく よていです"],
+["しゅうまつ、なにを する よていですか。","주말 계획을 말해 보세요.",["えいがを みる よていです","かいものを する よていです","ほんを よむ よていです"],"～よていです를 사용하세요."],
+["どこへ いく よていですか。","장소를 넣어 대답하세요.",["えいがかんへ いく よていです","としょかんへ いく よていです","こうえんへ いく よていです"],"장소 + へ + いく よていです"],
+["しゅうまつの よていを はなしてください。","주말 계획을 말해 보세요.",["えいがを みる よていです","かいものを する よていです","ほんを よむ よていです"],"문장 끝을 ～よていです로 말하세요."]
+],
+can:[
+["しゃしんを とる ことが できますか。","사진을 찍을 수 있습니까?",["はい できます","いいえ できません"],"はい、できます。 / いいえ、できません。"],
+["にほんごを はなす ことが できますか。","일본어를 말할 수 있습니까?",["はい できます","いいえ できません"],"はい、できます。 / いいえ、できません。"],
+["およぐ ことが できますか。","수영할 수 있습니까?",["はい できます","いいえ できません"],"はい、できます。 / いいえ、できません。"],
+["りょうりを する ことが できますか。","요리할 수 있습니까?",["はい できます","いいえ できません"],"はい、できます。 / いいえ、できません。"],
+["うたを うたう ことが できますか。","노래를 부를 수 있습니까?",["はい できます","いいえ できません"],"はい、できます。 / いいえ、できません。"],
+["できることを 3つ はなしてください。","할 수 있는 일을 3가지 말해 보세요.",["しゃしんを とる ことが できます","にほんごを はなす ことが できます","およぐ ことが できます"],"～ことが できます를 사용하세요."]
+]};
+let m="plan",i=0,rec=null,listening=false,currentStudent="",studentScores=[];
+
+function load(){return JSON.parse(localStorage.getItem("japaneseClassScores")||"{}")}
+function save(x){localStorage.setItem("japaneseClassScores",JSON.stringify(x))}
+function setMode(x,b){stop();m=x;i=0;document.querySelectorAll(".tab").forEach(e=>e.classList.remove("on"));b.classList.add("on");render()}
+function startStudent(){let n=document.getElementById("student").value.trim();if(!n){alert("학생 이름 또는 번호를 입력하세요.");return}currentStudent=n;studentScores=[];document.getElementById("current").textContent="현재 학생: "+n;render()}
+function clearStudent(){currentStudent="";studentScores=[];document.getElementById("student").value="";document.getElementById("current").textContent="현재 학생: 없음";render()}
+function render(){let d=D[m][i];q.textContent=d[0];kr.textContent=d[1];num.textContent=i+1;total.textContent=D[m].length;bar.style.width=((i+1)/D[m].length*100)+"%";ans.textContent="인식된 말이 여기에 표시됩니다.";fb.className="feedback hidden";status.textContent="마이크를 누르고 일본어로 말해 보세요.";renderStudent();renderClass()}
+function norm(s){return s.toLowerCase().replace(/[、。！？,.!?\s]/g,"")}
+function sim(a,b){a=norm(a);b=norm(b);let x=a.length,y=b.length;if(!x||!y)return 0;let dp=Array.from({length:x+1},()=>Array(y+1).fill(0));for(let r=0;r<=x;r++)dp[r][0]=r;for(let c=0;c<=y;c++)dp[0][c]=c;for(let r=1;r<=x;r++)for(let c=1;c<=y;c++)dp[r][c]=Math.min(dp[r-1][c]+1,dp[r][c-1]+1,dp[r-1][c-1]+(a[r-1]==b[c-1]?0:1));return Math.max(0,Math.round((1-dp[x][y]/Math.max(x,y))*100))}
+function grade(t){if(!currentStudent){alert("먼저 학생 이름 또는 번호를 입력하고 '학생 시작'을 눌러 주세요.");return}let d=D[m][i],best=0,ex=d[2][0];d[2].forEach(a=>{let s=sim(t,a);if(s>best){best=s;ex=a}});let n=norm(t);if(m=="plan"&&n.includes("よていです"))best=Math.min(100,best+15);if(m=="can"&&n.includes("ことができます"))best=Math.min(100,best+15);
+let item={student:currentStudent,mode:m,mission:i+1,score:best,text:t,time:new Date().toLocaleString()};studentScores.push(item);let all=load();if(!all[currentStudent])all[currentStudent]=[];all[currentStudent].push(item);save(all);
+let c=best>=85?"good":best>=60?"mid":"bad",msg=best>=85?"🎉 아주 좋아요!":best>=60?"👍 거의 맞았어요!":"💪 다시 한 번 천천히 말해 보세요.";
+fb.className="feedback";fb.innerHTML='<div class="score '+c+'">'+best+'점</div><p style="text-align:center;font-weight:bold">'+msg+'</p><p><b>모범 답안 예시</b><br>'+ex+'</p><p><b>교사 개별 피드백</b><br>'+(best>=85?"문형 사용이 안정적입니다. 다음에는 발음을 더 자연스럽게 이어 보세요.":best>=60?"핵심 문형은 잘 사용했습니다. 문장 끝 표현을 조금 더 정확하게 말해 보세요.":"핵심 문형을 보고 짧게 끊어서 다시 말해 보세요.")+'</p>';
+renderStudent();renderClass()}
+function mic(){if(listening){stop();return}if(!("webkitSpeechRecognition"in window||"SpeechRecognition"in window)){alert("Chrome 또는 Edge에서 사용해 주세요.");return}if(!currentStudent){alert("학생 이름 또는 번호를 먼저 입력하세요.");return}let R=window.SpeechRecognition||window.webkitSpeechRecognition;rec=new R();rec.lang="ja-JP";rec.interimResults=true;rec.continuous=false;rec.onstart=()=>{listening=true;mic.classList.add("listen");status.textContent="🎤 듣고 있어요..."};rec.onresult=e=>{let t="";for(let j=e.resultIndex;j<e.results.length;j++)t+=e.results[j][0].transcript;ans.textContent=t;if(e.results[e.results.length-1].isFinal)grade(t)};rec.onerror=()=>{status.textContent="인식하지 못했어요. 다시 눌러 주세요.";stop()};rec.onend=stop;rec.start()}
+function stop(){if(rec){try{rec.stop()}catch(e){}}listening=false;mic.classList.remove("listen")}
+function next(){stop();i=(i+1)%D[m].length;render()}
+function hint(){fb.className="feedback";fb.innerHTML="<b>💡 힌트</b><br>"+D[m][i][3]}
+function listen(){let u=new SpeechSynthesisUtterance(D[m][i][0]);u.lang="ja-JP";u.rate=.8;speechSynthesis.speak(u)}
+function renderStudent(){let a=studentScores.map(x=>x.score),avg=a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;document.getElementById("avg").textContent=avg+"점";studentRows.innerHTML=studentScores.slice().reverse().map(x=>'<tr><td>'+x.mission+'</td><td><b>'+x.score+'</b></td><td>'+x.text+'</td></tr>').join("")}
+function renderClass(){let all=load();classRows.innerHTML=Object.keys(all).sort().map(n=>{let a=all[n].map(x=>x.score);return '<tr><td>'+n+'</td><td>'+a.length+'</td><td>'+Math.round(a.reduce((x,y)=>x+y,0)/a.length)+'점</td><td>'+Math.max(...a)+'점</td></tr>'}).join("")||'<tr><td colspan="4" class="small">아직 기록이 없습니다.</td></tr>'}
+function clearAll(){if(confirm("이 브라우저에 저장된 반 전체 기록을 모두 삭제할까요?")){localStorage.removeItem("japaneseClassScores");studentScores=[];render()}}
+function downloadCSV(){let all=load(),rows=[["학생","영역","미션","점수","인식 문장","시간"]];Object.keys(all).forEach(n=>all[n].forEach(x=>rows.push([n,x.mode=="plan"?"주말 계획":"가능 표현",x.mission,x.score,x.text,x.time])));let csv="\uFEFF"+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="일본어_회화_학생기록.csv";a.click()}
+render()
+</script>
+</body></html>
