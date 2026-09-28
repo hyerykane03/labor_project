@@ -305,15 +305,20 @@
   // 폼 주소(…/formResponse)와 각 항목의 entry 번호를 채우면 제출 시 구글 시트로 전송됩니다.
   // 비워 두면 전송 없이 교지 이미지만 만들어집니다.
   const FORM = {
-    action: "",            // 예: "https://docs.google.com/forms/d/e/폼ID/formResponse"
-    sid: "", sname: "",    // 예: "entry.123456789"
-    count: "",             // "참여 활동 수" 항목의 entry 번호
-    answers: { hangeul:"", kkeutmal:"", jindan:"", sajeon:"", sumbakkok:"", swaeguk:"", tuho:"", samhaeng:"", cheonnyang:"" }
+    action: "https://docs.google.com/forms/d/e/1FAIpQLSfniwC--qDvv4L6Yv76i025S-HT8VfS8jy-8V1YIa0Z5Jz--A/formResponse",
+    sid: "entry.1443465718",   // 학번
+    sname: "entry.945033481",  // 이름
+    count: "entry.139812043",  // 참여 활동 수
+    answers: {
+      hangeul:"entry.426889", kkeutmal:"entry.1561370235", jindan:"entry.686383503",
+      sajeon:"entry.1941669814", sumbakkok:"entry.1308080203", swaeguk:"entry.338176983",
+      tuho:"entry.1883003566", samhaeng:"entry.997727923", cheonnyang:"entry.789040228"
+    }
   };
   async function sendToForm(){
     if (!FORM.action) return null;
     const fd = new URLSearchParams();
-    if (FORM.sid) fd.append(FORM.sid, state.sid);
+    if (FORM.sid) fd.append(FORM.sid, FORM.sname ? state.sid : (state.sid + " " + state.sname));
     if (FORM.sname) fd.append(FORM.sname, state.sname);
     if (FORM.count) fd.append(FORM.count, TASKS.filter((_, i) => isDone(i)).length + " / 9");
     TASKS.forEach(t => { const k = FORM.answers[t.id]; if (k) fd.append(k, (state.answers[t.id] && state.answers[t.id].text) || ""); });
