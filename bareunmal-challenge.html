@@ -321,7 +321,7 @@
     if (FORM.sid) fd.append(FORM.sid, FORM.sname ? state.sid : (state.sid + " " + state.sname));
     if (FORM.sname) fd.append(FORM.sname, state.sname);
     if (FORM.count) fd.append(FORM.count, TASKS.filter((_, i) => isDone(i)).length + " / 9");
-    TASKS.forEach(t => { const k = FORM.answers[t.id]; if (k) fd.append(k, (state.answers[t.id] && state.answers[t.id].text) || ""); });
+    TASKS.forEach(t => { const k = FORM.answers[t.id]; if (k) fd.append(k, (state.answers[t.id] && state.answers[t.id].text) || "미참여"); });
     try{
       await fetch(FORM.action, { method:"POST", mode:"no-cors", body: fd });
       return true;
