@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>운암고 바른말 챌린지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Gowun+Batang:wght@400;700&family=Nanum+Gothic:wght@700;800&display=swap">
+<style>
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;}
+  img{max-width:100%;}
+  [hidden]{display:none!important;}
+  .dl{display:inline-block;text-align:center;text-decoration:none;}
+  :root{
+    --hanji:#EEE5D1;
+    --hanji-deep:#E3D6BA;
+    --paper:#F7F1E3;
+    --ink:#23201B;
+    --ink-soft:#5B5246;
+    --inju:#B3302A;
+    --inju-soft:#D9776F;
+    --cheong:#2C6A5C;
+    --hwang:#B98433;
+    --line:#CBBB98;
+    --brush:"Nanum Brush Script", "Gowun Batang", serif;
+    --serif:"Gowun Batang", "Noto Serif KR", "Batang", serif;
+    --sans:"Nanum Gothic", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color-scheme: light;
+  }
+  html,body{background:var(--hanji);}
+  body{
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:16px;
+    font-weight:700;
+    line-height:1.6;
+    padding-inline:16px;
+    padding-block:20px 48px;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(185,132,51,.08), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(44,106,92,.06), transparent 45%),
+      var(--hanji);
+    min-height:100%;
+  }
+  .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
+
+  /* 단청 띠 */
+  .dancheong{
+    height:10px;border-radius:2px;
+    background:repeating-linear-gradient(90deg,
+      var(--cheong) 0 18px, var(--hwang) 18px 24px, var(--inju) 24px 36px, var(--hwang) 36px 42px);
+    opacity:.9;
+  }
+
+  header{text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center;}
+  .eyebrow{font-family:var(--sans);font-size:13px;letter-spacing:.08em;color:var(--ink-soft);}
+  h1{
+    font-family:var(--brush);font-weight:400;
+    font-size:clamp(56px, 16vw, 84px);line-height:1;margin:6px 0 0;
+    text-wrap:balance;
+    -webkit-text-stroke:1.6px currentColor;
+  }
+  h1 .red{color:var(--inju);}
+  .sub{margin:0;color:var(--ink-soft);font-size:15px;}
+
+  .applicant{
+    background:var(--paper);border:1px solid var(--line);border-radius:4px;
+    padding:14px 16px;display:grid;grid-template-columns:1fr 1.4fr;gap:10px 12px;
+  }
+  .applicant .cap{grid-column:1/-1;font-family:var(--sans);font-size:13px;color:var(--ink-soft);letter-spacing:.06em;}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-family:var(--sans);font-size:13px;color:var(--ink-soft);}
+  .field input{
+    font:inherit;font-size:16px;color:var(--ink);background:transparent;
+    border:0;border-bottom:1.5px solid var(--ink);padding:4px 2px;border-radius:0;
+  }
+  .field input:focus{outline:none;border-bottom-color:var(--inju);}
+
+  .status{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .status .count{font-family:var(--serif);font-size:17px;}
+  .status .count b{font-size:22px;color:var(--inju);font-variant-numeric:tabular-nums;}
+  .status .lines{font-family:var(--sans);font-size:14px;color:var(--cheong);}
+
+  .board-frame{
+    padding:10px;border-radius:4px;
+    background:var(--cheong);
+    box-shadow:inset 0 0 0 3px var(--hwang), inset 0 0 0 5px var(--cheong), inset 0 0 0 6px rgba(255,255,255,.25);
+  }
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px;background:var(--hanji-deep);}
+  .cell{
+    position:relative;aspect-ratio:1;max-width:100%;
+    background:var(--paper);border:1px solid var(--line);
+    font:inherit;color:var(--ink);cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    padding:6px;text-align:center;overflow:hidden;
+    transition:transform .12s ease, background .2s;
+  }
+  .cell:hover{background:#FFFBF1;}
+  .cell:active{transform:scale(.97);}
+  .cell:focus-visible{outline:3px solid var(--inju);outline-offset:2px;}
+  .cell .no{font-family:var(--sans);font-size:11px;color:var(--ink-soft);}
+  .cell .name{font-family:var(--serif);font-weight:700;font-size:clamp(13px, 3.7vw, 17px);line-height:1.3;word-break:keep-all;text-wrap:balance;}
+  .cell .when{font-family:var(--sans);font-size:11px;color:var(--ink-soft);}
+  .cell.done{background:#FBF4E6;}
+  .cell.done .name,.cell.done .when,.cell.done .no{opacity:.45;}
+  .seal{
+    position:absolute;inset:0;margin:auto;width:64%;aspect-ratio:1;
+    border:3px solid var(--inju);border-radius:8px;color:var(--inju);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--brush);font-size:clamp(28px, 9vw, 44px);line-height:1;-webkit-text-stroke:1px currentColor;
+    transform:rotate(-12deg);background:rgba(179,48,42,.06);
+    box-shadow:inset 0 0 0 2px rgba(179,48,42,.25);
+    pointer-events:none;
+  }
+  .seal.stamp{animation:stamp .35s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes stamp{from{transform:rotate(-12deg) scale(2.2);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:1}}
+
+  .actions{display:flex;flex-direction:column;gap:10px;}
+  .btn{
+    font-family:var(--serif);font-weight:700;font-size:17px;
+    border:0;border-radius:4px;padding:14px 18px;cursor:pointer;
+  }
+  .btn:focus-visible{outline:3px solid var(--hwang);outline-offset:2px;}
+  .btn-main{background:var(--inju);color:#FFF6EA;}
+  .btn-main:disabled{background:var(--line);color:var(--ink-soft);cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);font-weight:700;font-size:15px;}
+  .hint{font-family:var(--sans);font-size:13px;color:var(--ink-soft);text-align:center;margin:0;}
+
+  /* 두루마리 대화창 */
+  dialog{
+    border:0;padding:0;background:transparent;width:min(520px, calc(100% - 32px));max-height:calc(100% - 40px);
+    color:var(--ink);
+  }
+  dialog::backdrop{background:rgba(35,32,27,.55);}
+  .scroll{
+    position:relative;background:var(--paper);
+    padding:22px 20px 18px;display:flex;flex-direction:column;gap:12px;
+    border-top:12px solid var(--ink);border-bottom:12px solid var(--ink);
+    border-radius:2px;
+  }
+  .scroll::before,.scroll::after{
+    content:"";position:absolute;left:-6px;right:-6px;height:6px;background:var(--hwang);border-radius:3px;
+  }
+  .scroll::before{top:-9px}.scroll::after{bottom:-9px}
+  .scroll .meta{font-family:var(--sans);font-size:13px;color:var(--cheong);display:flex;gap:8px;flex-wrap:wrap;}
+  .scroll h2{font-family:var(--brush);font-weight:400;-webkit-text-stroke:1px currentColor;font-size:40px;line-height:1.05;margin:0;text-wrap:balance;}
+  .scroll .desc{margin:0;font-size:14px;color:var(--ink-soft);}
+  .scroll .q{margin:4px 0 0;font-weight:700;font-size:16px;}
+  .scroll textarea{
+    font:inherit;font-size:16px;color:var(--ink);min-height:120px;resize:vertical;
+    background:
+      repeating-linear-gradient(transparent 0 31px, var(--line) 31px 32px);
+    line-height:32px;border:1px solid var(--line);padding:0 10px;border-radius:2px;
+  }
+  .scroll textarea:focus{outline:2px solid var(--cheong);outline-offset:1px;}
+  .scroll .err{color:var(--inju);font-family:var(--sans);font-size:13px;margin:0;min-height:1em;}
+  .row{display:flex;gap:8px;}
+  .row .btn{flex:1;}
+
+  .toast{
+    position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);
+    background:var(--ink);color:#FFF6EA;padding:12px 20px;border-radius:4px;
+    font-family:var(--serif);font-size:16px;box-shadow:0 6px 20px rgba(0,0,0,.25);
+    max-width:calc(100% - 32px);text-align:center;
+  }
+  .notice{text-align:center;align-items:center;background:var(--paper);border:2px solid var(--inju);border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;}
+  .notice strong{color:var(--inju);font-size:16px;}
+  .notice p{margin:0;font-size:15px;word-break:keep-all;}
+  .toast b{color:#F1B27D;font-family:var(--brush);font-size:26px;font-weight:400;margin-right:6px;}
+
+  .result{display:flex;flex-direction:column;gap:12px;align-items:center;}
+  .result img{width:100%;border:1px solid var(--line);box-shadow:0 8px 24px rgba(35,32,27,.18);}
+  .result .save{background:var(--paper);border:1px dashed var(--inju);padding:10px 14px;border-radius:4px;font-family:var(--sans);font-size:14px;text-align:center;}
+
+  @media (prefers-reduced-motion: reduce){
+    .seal.stamp{animation:none}
+    .cell{transition:none}
+  }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="dancheong" aria-hidden="true"></div>
+
+  <header>
+    <div class="eyebrow">운암고 바른말 사용 주간 · 10월 2일(금) ~ 16일(금)</div>
+    <h1>운암고 <span class="red">바른말 챌린지</span></h1>
+    <p class="sub">아홉 과제를 모두 마치고 한글날 한정판 럭키박스를 수령하라!</p>
+  </header>
+
+  <section class="notice" role="note" aria-label="안내">
+    <strong>꼭 읽어 주세요</strong>
+    <p>빙고 내용은 임시저장되지 않아요. 창을 닫거나 새로고침하면 적은 내용이 모두 사라집니다.</p>
+    <p><b>아홉 가지 활동을 모두 마친 뒤</b> 한 번에 빙고를 채우고 제출하세요.</p>
+  </section>
+
+  <section class="applicant" aria-label="참여자 정보">
+    <div class="cap">참여자 정보</div>
+    <div class="field">
+      <label for="sid">학번</label>
+      <input id="sid" inputmode="numeric" autocomplete="off" placeholder="예: 20315">
+    </div>
+    <div class="field">
+      <label for="sname">이름</label>
+      <input id="sname" autocomplete="off" placeholder="이름을 적어 주세요">
+    </div>
+  </section>
+
+  <div class="status">
+    <div class="count">아홉 과제 중 <b id="doneCount">0</b> 통과</div>
+    <div class="lines" id="lineCount">급제 줄 0</div>
+  </div>
+
+  <div class="board-frame">
+    <div class="board" id="board" role="grid" aria-label="바른말 챌린지 빙고판"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-main" id="submitBtn" disabled>답안 제출하고 교지 받기</button>
+    <p class="hint" id="submitHint">칸을 눌러 활동 내용을 적으면 도장이 찍혀요. 아홉 칸을 모두 채우면 제출할 수 있어요.</p>
+  </div>
+
+  <section class="result" id="result" hidden>
+    <div class="save">아래 교지 이미지를 <b>길게 눌러(휴대폰)</b> 또는 <b>마우스 오른쪽 버튼(컴퓨터)</b>으로 저장하여 꼭 보관해 주세요.<br>프로그램 전송 오류에 대비해 참여 확인용으로 필요합니다.</div>
+    <a class="btn btn-main dl" id="dlLink" download="바른말챌린지_교지.png" href="#">교지 이미지 내려받기</a>
+    <p class="hint" id="sendMsg"></p>
+    <img id="resultImg" alt="운암고 바른말 챌린지 완료 교지와 답안">
+  </section>
+
+  <div class="actions">
+    <button class="btn btn-ghost" id="resetBtn">처음부터 다시 쓰기</button>
+  </div>
+
+  <div class="dancheong" aria-hidden="true"></div>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlgTitle">
+  <form class="scroll" id="dlgForm" method="dialog">
+    <div class="meta"><span id="dlgWhen"></span><span id="dlgTime"></span></div>
+    <h2 id="dlgTitle"></h2>
+    <p class="desc" id="dlgDesc"></p>
+    <label class="q" for="dlgAnswer" id="dlgQ"></label>
+    <textarea id="dlgAnswer" rows="4"></textarea>
+    <p class="err" id="dlgErr" aria-live="polite"></p>
+    <div class="row">
+      <button type="button" class="btn btn-ghost" id="dlgClose">닫기</button>
+      <button type="submit" class="btn btn-main" id="dlgSave">제출하고 도장 받기</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirmDlg" aria-labelledby="cfTitle">
+  <div class="scroll">
+    <h2 id="cfTitle">처음부터 다시 쓸까요?</h2>
+    <p class="desc">지금까지 적은 답과 도장이 모두 지워져요.</p>
+    <div class="row">
+      <button type="button" class="btn btn-ghost" id="cfNo">그대로 두기</button>
+      <button type="button" class="btn btn-main" id="cfYes">모두 지우기</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+  const TASKS = [
+    { id:"hangeul", short:"인간 훈민정음", name:"인간 훈민정음", when:"10/6~10/8", time:"점심시간",
+      desc:"친구와 제시된 자음·모음 글자를 몸으로 만들어 폴라로이드 사진 찍기",
+      q:"우리 팀이 몸으로 만든 글자는 무엇인가요? 함께한 친구는 누구인가요?" },
+    { id:"kkeutmal", short:"전교생 끝말잇기", name:"전교생 끝말잇기", when:"10/6~10/8", time:"상시",
+      desc:"후관 쪽 주차장 벽면에 설치된 판에 전교생이 끝말잇기 이어 가기",
+      q:"이전 단어는 무엇이고, 나는 어떤 단어를 썼나요?" },
+    { id:"jindan", short:"언어습관 진단하기", name:"언어습관 진단하기", when:"10/6~10/16", time:"상시",
+      desc:"교육청에서 제공하는 언어습관 자가진단 도구로 나의 말 습관 점검하기",
+      q:"진단 결과는 어떻게 나왔나요? 고치고 싶은 말 습관 하나를 적어 주세요." },
+    { id:"sajeon", short:"우리반 금지어 사전 제작하기", name:"우리반 금지어 사전 제작하기", when:"10/2", time:"6교시 창체",
+      desc:"비속어의 뜻을 알아보고, 금지어 대신 쓸 수 있는 순화된 표현 제안하기",
+      q:"우리 반이 만든 순화 표현 중 가장 마음에 드는 것은 무엇인가요? (금지어는 적지 않아요)" },
+    { id:"sumbakkok", short:"한글 숨바꼭질", name:"교내 곳곳 한글 숨바꼭질", when:"10/6~10/8", time:"상시",
+      desc:"교내 곳곳에 숨겨진 글자를 찍어 단어 완성하기",
+      q:"찾은 글자들과 완성한 단어는 무엇인가요?" },
+    { id:"swaeguk", short:"외래어 쇄국정책", name:"흥선대원군의 외래어 쇄국정책", when:"10/6~10/8", time:"점심시간",
+      desc:"점심시간 동안 외래어는 순우리말·한자어로 바꿔 말하고, 욕설은 쓰지 않기",
+      q:"외래어와 욕설을 금지해 보니 어떤 점을 느꼈나요?" },
+    { id:"tuho", short:"투호 한 판! 퀴즈 한 판!", name:"투호 한 판! 퀴즈 한 판!", when:"10/7, 10/8", time:"점심시간",
+      desc:"투호에 성공하면 사투리·방언 퀴즈에 도전하고, 맞히면 간식 받기",
+      q:"맞힌 사투리 문제와 그 뜻은 무엇인가요?" },
+    { id:"samhaeng", short:"삼행시 과거시험", name:"삼행시 과거시험", when:"10/6~10/16", time:"상시",
+      desc:"'바른말' 또는 '고운말'로 삼행시를 지어 링크로 제출하기",
+      q:"내가 지은 삼행시를 적어 주세요." },
+    { id:"cheonnyang", short:"말 한마디로 천 냥 갚기", name:"말 한마디로 천 냥 갚기 캠페인", when:"10/2~10/16", time:"상시",
+      desc:"친구나 선생님께 예쁘고 아름다운 말을 하루 한 번 건네기",
+      q:"누구에게 어떤 예쁜 말을 건넸나요? 상대의 반응은 어땠나요?" }
+  ];
+  // ── 구글 폼 연동 설정 ──────────────────────────
+  // 폼 주소(…/formResponse)와 각 항목의 entry 번호를 채우면 제출 시 구글 시트로 전송됩니다.
+  // 비워 두면 전송 없이 교지 이미지만 만들어집니다.
+  const FORM = {
+    action: "",            // 예: "https://docs.google.com/forms/d/e/폼ID/formResponse"
+    sid: "", sname: "",    // 예: "entry.123456789"
+    answers: { hangeul:"", kkeutmal:"", jindan:"", sajeon:"", sumbakkok:"", swaeguk:"", tuho:"", samhaeng:"", cheonnyang:"" }
+  };
+  async function sendToForm(){
+    if (!FORM.action) return null;
+    const fd = new URLSearchParams();
+    if (FORM.sid) fd.append(FORM.sid, state.sid);
+    if (FORM.sname) fd.append(FORM.sname, state.sname);
+    TASKS.forEach(t => { const k = FORM.answers[t.id]; if (k) fd.append(k, (state.answers[t.id] && state.answers[t.id].text) || ""); });
+    try{
+      await fetch(FORM.action, { method:"POST", mode:"no-cors", body: fd });
+      return true;
+    }catch(e){ return false; }
+  }
+  const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const KEY = "bagomal-bingo-v1";
+
+  let state = { sid:"", sname:"", answers:{} };
+    function save(){}
+
+  const $ = id => document.getElementById(id);
+  const board = $("board"), dlg = $("dlg");
+  let current = -1;
+
+  $("sid").value = state.sid || "";
+  $("sname").value = state.sname || "";
+  $("sid").addEventListener("input", e => { state.sid = e.target.value.trim(); save(); });
+  $("sname").addEventListener("input", e => { state.sname = e.target.value.trim(); save(); });
+
+  function isDone(i){ const a = state.answers[TASKS[i].id]; return !!(a && a.text && a.text.trim()); }
+  function lineCount(){ return LINES.filter(l => l.every(isDone)).length; }
+
+  function render(stampIndex){
+    board.innerHTML = "";
+    TASKS.forEach((t, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "cell" + (isDone(i) ? " done" : "");
+      b.setAttribute("aria-label", t.name + (isDone(i) ? " 통과" : " 미완료"));
+      b.innerHTML =
+        '<span class="no">제' + (i+1) + '과</span>' +
+        '<span class="name">' + t.short + '</span>' +
+        '<span class="when">' + t.when + '</span>' +
+        (isDone(i) ? '<span class="seal' + (i === stampIndex ? ' stamp' : '') + '">통과</span>' : '');
+      b.addEventListener("click", () => openTask(i));
+      board.appendChild(b);
+    });
+    const n = TASKS.filter((_, i) => isDone(i)).length;
+    $("doneCount").textContent = n;
+    $("lineCount").textContent = "급제 줄 " + lineCount();
+    $("submitBtn").disabled = n < 9;
+    $("submitHint").textContent = n < 9
+      ? "칸을 눌러 활동 내용을 적으면 도장이 찍혀요. 아홉 칸을 모두 채우면 제출할 수 있어요."
+      : "아홉 과제를 모두 통과했어요! 답안을 제출하고 교지를 받으세요.";
+  }
+
+  function openTask(i){
+    current = i;
+    const t = TASKS[i];
+    $("dlgWhen").textContent = t.when;
+    $("dlgTime").textContent = "· " + t.time;
+    $("dlgTitle").textContent = t.name;
+    $("dlgDesc").textContent = t.desc;
+    $("dlgQ").textContent = t.q;
+    $("dlgAnswer").value = (state.answers[t.id] && state.answers[t.id].text) || "";
+    $("dlgErr").textContent = "";
+    $("dlgSave").textContent = isDone(i) ? "고쳐서 다시 제출하기" : "제출하고 도장 받기";
+    if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open","");
+    setTimeout(() => $("dlgAnswer").focus(), 50);
+  }
+  function closeDlg(){ if (dlg.close) dlg.close(); else dlg.removeAttribute("open"); }
+  $("dlgClose").addEventListener("click", closeDlg);
+
+  $("dlgForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const text = $("dlgAnswer").value.trim();
+    if (!text){ $("dlgErr").textContent = "활동 내용을 적어야 도장을 받을 수 있어요."; return; }
+    const t = TASKS[current];
+    const before = lineCount(), wasDone = isDone(current);
+    state.answers[t.id] = { text, at: new Date().toISOString() };
+    save();
+    closeDlg();
+    $("result").hidden = true;
+    render(wasDone ? -1 : current);
+    const after = lineCount();
+    const n = TASKS.filter((_, i) => isDone(i)).length;
+    if (n === 9 && !wasDone) toast("장원", "아홉 과제를 모두 통과했습니다!");
+    else if (after > before) toast("급제", "한 줄 급제! 지금까지 " + after + "줄");
+    else if (!wasDone) toast("통과", t.short + " 도장을 받았어요");
+  });
+
+  let toastTimer;
+  function toast(big, msg){
+    const el = $("toast");
+    el.innerHTML = "<b>" + big + "</b>" + msg;
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.hidden = true, 2400);
+  }
+
+  // 처음부터 다시
+  const cf = $("confirmDlg");
+  $("resetBtn").addEventListener("click", () => cf.showModal ? cf.showModal() : cf.setAttribute("open",""));
+  $("cfNo").addEventListener("click", () => cf.close ? cf.close() : cf.removeAttribute("open"));
+  $("cfYes").addEventListener("click", () => {
+    state.answers = {}; save();
+    cf.close ? cf.close() : cf.removeAttribute("open");
+    $("result").hidden = true;
+    render();
+  });
+
+  // 교지 이미지 만들기
+  $("submitBtn").addEventListener("click", async () => {
+    if (!state.sname || !state.sid){
+      toast("잠깐", "참여자 정보에 학번과 이름을 적어 주세요");
+      (state.sid ? $("sname") : $("sid")).focus();
+      return;
+    }
+    $("submitBtn").disabled = true;
+    $("submitBtn").textContent = "교지를 쓰는 중…";
+    try{
+      await Promise.all([
+        document.fonts.load('64px "Nanum Brush Script"'),
+        document.fonts.load('700 28px "Gowun Batang"'),
+        document.fonts.load('28px "Gowun Batang"'),
+        document.fonts.load('700 22px "Nanum Gothic"')
+      ]);
+    }catch(e){}
+    const url = drawGyoji();
+    $("resultImg").src = url;
+    $("dlLink").href = url;
+    const sent = await sendToForm();
+    $("sendMsg").textContent = sent === true ? "답안이 선생님께 전송되었어요."
+      : sent === false ? "전송 중 오류가 났어요. 교지 이미지를 저장해 선생님께 보여 주세요." : "";
+    $("result").hidden = false;
+    $("submitBtn").textContent = "답안 다시 제출하기";
+    $("submitBtn").disabled = false;
+    $("result").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start" });
+  });
+
+  function wrap(ctx, text, maxW){
+    const out = [];
+    String(text).split(/\n/).forEach(para => {
+      let line = "";
+      for (const ch of para){
+        const test = line + ch;
+        if (ctx.measureText(test).width > maxW && line){ out.push(line); line = ch.trimStart(); }
+        else line = test;
+      }
+      out.push(line);
+    });
+    return out;
+  }
+
+  function drawGyoji(){
+    const W = 1080, P = 90, inner = W - P*2;
+    const c = document.createElement("canvas");
+    let ctx = c.getContext("2d");
+    const BODY = '700 28px "Gowun Batang", serif';
+    const BOLD = '700 28px "Gowun Batang", serif';
+    const LH = 44;
+
+    // 높이 계산
+    ctx.font = BODY;
+    const blocks = TASKS.map((t, i) => ({
+      title: "제" + (i+1) + "과  " + t.name,
+      q: wrap(ctx, "문) " + t.q, inner - 20),
+      a: wrap(ctx, (state.answers[t.id] && state.answers[t.id].text) || "", inner - 20)
+    }));
+    ctx.font = '700 24px "Nanum Gothic", sans-serif';
+    blocks.forEach(b => b.q = wrap(ctx, "문) " + TASKS[blocks.indexOf(b)].q, inner - 20));
+    let answersH = 0;
+    blocks.forEach(b => { answersH += 50 + b.q.length*36 + b.a.length*LH + 36; });
+    const H = 860 + answersH + 110;
+    c.width = W; c.height = H;
+    ctx = c.getContext("2d");
+
+    // 바탕 한지
+    ctx.fillStyle = "#F4ECDA"; ctx.fillRect(0,0,W,H);
+    for (let k=0;k<1400;k++){
+      ctx.fillStyle = "rgba(160,130,80," + (Math.random()*0.06) + ")";
+      ctx.fillRect(Math.random()*W, Math.random()*H, Math.random()*3+1, Math.random()*1.5+.5);
+    }
+    // 단청 테두리
+    ctx.fillStyle = "#2C6A5C"; ctx.fillRect(24,24,W-48,26); ctx.fillRect(24,H-50,W-48,26);
+    ctx.fillRect(24,24,26,H-48); ctx.fillRect(W-50,24,26,H-48);
+    ctx.strokeStyle = "#B98433"; ctx.lineWidth = 4; ctx.strokeRect(58,58,W-116,H-116);
+    ctx.strokeStyle = "#B3302A"; ctx.lineWidth = 2; ctx.strokeRect(66,66,W-132,H-132);
+    for (let x=40; x<W-40; x+=48){ ctx.fillStyle = "#B3302A"; ctx.fillRect(x,32,14,10); ctx.fillRect(x,H-42,14,10); }
+
+    ctx.textAlign = "center"; ctx.fillStyle = "#23201B";
+    ctx.font = '700 96px "Gowun Batang", serif';
+    ctx.fillText("챌린지 완료", W/2, 215);
+    ctx.font = '700 30px "Gowun Batang", serif'; ctx.fillStyle = "#5B5246";
+    ctx.fillText("운암고 바른말 챌린지", W/2, 320);
+
+    // 응시자
+    ctx.fillStyle = "#23201B"; ctx.font = BOLD;
+    ctx.fillText("학번 " + state.sid + "   ·   " + state.sname, W/2, 420);
+    ctx.font = BODY; ctx.fillStyle = "#23201B";
+    const decree = ["위 응시생은 한글날을 맞아 열린 바른말 챌린지에서"].concat(wrap(ctx, "아홉 과제를 모두 성실히 마치고 바르고 고운 우리말을 몸소 실천하였기에 이에 챌린지 완료를 증명하노라.", inner - 40));
+    decree.forEach((l, i) => ctx.fillText(l, W/2, 490 + i*LH));
+
+    const d = new Date();
+    const dateStr = d.getFullYear() + "년 " + (d.getMonth()+1) + "월 " + d.getDate() + "일";
+    ctx.font = '700 26px "Nanum Gothic", sans-serif'; ctx.fillStyle = "#5B5246";
+    ctx.fillText(dateStr, W/2, 490 + decree.length*LH + 30);
+
+    // 구분선
+    let y = 490 + decree.length*LH + 90;
+    ctx.strokeStyle = "#CBBB98"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(P, y); ctx.lineTo(W-P, y); ctx.stroke();
+    ctx.font = '700 44px "Gowun Batang", serif'; ctx.fillStyle = "#B3302A";
+    ctx.fillText("답 안", W/2, y + 66);
+    y += 120;
+
+    // 답안
+    ctx.textAlign = "left";
+    blocks.forEach((b, i) => {
+      ctx.font = BOLD; ctx.fillStyle = "#2C6A5C";
+      ctx.fillText(b.title, P, y); y += 42;
+      ctx.font = '700 24px "Nanum Gothic", sans-serif'; ctx.fillStyle = "#5B5246";
+      b.q.forEach(l => { ctx.fillText(l, P + 20, y); y += 36; });
+      y += 6;
+      ctx.font = BODY; ctx.fillStyle = "#23201B";
+      b.a.forEach(l => { ctx.fillText(l, P + 20, y); y += LH; });
+      y += 18;
+      if (i < blocks.length - 1){
+        ctx.strokeStyle = "rgba(203,187,152,.8)"; ctx.setLineDash([6,8]);
+        ctx.beginPath(); ctx.moveTo(P, y - 10); ctx.lineTo(W-P, y - 10); ctx.stroke(); ctx.setLineDash([]);
+        y += 20;
+      }
+    });
+
+    return c.toDataURL("image/png");
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>
