@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>블라인드 토론: 베일 너머의 선택</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Pretendard-Regular:wght@400&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-navy:#12172a;
+    --ink-navy-deep:#0b0f1c;
+    --parchment:#f1ead8;
+    --parchment-dim:#e6dcc4;
+    --ink-text:#211c14;
+    --gold:#c8a133;
+    --gold-bright:#e6c25c;
+    --equal-color:#2f6f6b;
+    --equal-dark:#1f4d49;
+    --unequal-color:#8a3636;
+    --unequal-dark:#652525;
+    --line:rgba(200,161,51,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 50% -10%, #1c2340 0%, var(--ink-navy) 45%, var(--ink-navy-deep) 100%);
+    color:var(--parchment);
+    font-family:'Gowun Batang', serif;
+    min-height:100vh;
+    padding:28px 16px 60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+
+  /* header */
+  .eyebrow{
+    text-align:center;
+    letter-spacing:0.35em;
+    font-size:11px;
+    color:var(--gold-bright);
+    font-family:'Pretendard-Regular', sans-serif;
+    margin-bottom:10px;
+    opacity:0.85;
+  }
+  h1{
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:26px;
+    line-height:1.35;
+    text-align:center;
+    margin:0 0 6px;
+    color:var(--parchment);
+    text-shadow:0 2px 14px rgba(230,194,92,0.15);
+  }
+  .subtitle{
+    text-align:center;
+    font-size:14px;
+    color:var(--gold-bright);
+    opacity:0.75;
+    margin-bottom:26px;
+  }
+  .divider{
+    width:64px;height:2px;margin:0 auto 26px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  /* cards */
+  .card{
+    background:var(--parchment);
+    color:var(--ink-text);
+    border-radius:4px;
+    padding:22px 20px;
+    margin-bottom:16px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.4) inset;
+    position:relative;
+    border:1px solid rgba(0,0,0,0.06);
+    animation:riseIn 0.6s ease both;
+  }
+  .card::before{
+    content:'';
+    position:absolute;inset:0;
+    background-image:radial-gradient(rgba(0,0,0,0.025) 1px, transparent 1px);
+    background-size:3px 3px;
+    border-radius:4px;
+    pointer-events:none;
+  }
+  @keyframes riseIn{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .card-label{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:11px;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:var(--unequal-dark);
+    opacity:0.55;
+    margin-bottom:10px;
+    font-weight:600;
+  }
+  .situation-text{
+    font-size:15.5px;
+    line-height:1.85;
+  }
+
+  /* veil info toggle */
+  .veil-toggle{
+    width:100%;
+    background:var(--ink-navy);
+    color:var(--gold-bright);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:13px 16px;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:13.5px;
+    text-align:left;
+    cursor:pointer;
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:16px;
+    transition:background 0.2s;
+  }
+  .veil-toggle:active{background:#1a2038;}
+  .veil-toggle .chevron{transition:transform 0.25s; font-size:11px;}
+  .veil-toggle.open .chevron{transform:rotate(180deg);}
+  .veil-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.35s ease;
+    margin-top:-8px;
+    margin-bottom:0;
+  }
+  .veil-body.open{max-height:340px; margin-bottom:16px;}
+  .veil-body-inner{
+    background:rgba(241,234,216,0.06);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:16px 16px;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:13px;
+    line-height:1.75;
+    color:var(--parchment);
+    opacity:0.92;
+  }
+  .veil-body-inner b{color:var(--gold-bright);}
+
+  /* question */
+  .question{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:18px;
+    text-align:center;
+    margin:26px 0 16px;
+    color:var(--parchment);
+  }
+
+  /* choice buttons */
+  .choices{display:flex; flex-direction:column; gap:12px; margin-bottom:22px;}
+  .choice-btn{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:16.5px;
+    padding:20px 18px;
+    border-radius:4px;
+    border:2px solid;
+    cursor:pointer;
+    text-align:left;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:all 0.18s ease;
+    background:rgba(255,255,255,0.02);
+  }
+  .choice-btn .sub{
+    display:block;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-weight:400;
+    font-size:12px;
+    margin-top:5px;
+    opacity:0.7;
+  }
+  .choice-btn.equal{border-color:var(--equal-color); color:#8fd6cf;}
+  .choice-btn.equal:active{background:rgba(47,111,107,0.25);}
+  .choice-btn.equal.selected{
+    background:var(--equal-color); color:#f1ead8; border-color:var(--equal-color);
+    box-shadow:0 8px 24px rgba(47,111,107,0.45);
+  }
+  .choice-btn.unequal{border-color:var(--unequal-color); color:#e3a3a3;}
+  .choice-btn.unequal:active{background:rgba(138,54,54,0.25);}
+  .choice-btn.unequal.selected{
+    background:var(--unequal-color); color:#f1ead8; border-color:var(--unequal-color);
+    box-shadow:0 8px 24px rgba(138,54,54,0.45);
+  }
+  .choice-btn .mark{
+    width:22px;height:22px;border-radius:50%;
+    border:2px solid currentColor;
+    flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;
+  }
+  .choice-btn.selected .mark{background:var(--parchment); color:inherit;}
+
+  /* name + textarea */
+  label{
+    display:block;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:12.5px;
+    letter-spacing:0.05em;
+    color:var(--gold-bright);
+    margin-bottom:8px;
+    opacity:0.85;
+  }
+  .name-row{display:flex; gap:10px; margin-bottom:20px;}
+  .name-row input{margin-bottom:0;}
+  .name-row input#studentNumber{flex:0.85;}
+  .name-row input#studentName{flex:1;}
+
+  .ref-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.4s ease;
+    margin-top:-8px;
+    margin-bottom:0;
+  }
+  .ref-body.open{max-height:1400px; margin-bottom:16px;}
+  .ref-block{
+    border-radius:4px;
+    padding:16px 16px;
+    margin-bottom:12px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--line);
+    border-left:4px solid;
+  }
+  .ref-block.equal-ref{border-left-color:var(--equal-color);}
+  .ref-block.unequal-ref{border-left-color:var(--unequal-color); margin-bottom:0;}
+  .ref-title{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:13.5px;
+    margin-bottom:8px;
+  }
+  .equal-ref .ref-title{color:#8fd6cf;}
+  .unequal-ref .ref-title{color:#e3a3a3;}
+  .ref-core{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:12.5px;
+    line-height:1.65;
+    font-style:italic;
+    opacity:0.9;
+    margin-bottom:10px;
+    color:var(--parchment);
+  }
+  .ref-list{
+    margin:0;
+    padding-left:18px;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:12px;
+    line-height:1.7;
+    color:var(--parchment);
+    opacity:0.85;
+  }
+  .ref-list li{margin-bottom:9px;}
+  .ref-list li:last-child{margin-bottom:0;}
+  .ref-list b{color:var(--gold-bright);}
+
+  input[type=text], textarea{
+    width:100%;
+    background:var(--parchment);
+    color:var(--ink-text);
+    border:1px solid rgba(0,0,0,0.15);
+    border-radius:4px;
+    padding:13px 14px;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:14.5px;
+    resize:vertical;
+    margin-bottom:18px;
+  }
+  input[type=text]{margin-bottom:20px;}
+  textarea{min-height:120px; line-height:1.6;}
+  .char-count{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:11px;
+    color:var(--parchment);
+    opacity:0.5;
+    text-align:right;
+    margin-top:-14px;
+    margin-bottom:20px;
+  }
+
+  .privacy-note{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:11.5px;
+    color:var(--parchment);
+    opacity:0.55;
+    text-align:center;
+    margin-bottom:16px;
+    line-height:1.6;
+  }
+
+  .submit-btn{
+    width:100%;
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color:#2a1e05;
+    border:none;
+    border-radius:4px;
+    padding:17px;
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:16px;
+    letter-spacing:0.05em;
+    cursor:pointer;
+    transition:transform 0.15s, opacity 0.2s;
+    box-shadow:0 10px 26px rgba(200,161,51,0.3);
+  }
+  .submit-btn:active{transform:scale(0.98);}
+  .submit-btn:disabled{
+    opacity:0.35; cursor:not-allowed; box-shadow:none;
+  }
+
+  /* result / seal */
+  .result-wrap{display:none;}
+  .result-wrap.show{display:block; animation:riseIn 0.5s ease both;}
+  .seal-stage{
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 20px 10px;
+  }
+  .seal{
+    width:104px;height:104px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold) 60%, #8a6a1c 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 14px 30px rgba(200,161,51,0.45), inset 0 -4px 10px rgba(0,0,0,0.25), inset 0 4px 8px rgba(255,255,255,0.35);
+    transform:scale(0);
+    animation:stampIn 0.55s cubic-bezier(.2,1.6,.4,1) 0.15s forwards;
+  }
+  @keyframes stampIn{
+    0%{transform:scale(2.4) rotate(-14deg); opacity:0;}
+    60%{transform:scale(0.92) rotate(3deg); opacity:1;}
+    100%{transform:scale(1) rotate(0deg); opacity:1;}
+  }
+  .seal-text{
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:15px;
+    color:#2a1e05;
+    text-align:center;
+    line-height:1.2;
+  }
+  .seal-caption{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:12px;
+    color:var(--gold-bright);
+    letter-spacing:0.1em;
+    margin-top:14px;
+    opacity:0.8;
+  }
+
+  .score-grid{
+    display:flex; gap:10px; margin:22px 0 4px;
+  }
+  .score-box{
+    flex:1;
+    background:rgba(241,234,216,0.06);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:14px 10px;
+    text-align:center;
+  }
+  .score-box .num{
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:24px;
+    color:var(--gold-bright);
+  }
+  .score-box .cap{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:11px;
+    color:var(--parchment);
+    opacity:0.6;
+    margin-top:4px;
+  }
+  .feedback-card{
+    margin-top:18px;
+  }
+  .feedback-card .card-label{color:var(--equal-dark);}
+  .feedback-text{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:14px;
+    line-height:1.75;
+  }
+  .reset-link{
+    display:block;
+    text-align:center;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:12.5px;
+    color:var(--gold-bright);
+    opacity:0.7;
+    margin:22px 0 4px;
+    background:none;border:none;cursor:pointer;
+    text-decoration:underline;
+  }
+
+  .loading-wrap{display:none; text-align:center; padding:30px 0;}
+  .loading-wrap.show{display:block;}
+  .spinner{
+    width:34px;height:34px;
+    border:3px solid rgba(200,161,51,0.25);
+    border-top-color:var(--gold-bright);
+    border-radius:50%;
+    margin:0 auto 14px;
+    animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:13px;
+    color:var(--gold-bright);
+    opacity:0.85;
+  }
+
+  .error-box{
+    display:none;
+    background:rgba(138,54,54,0.15);
+    border:1px solid var(--unequal-color);
+    color:#f1c9c9;
+    border-radius:4px;
+    padding:14px 16px;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:13px;
+    margin-top:14px;
+    line-height:1.6;
+  }
+  .error-box.show{display:block;}
+  .retry-btn{
+    margin-top:10px;
+    background:var(--unequal-color);
+    color:#fff;
+    border:none;
+    padding:9px 14px;
+    border-radius:4px;
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+
+  /* tally */
+  .tally-toggle{
+    display:block;
+    width:100%;
+    text-align:center;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--gold-bright);
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:12.5px;
+    padding:11px;
+    border-radius:4px;
+    cursor:pointer;
+    margin-top:8px;
+    opacity:0.8;
+  }
+  .tally-body{display:none; margin-top:12px;}
+  .tally-body.show{display:block;}
+  .tally-row{display:flex; gap:10px;}
+  .tally-box{
+    flex:1;
+    background:rgba(241,234,216,0.05);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:14px 10px;
+    text-align:center;
+  }
+  .tally-box .n{
+    font-family:'Noto Serif KR', serif;
+    font-weight:900;
+    font-size:22px;
+  }
+  .tally-box.equal-t .n{color:var(--equal-color);}
+  .tally-box.unequal-t .n{color:var(--unequal-color);}
+  .tally-box .cap{
+    font-family:'Pretendard-Regular', sans-serif;
+    font-size:11px;
+    color:var(--parchment);
+    opacity:0.6;
+    margin-top:4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">제 1 차 회의</div>
+  <h1>블라인드 토론<br>베일 너머의 선택</h1>
+  <div class="subtitle">— 나는 아직 누구인지 모른다 —</div>
+  <div class="divider"></div>
+
+  <div id="formSection">
+
+    <div class="card">
+      <div class="card-label">Situation · 상황</div>
+      <div class="situation-text">
+        여러분은 지금 막 탄생한 가상 사회에서 선발된 <b>'헌법 제정 위원'</b>입니다. 곧 이 사회를 굴러가게 할 거대한 산업들이 만들어질 것입니다. 아직 여러분이 이 사회에서 어떤 지위를 얻게 될지는 아무도 모릅니다. 운명을 결정짓는 제비뽑기에 앞서, 우리 사회를 관통할 <b>'노동의 가치'</b>에 대한 단 하나의 법안을 통과시켜야 합니다.
+      </div>
+    </div>
+
+    <button class="veil-toggle" id="veilToggle" type="button">
+      <span>💡 무지의 베일(Veil of Ignorance)이란?</span>
+      <span class="chevron">▼</span>
+    </button>
+    <div class="veil-body" id="veilBody">
+      <div class="veil-body-inner">
+        철학자 <b>존 롤스</b>가 제시한 개념입니다. 내가 이 사회에서 부자일지 가난할지, 관리자일지 노동자일지 <b>전혀 모르는 상태</b>에서 규칙을 정한다면 어떨까요? 최상위 계층이 될지 최하위 계층이 될지 알 수 없기 때문에, 사람들은 자연스럽게 <b>가장 불리한 위치에 놓이더라도 감내할 수 있는 규칙</b>을 선택하게 됩니다. 지금 여러분이 바로 그 '베일' 뒤에 서 있습니다.
+      </div>
+    </div>
+
+    <div class="question">여러분은 어떤 법안에 찬성하십니까?</div>
+
+    <div class="choices">
+      <button class="choice-btn equal" id="btnEqual" type="button">
+        <span>
+          평등 사회 구축
+          <span class="sub">모든 노동에는 귀천이 없으며 동등하게 대우받아야 한다</span>
+        </span>
+        <span class="mark">A</span>
+      </button>
+      <button class="choice-btn unequal" id="btnUnequal" type="button">
+        <span>
+          차등 사회 구축
+          <span class="sub">능력과 위험도, 책임감의 크기에 따라 철저하게 차등 대우해야 한다</span>
+        </span>
+        <span class="mark">B</span>
+      </button>
+    </div>
+
+    <label>학번 / 이름</label>
+    <div class="name-row">
+      <input type="text" id="studentNumber" placeholder="학번 (예: 10203)">
+      <input type="text" id="studentName" placeholder="이름">
+    </div>
+
+    <label for="reasoning">이 법안을 지지하는 근거를 작성해주세요</label>
+    <textarea id="reasoning" placeholder="왜 이 법안이 우리 사회에 필요한지, 근거를 들어 설명해보세요. (최소 20자)"></textarea>
+    <div class="char-count" id="charCount">0자</div>
+
+    <button class="veil-toggle" id="refToggle" type="button">
+      <span>📚 법안 근거 자료 보기 (헌법·법률 조항)</span>
+      <span class="chevron">▼</span>
+    </button>
+    <div class="ref-body" id="refBody">
+      <div class="ref-block equal-ref">
+        <div class="ref-title">A. 평등 법안 지지 측 근거 자료</div>
+        <div class="ref-core">핵심 논리: "인간의 존엄성은 직업의 종류에 따라 달라지지 않으며, 최소한의 인간다운 삶은 조건 없이 평등하게 보장되어야 한다."</div>
+        <ul class="ref-list">
+          <li><b>헌법 제10조</b> (인간의 존엄성) — "모든 국민은 인간으로서의 존엄과 가치를 가지며, 행복을 추구할 권리를 가진다."</li>
+          <li><b>헌법 제11조 1항</b> (평등권) — "모든 국민은 법 앞에 평등하다. 누구든지 성별·종교 또는 사회적 신분에 의하여 정치적·경제적·사회적·문화적 생활의 모든 영역에 있어서 차별을 받지 아니한다."</li>
+          <li><b>헌법 제32조 1항</b> (근로의 권리와 적정임금) — "모든 국민은 근로의 권리를 가진다. 국가는 사회적·경제적 방법으로 근로자의 고용의 증진과 적정임금의 보장에 노력하여야 하며, 법률이 정하는 바에 의하여 최저임금제를 시행하여야 한다."</li>
+          <li><b>근로기준법 제6조</b> (균등처우) — "사용자는 근로자에 대하여 남녀의 성을 이유로 차별적 대우를 하지 못하며, 국적·신앙 또는 사회적 신분을 이유로 근로조건에 대한 차별적 처우를 하지 못한다."</li>
+        </ul>
+      </div>
+      <div class="ref-block unequal-ref">
+        <div class="ref-title">B. 차등 법안 지지 측 근거 자료</div>
+        <div class="ref-core">핵심 논리: "개인의 노력, 감수하는 위험의 크기, 책임의 무게가 다르므로 그에 따라 보상(임금과 대우)이 다른 것은 차별이 아닌 '합리적이고 공정한 시장의 룰'이다."</div>
+        <ul class="ref-list">
+          <li><b>헌법 제119조 1항</b> (자유 시장 경제 원칙) — "대한민국의 경제질서는 개인과 기업의 경제상의 자유와 창의를 존중함을 기본으로 한다."</li>
+          <li><b>헌법 제23조 1항</b> (재산권 보장) — "모든 국민의 재산권은 보장된다. 그 내용과 한계는 법률로 정한다."</li>
+          <li><b>민법 제105조</b> (사적 자치의 원칙 / 계약 자유의 원칙) — "법률행위의 당사자가 법령 중의 선량한 풍속 기타 사회질서에 관계없는 규정과 다른 의사를 표시한 때에는 그 의사에 의한다."</li>
+          <li><b>합리적 차별의 법리</b> (헌법재판소 1999. 5. 27. 선고 98헌바26 등) — "평등의 원칙은 일체의 차별적 대우를 부정하는 절대적 평등을 의미하는 것이 아니라 입법과 법의 적용에 있어서 합리적인 근거가 없는 차별을 하여서는 아니된다는 상대적 평등을 뜻하고, 따라서 합리적인 근거가 있는 차별 또는 불평등은 평등의 원칙에 반하는 것이 아니다."</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="privacy-note">※ 제출한 이름과 선택은 학급 전체 현황(집계)에 공개됩니다.</div>
+
+    <button class="submit-btn" id="submitBtn" disabled>법안 제출하기</button>
+
+    <div class="error-box" id="errorBox">
+      채점 중 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.
+      <button class="retry-btn" id="retryBtn">다시 시도</button>
+    </div>
+  </div>
+
+  <div class="loading-wrap" id="loadingWrap">
+    <div class="spinner"></div>
+    <div class="loading-text">위원회가 법안의 논리를 심사하고 있습니다…</div>
+  </div>
+
+  <div class="result-wrap" id="resultWrap">
+    <div class="seal-stage">
+      <div class="seal"><div class="seal-text">제정<br>완료</div></div>
+      <div class="seal-caption" id="sealCaption">— 법안이 접수되었습니다 —</div>
+    </div>
+
+    <div class="score-grid">
+      <div class="score-box">
+        <div class="num" id="baseScoreNum">-</div>
+        <div class="cap">기본 점수</div>
+      </div>
+      <div class="score-box">
+        <div class="num" id="aiScoreNum">-</div>
+        <div class="cap">논리 심사 점수</div>
+      </div>
+      <div class="score-box">
+        <div class="num" id="totalScoreNum">-</div>
+        <div class="cap">합계</div>
+      </div>
+    </div>
+
+    <div class="card feedback-card">
+      <div class="card-label">위원회 심사평</div>
+      <div class="feedback-text" id="feedbackText"></div>
+      <div id="fallbackNote" style="margin-top:10px; font-family:'Pretendard-Regular', sans-serif; font-size:10.5px; color:var(--parchment); opacity:0.5;">※ 채점 기준: 제출 시 기본 1점, 법 조항 인용 시 +1점, 근거 3개 이상 인용 또는 80자 이상 작성 시 +1점 (최대 3점)</div>
+    </div>
+
+    <button class="reset-link" id="resetBtn">다시 작성하기</button>
+  </div>
+
+  <div class="privacy-note" style="margin-top:8px;">📊 전체 제출 현황과 학생별 답안은 연결된 구글시트에서 실시간으로 확인하실 수 있어요.</div>
+
+</div>
+
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+<form id="googleFormBridge"
+      action="https://docs.google.com/forms/d/e/1FAIpQLSca7GdYXP7iaQXkFIH9q4CCi7QwigXn5lPIf7_0Fhx2iL1YSQ/formResponse"
+      method="POST" target="hidden_iframe" style="display:none;">
+  <input type="text" name="entry.931444298" id="gf_studentNumber">
+  <input type="text" name="entry.1176152697" id="gf_studentName">
+  <input type="text" name="entry.1957643243" id="gf_choice">
+  <input type="text" name="entry.1411524997" id="gf_reasoning">
+</form>
+
+<script>
+(function(){
+  const veilToggle = document.getElementById('veilToggle');
+  const veilBody = document.getElementById('veilBody');
+  veilToggle.addEventListener('click', function(){
+    veilToggle.classList.toggle('open');
+    veilBody.classList.toggle('open');
+  });
+
+  const refToggle = document.getElementById('refToggle');
+  const refBody = document.getElementById('refBody');
+  refToggle.addEventListener('click', function(){
+    refToggle.classList.toggle('open');
+    refBody.classList.toggle('open');
+  });
+
+  function localGrade(choice, text){
+    const t = text;
+    const equalKeywords = ['제10조','제11조','제32조','근로기준법','존엄','평등','최저임금','균등처우','차별'];
+    const unequalKeywords = ['제119조','제23조','민법','제105조','계약','자유','재산권','합리적','시장','책임'];
+    const keywords = choice === 'equal' ? equalKeywords : unequalKeywords;
+    let hits = 0;
+    keywords.forEach(function(k){ if(t.indexOf(k) !== -1) hits++; });
+
+    // 채점 기준: ① 제출만 해도 기본 1점 ② 법 조항·근거 키워드를 인용하면 +1점
+    // ③ 근거를 3개 이상 인용했거나 글자 수가 150자 이상이면(충실히 작성) +1점 (최대 3점)
+    let score = 1;
+    if(hits >= 1) score += 1;
+    if(hits >= 3 || t.length >= 80) score += 1;
+    score = Math.max(1, Math.min(3, score));
+
+    let feedback;
+    if(score >= 3){
+      feedback = '법 조항을 여러 차례 인용하며 충실하게 작성했습니다. 근거가 탄탄합니다.';
+    } else if(score === 2){
+      feedback = '근거 자료 속 법 조항을 인용한 점이 좋습니다. 조항을 더 추가하거나 내용을 조금 더 보강하면 만점이에요.';
+    } else {
+      feedback = '자신의 생각을 잘 제출했어요. 근거 자료에 나온 법 조항(헌법·근로기준법 등)을 직접 인용하면 점수가 올라가요.';
+    }
+    return { score: score, feedback: feedback, citedCount: hits };
+  }
+
+  const btnEqual = document.getElementById('btnEqual');
+  const btnUnequal = document.getElementById('btnUnequal');
+  const studentNumber = document.getElementById('studentNumber');
+  const studentName = document.getElementById('studentName');
+  const reasoning = document.getElementById('reasoning');
+  const charCount = document.getElementById('charCount');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorBox = document.getElementById('errorBox');
+  const retryBtn = document.getElementById('retryBtn');
+
+  let selectedChoice = null; // 'equal' | 'unequal'
+
+  function selectChoice(choice){
+    selectedChoice = choice;
+    btnEqual.classList.toggle('selected', choice === 'equal');
+    btnUnequal.classList.toggle('selected', choice === 'unequal');
+    validateForm();
+  }
+  btnEqual.addEventListener('click', function(){ selectChoice('equal'); });
+  btnUnequal.addEventListener('click', function(){ selectChoice('unequal'); });
+
+  reasoning.addEventListener('input', function(){
+    charCount.textContent = reasoning.value.length + '자';
+    validateForm();
+  });
+  studentName.addEventListener('input', validateForm);
+  studentNumber.addEventListener('input', validateForm);
+
+  function validateForm(){
+    const ok = selectedChoice && studentNumber.value.trim().length > 0 && studentName.value.trim().length > 0 && reasoning.value.trim().length >= 20;
+    submitBtn.disabled = !ok;
+  }
+
+  const formSection = document.getElementById('formSection');
+  const loadingWrap = document.getElementById('loadingWrap');
+  const resultWrap = document.getElementById('resultWrap');
+
+  const GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSca7GdYXP7iaQXkFIH9q4CCi7QwigXn5lPIf7_0Fhx2iL1YSQ/formResponse';
+
+  async function saveSubmission(record){
+    try{
+      document.getElementById('gf_studentNumber').value = record.studentNumber || '';
+      document.getElementById('gf_studentName').value = record.studentNameOnly || '';
+      document.getElementById('gf_choice').value = record.choiceLabel || '';
+      document.getElementById('gf_reasoning').value = record.reasoning || '';
+      document.getElementById('googleFormBridge').submit();
+    }catch(e){ console.error('구글폼 전송 실패', e); }
+  }
+
+  async function loadTally(){
+    const errorEl = document.getElementById('tallyError');
+    const equalEl = document.getElementById('equalCount');
+    const unequalEl = document.getElementById('unequalCount');
+    errorEl.style.display = 'none';
+    equalEl.textContent = '…';
+    unequalEl.textContent = '…';
+    try{
+      const list = await window.storage.list('submissions:', true);
+      let equalN = 0, unequalN = 0;
+      if(list && list.keys){
+        for(const k of list.keys){
+          try{
+            const r = await window.storage.get(k, true);
+            if(r && r.value){
+              const rec = JSON.parse(r.value);
+              if(rec.choice === 'equal') equalN++;
+              else if(rec.choice === 'unequal') unequalN++;
+            }
+          }catch(e){ console.warn('개별 항목 로딩 실패', k, e); }
+        }
+      }
+      equalEl.textContent = equalN;
+      unequalEl.textContent = unequalN;
+    }catch(e){
+      console.error('tally load failed', e);
+      equalEl.textContent = '-';
+      unequalEl.textContent = '-';
+      errorEl.textContent = '집계를 불러오지 못했습니다 (' + (e && e.message ? e.message : '알 수 없는 오류') + ')';
+      errorEl.style.display = 'block';
+    }
+  }
+
+  let lastSubmitData = null;
+
+  submitBtn.addEventListener('click', async function(){
+    errorBox.classList.remove('show');
+    const choiceLabel = selectedChoice === 'equal' ? '평등 사회 구축' : '차등 사회 구축';
+    const text = reasoning.value.trim();
+    lastSubmitData = { choiceLabel, text };
+
+    formSection.style.display = 'none';
+    loadingWrap.classList.add('show');
+
+    try{
+      const graded = localGrade(selectedChoice, text);
+      const baseScore = selectedChoice === 'equal' ? 2 : 0;
+      const total = baseScore + graded.score;
+
+      document.getElementById('baseScoreNum').textContent = baseScore;
+      document.getElementById('aiScoreNum').textContent = graded.score;
+      document.getElementById('totalScoreNum').textContent = total;
+      document.getElementById('feedbackText').textContent = graded.feedback;
+      // 채점 기준 안내는 항상 표시됩니다 (fallbackNote는 정적 텍스트)
+      document.getElementById('sealCaption').textContent =
+        selectedChoice === 'unequal'
+          ? '— 차등 법안은 직업 공개 후 추가 점수가 결정됩니다 —'
+          : '— 법안이 접수되었습니다 —';
+
+      await saveSubmission({
+        studentNumber: studentNumber.value.trim(),
+        studentNameOnly: studentName.value.trim(),
+        name: studentNumber.value.trim() + ' ' + studentName.value.trim(),
+        choice: selectedChoice,
+        choiceLabel: choiceLabel,
+        reasoning: text,
+        baseScore: baseScore,
+        aiScore: graded.score,
+        totalScore: total,
+        feedback: graded.feedback,
+        ts: Date.now()
+      });
+
+      loadingWrap.classList.remove('show');
+      resultWrap.classList.add('show');
+    }catch(e){
+      console.error(e);
+      loadingWrap.classList.remove('show');
+      formSection.style.display = 'block';
+      errorBox.classList.add('show');
+    }
+  });
+
+  retryBtn.addEventListener('click', function(){
+    submitBtn.click();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    resultWrap.classList.remove('show');
+    formSection.style.display = 'block';
+    selectedChoice = null;
+    btnEqual.classList.remove('selected');
+    btnUnequal.classList.remove('selected');
+    studentNumber.value = '';
+    studentName.value = '';
+    reasoning.value = '';
+    charCount.textContent = '0자';
+    validateForm();
+  });
+
+})();
+</script>
+</body>
+</html>
