@@ -239,6 +239,7 @@
     <button class="btn btn-ghost" id="resetBtn">처음부터 다시 쓰기</button>
   </div>
 
+  <p class="hint" style="font-size:11px;opacity:.6">버전 9.28-3 (시트 연동)</p>
   <div class="dancheong" aria-hidden="true"></div>
 </div>
 
@@ -315,17 +316,30 @@
       tuho:"entry.1883003566", samhaeng:"entry.997727923", cheonnyang:"entry.789040228"
     }
   };
-  async function sendToForm(){
-    if (!FORM.action) return null;
-    const fd = new URLSearchParams();
-    if (FORM.sid) fd.append(FORM.sid, FORM.sname ? state.sid : (state.sid + " " + state.sname));
-    if (FORM.sname) fd.append(FORM.sname, state.sname);
-    if (FORM.count) fd.append(FORM.count, TASKS.filter((_, i) => isDone(i)).length + " / 9");
-    TASKS.forEach(t => { const k = FORM.answers[t.id]; if (k) fd.append(k, (state.answers[t.id] && state.answers[t.id].text) || "미참여"); });
-    try{
-      await fetch(FORM.action, { method:"POST", mode:"no-cors", body: fd });
-      return true;
-    }catch(e){ return false; }
+  // 숨은 iframe으로 폼을 제출하는 방식 (fetch보다 브라우저 호환성이 좋음)
+  function sendToForm(){
+    if (!FORM.action) return Promise.resolve(null);
+    return new Promise(resolve => {
+      try{
+        const name = "gf-target-" + Date.now();
+        const frame = document.createElement("iframe");
+        frame.name = name; frame.hidden = true; frame.title = "제출";
+        document.body.appendChild(frame);
+        const form = document.createElement("form");
+        form.action = FORM.action; form.method = "POST"; form.target = name;
+        form.acceptCharset = "UTF-8"; form.hidden = true;
+        const add = (k, v) => { if (!k) return; const i = document.createElement("input"); i.type = "hidden"; i.name = k; i.value = v; form.appendChild(i); };
+        add(FORM.sid, FORM.sname ? state.sid : (state.sid + " " + state.sname));
+        add(FORM.sname, state.sname);
+        add(FORM.count, TASKS.filter((_, i) => isDone(i)).length + " / 9");
+        TASKS.forEach(t => add(FORM.answers[t.id], (state.answers[t.id] && state.answers[t.id].text) || "미참여"));
+        document.body.appendChild(form);
+        let done = false;
+        frame.addEventListener("load", () => { if (!done){ done = true; resolve(true); } });
+        setTimeout(() => { if (!done){ done = true; resolve(true); } }, 4000);
+        form.submit();
+      }catch(e){ resolve(false); }
+    });
   }
   const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
   const KEY = "bagomal-bingo-v1";
