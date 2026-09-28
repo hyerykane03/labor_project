@@ -67,12 +67,13 @@
 
   .applicant{
     background:var(--paper);border:1px solid var(--line);border-radius:4px;
-    padding:14px 16px;display:grid;grid-template-columns:1fr 1.4fr;gap:10px 12px;
+    padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px 12px;
   }
   .applicant .cap{grid-column:1/-1;font-family:var(--sans);font-size:13px;color:var(--ink-soft);letter-spacing:.06em;}
-  .field{display:flex;flex-direction:column;gap:4px;}
+  .field{display:flex;flex-direction:column;gap:4px;min-width:0;}
   .field label{font-family:var(--sans);font-size:13px;color:var(--ink-soft);}
   .field input{
+    width:100%;min-width:0;box-sizing:border-box;
     font:inherit;font-size:16px;color:var(--ink);background:transparent;
     border:0;border-bottom:1.5px solid var(--ink);padding:4px 2px;border-radius:0;
   }
@@ -157,7 +158,9 @@
   .scroll textarea:focus{outline:2px solid var(--cheong);outline-offset:1px;}
   .scroll .err{color:var(--inju);font-family:var(--sans);font-size:13px;margin:0;min-height:1em;}
   .row{display:flex;gap:8px;}
-  .row .btn{flex:1;}
+  .row .btn{flex:1;white-space:nowrap;padding-inline:10px;}
+  .row .btn-main{flex:2;}
+  .toast{word-break:keep-all;}
 
   .toast{
     position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);
@@ -195,7 +198,8 @@
   <section class="notice" role="note" aria-label="안내">
     <strong>꼭 읽어 주세요</strong>
     <p>빙고 내용은 임시저장되지 않아요. 창을 닫거나 새로고침하면 적은 내용이 모두 사라집니다.</p>
-    <p><b>아홉 가지 활동을 모두 마친 뒤</b> 한 번에 빙고를 채우고 제출하세요.</p>
+    <p><b>참여한 활동을 모두 마친 뒤</b> 한 번에 빙고를 채우고 제출하세요.</p>
+    <p>모든 활동에 참여하지 않아도 참여한 칸만 채워 제출할 수 있어요.</p>
   </section>
 
   <section class="applicant" aria-label="참여자 정보">
@@ -221,14 +225,14 @@
 
   <div class="actions">
     <button class="btn btn-main" id="submitBtn" disabled>답안 제출하고 교지 받기</button>
-    <p class="hint" id="submitHint">칸을 눌러 활동 내용을 적으면 도장이 찍혀요. 아홉 칸을 모두 채우면 제출할 수 있어요.</p>
+    <p class="hint" id="submitHint">칸을 눌러 활동 내용을 적으면 도장이 찍혀요. 한 칸 이상 채우면 제출할 수 있어요.</p>
   </div>
 
   <section class="result" id="result" hidden>
     <div class="save">아래 교지 이미지를 <b>길게 눌러(휴대폰)</b> 또는 <b>마우스 오른쪽 버튼(컴퓨터)</b>으로 저장하여 꼭 보관해 주세요.<br>프로그램 전송 오류에 대비해 참여 확인용으로 필요합니다.</div>
     <a class="btn btn-main dl" id="dlLink" download="바른말챌린지_교지.png" href="#">교지 이미지 내려받기</a>
     <p class="hint" id="sendMsg"></p>
-    <img id="resultImg" alt="운암고 바른말 챌린지 완료 교지와 답안">
+    <img id="resultImg" alt="운암고 바른말 챌린지 교지와 답안">
   </section>
 
   <div class="actions">
@@ -239,7 +243,7 @@
 </div>
 
 <dialog id="dlg" aria-labelledby="dlgTitle">
-  <form class="scroll" id="dlgForm" method="dialog">
+  <div class="scroll" id="dlgForm">
     <div class="meta"><span id="dlgWhen"></span><span id="dlgTime"></span></div>
     <h2 id="dlgTitle"></h2>
     <p class="desc" id="dlgDesc"></p>
@@ -248,9 +252,9 @@
     <p class="err" id="dlgErr" aria-live="polite"></p>
     <div class="row">
       <button type="button" class="btn btn-ghost" id="dlgClose">닫기</button>
-      <button type="submit" class="btn btn-main" id="dlgSave">제출하고 도장 받기</button>
+      <button type="button" class="btn btn-main" id="dlgSave">제출하고 도장 받기</button>
     </div>
-  </form>
+  </div>
 </dialog>
 
 <dialog id="confirmDlg" aria-labelledby="cfTitle">
@@ -303,6 +307,7 @@
   const FORM = {
     action: "",            // 예: "https://docs.google.com/forms/d/e/폼ID/formResponse"
     sid: "", sname: "",    // 예: "entry.123456789"
+    count: "",             // "참여 활동 수" 항목의 entry 번호
     answers: { hangeul:"", kkeutmal:"", jindan:"", sajeon:"", sumbakkok:"", swaeguk:"", tuho:"", samhaeng:"", cheonnyang:"" }
   };
   async function sendToForm(){
@@ -310,6 +315,7 @@
     const fd = new URLSearchParams();
     if (FORM.sid) fd.append(FORM.sid, state.sid);
     if (FORM.sname) fd.append(FORM.sname, state.sname);
+    if (FORM.count) fd.append(FORM.count, TASKS.filter((_, i) => isDone(i)).length + " / 9");
     TASKS.forEach(t => { const k = FORM.answers[t.id]; if (k) fd.append(k, (state.answers[t.id] && state.answers[t.id].text) || ""); });
     try{
       await fetch(FORM.action, { method:"POST", mode:"no-cors", body: fd });
@@ -352,9 +358,11 @@
     const n = TASKS.filter((_, i) => isDone(i)).length;
     $("doneCount").textContent = n;
     $("lineCount").textContent = "급제 줄 " + lineCount();
-    $("submitBtn").disabled = n < 9;
-    $("submitHint").textContent = n < 9
-      ? "칸을 눌러 활동 내용을 적으면 도장이 찍혀요. 아홉 칸을 모두 채우면 제출할 수 있어요."
+    $("submitBtn").disabled = n < 1;
+    $("submitHint").textContent = n === 0
+      ? "칸을 눌러 활동 내용을 적으면 도장이 찍혀요. 한 칸 이상 채우면 제출할 수 있어요."
+      : n < 9
+      ? "지금까지 " + n + "개 활동에 참여했어요. 참여한 활동을 모두 채웠다면 제출하세요."
       : "아홉 과제를 모두 통과했어요! 답안을 제출하고 교지를 받으세요.";
   }
 
@@ -368,15 +376,14 @@
     $("dlgQ").textContent = t.q;
     $("dlgAnswer").value = (state.answers[t.id] && state.answers[t.id].text) || "";
     $("dlgErr").textContent = "";
-    $("dlgSave").textContent = isDone(i) ? "고쳐서 다시 제출하기" : "제출하고 도장 받기";
+    $("dlgSave").textContent = isDone(i) ? "고쳐서 다시 제출" : "제출하고 도장 받기";
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open","");
     setTimeout(() => $("dlgAnswer").focus(), 50);
   }
   function closeDlg(){ if (dlg.close) dlg.close(); else dlg.removeAttribute("open"); }
   $("dlgClose").addEventListener("click", closeDlg);
 
-  $("dlgForm").addEventListener("submit", e => {
-    e.preventDefault();
+  $("dlgSave").addEventListener("click", () => {
     const text = $("dlgAnswer").value.trim();
     if (!text){ $("dlgErr").textContent = "활동 내용을 적어야 도장을 받을 수 있어요."; return; }
     const t = TASKS[current];
@@ -465,17 +472,19 @@
     const LH = 44;
 
     // 높이 계산
+    const doneIdx = TASKS.map((_, i) => i).filter(isDone);
+    const N = doneIdx.length;
     ctx.font = BODY;
-    const blocks = TASKS.map((t, i) => ({
-      title: "제" + (i+1) + "과  " + t.name,
-      q: wrap(ctx, "문) " + t.q, inner - 20),
-      a: wrap(ctx, (state.answers[t.id] && state.answers[t.id].text) || "", inner - 20)
+    const blocks = doneIdx.map(i => ({
+      title: "제" + (i+1) + "과  " + TASKS[i].name,
+      a: wrap(ctx, state.answers[TASKS[i].id].text, inner - 20)
     }));
     ctx.font = '700 24px "Nanum Gothic", sans-serif';
-    blocks.forEach(b => b.q = wrap(ctx, "문) " + TASKS[blocks.indexOf(b)].q, inner - 20));
+    blocks.forEach((b, k) => b.q = wrap(ctx, "문) " + TASKS[doneIdx[k]].q, inner - 20));
     let answersH = 0;
     blocks.forEach(b => { answersH += 50 + b.q.length*36 + b.a.length*LH + 36; });
-    const H = 860 + answersH + 110;
+    const CS = 150, GAP = 10, GRID = CS*3 + GAP*2;
+    const H = 860 + GRID + 90 + answersH + 110;
     c.width = W; c.height = H;
     ctx = c.getContext("2d");
 
@@ -494,7 +503,7 @@
 
     ctx.textAlign = "center"; ctx.fillStyle = "#23201B";
     ctx.font = '700 96px "Gowun Batang", serif';
-    ctx.fillText("챌린지 완료", W/2, 215);
+    ctx.fillText(N === 9 ? "챌린지 완료" : "챌린지 참여", W/2, 215);
     ctx.font = '700 30px "Gowun Batang", serif'; ctx.fillStyle = "#5B5246";
     ctx.fillText("운암고 바른말 챌린지", W/2, 320);
 
@@ -502,7 +511,9 @@
     ctx.fillStyle = "#23201B"; ctx.font = BOLD;
     ctx.fillText("학번 " + state.sid + "   ·   " + state.sname, W/2, 420);
     ctx.font = BODY; ctx.fillStyle = "#23201B";
-    const decree = ["위 응시생은 한글날을 맞아 열린 바른말 챌린지에서"].concat(wrap(ctx, "아홉 과제를 모두 성실히 마치고 바르고 고운 우리말을 몸소 실천하였기에 이에 챌린지 완료를 증명하노라.", inner - 40));
+    const decree = ["위 응시생은 한글날을 맞아 열린 바른말 챌린지에서"].concat(wrap(ctx,
+      N === 9 ? "아홉 과제를 모두 성실히 마치고 바르고 고운 우리말을 몸소 실천하였기에 이에 챌린지 완료를 증명하노라."
+              : "아홉 과제 중 " + N + "개를 성실히 마치고 바르고 고운 우리말을 몸소 실천하였기에 이에 챌린지 참여를 증명하노라.", inner - 40));
     decree.forEach((l, i) => ctx.fillText(l, W/2, 490 + i*LH));
 
     const d = new Date();
@@ -510,8 +521,33 @@
     ctx.font = '700 26px "Nanum Gothic", sans-serif'; ctx.fillStyle = "#5B5246";
     ctx.fillText(dateStr, W/2, 490 + decree.length*LH + 30);
 
+    // 빙고판
+    let y = 490 + decree.length*LH + 80;
+    ctx.font = '700 30px "Gowun Batang", serif'; ctx.fillStyle = "#23201B";
+    ctx.fillText("참여 " + N + " / 9  ·  빙고 " + lineCount() + "줄", W/2, y);
+    y += 30;
+    const gx = (W - GRID) / 2;
+    TASKS.forEach((t, i) => {
+      const cx = gx + (i % 3) * (CS + GAP), cy = y + Math.floor(i / 3) * (CS + GAP);
+      const on = isDone(i);
+      ctx.fillStyle = on ? "#FBF1E4" : "#EDE3CD"; ctx.fillRect(cx, cy, CS, CS);
+      ctx.strokeStyle = on ? "#B3302A" : "#CBBB98"; ctx.lineWidth = on ? 4 : 2; ctx.strokeRect(cx, cy, CS, CS);
+      ctx.textAlign = "center";
+      ctx.font = '700 20px "Nanum Gothic", sans-serif'; ctx.fillStyle = on ? "#2C6A5C" : "#9A8E78";
+      ctx.fillText("제" + (i+1) + "과", cx + CS/2, cy + 34);
+      ctx.font = '700 22px "Gowun Batang", serif'; ctx.fillStyle = on ? "#23201B" : "#9A8E78";
+      wrap(ctx, t.short, CS - 20).slice(0, 3).forEach((l, k) => ctx.fillText(l, cx + CS/2, cy + 68 + k*28));
+      if (on){
+        ctx.save(); ctx.translate(cx + CS - 34, cy + CS - 30); ctx.rotate(-0.2);
+        ctx.strokeStyle = "#B3302A"; ctx.lineWidth = 3; ctx.strokeRect(-28, -18, 56, 36);
+        ctx.font = '700 20px "Gowun Batang", serif'; ctx.fillStyle = "#B3302A"; ctx.fillText("통과", 0, 7);
+        ctx.restore();
+      }
+    });
+    y += GRID + 60;
+    ctx.textAlign = "center";
+
     // 구분선
-    let y = 490 + decree.length*LH + 90;
     ctx.strokeStyle = "#CBBB98"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(P, y); ctx.lineTo(W-P, y); ctx.stroke();
     ctx.font = '700 44px "Gowun Batang", serif'; ctx.fillStyle = "#B3302A";
