@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>동영상 보기</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    video {
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- video.mp4 부분에 올리신 동영상 파일명을 입력하세요 -->
+  <video controls playsinline autoplay muted>
+    <source src="video.mp4" type="video/mp4">
+    브라우저가 동영상 재생을 지원하지 않습니다.
+  </video>
+
+</body>
+</html>

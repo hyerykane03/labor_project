@@ -1,0 +1,762 @@
+<title>독도마블</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+:root{
+  /* Layout: 실물 말판과 같은 40칸 링 보드(11×11) + 진행 패널. 좁은 화면에서는 패널이 보드 아래로 */
+  --sky:#e6f2fa; --paper:#ffffff; --ink:#16314a; --muted:#587088; --line:#cddfeb;
+  --sea:#1c7cc0; --deep:#0d4677; --wave:#8fcdf0;
+  --sun:#f6c744; --sand:#c99a55; --coral:#ee6a5f;
+  --good:#1d9a60; --bad:#d64545; --hibiscus:#e86fa0;
+  --display:'Jua','Noto Sans KR',system-ui,sans-serif;
+  --body:'Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--sky);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  background-image:radial-gradient(circle at 10% 0%, #fff 0, transparent 40%),radial-gradient(circle at 100% 100%, #d4ebf8 0, transparent 45%)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,.tile:focus-visible{outline:3px solid var(--hibiscus);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:16px 40px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.brand{font-family:var(--display);font-size:clamp(22px,4vw,30px);color:var(--deep);line-height:1.1;margin:0}
+.brand small{display:block;font-family:var(--body);font-size:13px;color:var(--muted);font-weight:500}
+.topbtns{display:flex;gap:8px;flex-wrap:wrap}
+.ghost{background:var(--paper);border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:500}
+.ghost:hover{border-color:var(--sea)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- Board ---------- */
+.board{display:grid;width:100%;max-width:720px;margin:0 auto;aspect-ratio:1;max-height:calc(100vh - 110px);
+  grid-template-columns:1.5fr repeat(9,1fr) 1.5fr;grid-template-rows:1.5fr repeat(9,1fr) 1.5fr;
+  gap:2px;padding:3px;background:var(--deep);border-radius:14px;box-shadow:0 10px 30px rgba(13,70,119,.18)}
+@media (max-width:900px){.board{max-height:none}}
+.tile{position:relative;background:var(--paper);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2px;font-size:clamp(7px,1.35vw,11.5px);line-height:1.15;font-weight:700;border:0;border-radius:2px;word-break:keep-all}
+.tile:hover{filter:brightness(.97)}
+.tile .nm{position:relative;z-index:1;padding:0 1px}
+.tile.b::before,.tile.t::before,.tile.l::before,.tile.r::before{content:"";position:absolute;background:var(--band)}
+.tile.b::before{left:0;right:0;top:0;height:20%}
+.tile.t::before{left:0;right:0;bottom:0;height:20%}
+.tile.l::before{top:0;bottom:0;right:0;width:20%}
+.tile.r::before{top:0;bottom:0;left:0;width:20%}
+.g-sun{--band:var(--sun)} .g-sand{--band:var(--sand)} .g-coral{--band:var(--coral)} .g-sea{--band:var(--sea)}
+.tile.sp{background:#f3f8fc}
+.tile.sp .nm{color:var(--deep)}
+.tile.c{background:linear-gradient(160deg,#fff,#dcefFA);font-family:var(--display);font-weight:400;font-size:clamp(9px,1.7vw,15px);color:var(--deep)}
+.tile.c .ico{font-size:1.5em;line-height:1}
+.tile.pick{animation:pulse 1.1s infinite;cursor:crosshair}
+@keyframes pulse{50%{background:#fff4c2}}
+.tile.here{box-shadow:inset 0 0 0 2px var(--hibiscus)}
+.own{position:absolute;z-index:2;display:flex;gap:1px;justify-content:center;align-items:center;color:#fff;font-size:.8em;line-height:1;padding:1px 2px;border-radius:3px}
+.tile.b .own{bottom:2px;left:2px;right:2px}
+.tile.t .own{top:2px;left:2px;right:2px}
+.tile.l .own{left:2px;top:2px;bottom:2px;flex-direction:column;width:auto;right:auto}
+.tile.r .own{right:2px;top:2px;bottom:2px;flex-direction:column;left:auto}
+.tokens{position:absolute;z-index:3;inset:auto 0 0 0;display:flex;flex-wrap:wrap;justify-content:center;gap:1px;padding:1px;pointer-events:none}
+.tile.b .tokens{bottom:22%}
+.tile.t .tokens{top:22%;bottom:auto}
+.tok{width:clamp(9px,2.1vw,17px);height:clamp(9px,2.1vw,17px);border-radius:50%;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35);
+  color:#fff;font-size:clamp(6px,1.2vw,10px);display:grid;place-items:center;font-weight:900}
+.tok.now{outline:2px solid var(--ink);outline-offset:1px}
+
+.center{grid-row:2/11;grid-column:2/11;background:linear-gradient(180deg,#f7fbfe 0%,#e2f1fb 60%,#cfe8f7 100%);border-radius:6px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(4px,1.4vw,14px);padding:6px;position:relative;overflow:hidden}
+.center .eyebrow{font-weight:700;color:var(--muted);font-size:clamp(9px,1.6vw,14px);letter-spacing:.02em}
+.center h2{margin:0;font-family:var(--display);font-weight:400;color:var(--sea);font-size:clamp(26px,7vw,64px);line-height:1;
+  text-shadow:0 3px 0 var(--deep)}
+.isles{width:clamp(70px,18vw,150px);height:auto}
+.vault{background:var(--paper);border:2px solid var(--sun);border-radius:12px;padding:clamp(3px,1vw,8px) clamp(8px,2vw,16px);text-align:center}
+.vault span{display:block;font-size:clamp(8px,1.4vw,12px);color:var(--muted);font-weight:700}
+.vault b{font-family:var(--display);font-weight:400;font-size:clamp(14px,3.2vw,26px);color:var(--deep);font-variant-numeric:tabular-nums}
+.dicebox{display:flex;gap:8px;align-items:center}
+.die{width:clamp(26px,6vw,46px);height:clamp(26px,6vw,46px);background:#fff;border-radius:22%;border:2px solid var(--deep);
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:14%;box-shadow:0 3px 0 var(--deep)}
+.die i{border-radius:50%;background:var(--deep);margin:12%;visibility:hidden}
+.die i.on{visibility:visible}
+.die.six i.on{background:var(--bad)}
+.die.roll{animation:shake .5s}
+@keyframes shake{25%{transform:rotate(-14deg)}50%{transform:rotate(10deg) translateY(-3px)}75%{transform:rotate(-5deg)}}
+
+/* ---------- Panel ---------- */
+.panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--paper);border-radius:14px;border:1px solid var(--line);padding:14px}
+.turn{border:0;box-shadow:0 6px 20px rgba(13,70,119,.12);overflow:hidden;padding:0}
+.turnhead{display:flex;align-items:center;gap:10px;padding:12px 14px;color:#fff;background:var(--pc,var(--sea))}
+.turnhead .who{font-family:var(--display);font-size:22px;line-height:1.1;flex:1;min-width:0}
+.turnhead .who small{display:block;font-family:var(--body);font-size:12px;opacity:.9}
+.turnhead .money{font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.turnbody{padding:14px;display:flex;flex-direction:column;gap:12px}
+.where{font-size:13px;color:var(--muted)}
+.where b{color:var(--ink)}
+.msg{margin:0;font-size:15px;font-weight:500;text-wrap:pretty}
+.msg.warn{color:var(--bad)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;background:var(--sea);color:#fff;box-shadow:0 3px 0 var(--deep);flex:1 1 auto;min-height:46px}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--deep)}
+.btn.alt{background:#eef5fa;color:var(--deep);box-shadow:0 3px 0 var(--line)}
+.btn.warm{background:var(--coral);box-shadow:0 3px 0 #b8473e}
+.btn.gold{background:var(--sun);color:var(--ink);box-shadow:0 3px 0 #c79a17}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.big{font-family:var(--display);font-weight:400;font-size:22px;min-height:58px}
+.seg{display:flex;background:#eef5fa;border-radius:999px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:999px;padding:6px 8px;font-size:13px;font-weight:700;color:var(--muted)}
+.seg button.on{background:var(--paper);color:var(--deep);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pick6{display:grid;grid-template-columns:auto repeat(6,1fr);gap:4px;align-items:center;font-size:13px;color:var(--muted)}
+.pick6 button{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:7px 0;font-weight:900;font-variant-numeric:tabular-nums}
+.pick6 button.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+.hold{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;background:#eef5fa;color:var(--deep)}
+
+.h3{font-family:var(--display);font-weight:400;font-size:18px;margin:0 0 8px;color:var(--deep)}
+.players{display:grid;gap:10px}
+.pl{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:6px;border-left:6px solid var(--pc)}
+.pl.cur{border-color:var(--pc);background:color-mix(in srgb,var(--pc) 7%,#fff)}
+.pl.out{opacity:.5}
+.pl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pl-top b{font-size:16px}
+.pl-top .dp{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums}
+.pl-top .dp.neg{color:var(--bad)}
+.props{display:flex;flex-wrap:wrap;gap:4px}
+.prop{font-size:11.5px;font-weight:700;border-radius:6px;padding:2px 7px;background:#f4f8fb;border-left:4px solid var(--band)}
+.lv{color:var(--muted);font-weight:500}
+.status{font-size:12px;color:var(--muted)}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13px;color:var(--muted);max-height:180px;overflow:auto}
+.log li b{color:var(--ink)}
+details.tools summary{cursor:pointer;font-family:var(--display);font-size:18px;color:var(--deep);list-style:none}
+details.tools summary::-webkit-details-marker{display:none}
+details.tools summary::after{content:" ▾";font-size:14px}
+.tgrid{display:grid;gap:12px;margin-top:10px}
+.trow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.trow label{font-size:13px;color:var(--muted);width:100%}
+select,input[type=number],input[type=text]{font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:7px 8px;background:#fff;min-width:0;flex:1 1 90px}
+.sbtn{border:0;border-radius:8px;padding:8px 12px;background:var(--deep);color:#fff;font-weight:700;font-size:13px}
+.sbtn.red{background:var(--bad)}
+
+/* ---------- Modal ---------- */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(10,40,70,.55);display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.modal{background:var(--paper);border-radius:18px;width:min(520px,100%);max-height:100%;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3);animation:pop .22s ease-out}
+@keyframes pop{from{transform:scale(.94);opacity:0}}
+.mhead{padding:16px 18px;color:#fff;background:var(--mh,var(--sea));border-radius:18px 18px 0 0}
+.mhead .tag{font-size:12px;font-weight:700;opacity:.9;letter-spacing:.04em}
+.mhead h3{margin:2px 0 0;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.25;text-wrap:balance}
+.mbody{padding:18px;display:grid;gap:12px}
+.q{font-size:18px;font-weight:700;margin:0;line-height:1.5;text-wrap:pretty}
+.opts{display:grid;gap:8px}
+.opts.ox{grid-template-columns:1fr 1fr}
+.opt{border:2px solid var(--line);background:#fff;border-radius:12px;padding:12px 14px;text-align:left;font-size:16px;font-weight:500;display:flex;gap:10px;align-items:center}
+.opts.ox .opt{justify-content:center;font-family:var(--display);font-size:40px;padding:10px}
+.opt .n{flex:none;width:24px;height:24px;border-radius:50%;background:#eef5fa;display:grid;place-items:center;font-size:13px;font-weight:900;color:var(--deep)}
+.opt:hover:not(:disabled){border-color:var(--sea)}
+.opt.right{border-color:var(--good);background:#e5f6ec}
+.opt.wrong{border-color:var(--bad);background:#fde9e9}
+.opt:disabled{cursor:default}
+.result{border-radius:12px;padding:12px 14px;font-size:15px}
+.result.ok{background:#e5f6ec;color:#11603b}
+.result.no{background:#fde9e9;color:#8f2525}
+.result p{margin:4px 0 0;color:var(--ink);font-weight:400}
+.qtimer{display:flex;align-items:center;gap:10px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--deep)}
+.qtimer .track{flex:1;height:10px;background:#eef5fa;border-radius:999px;overflow:hidden}
+.qtimer .fill{height:100%;width:100%;background:var(--sea);border-radius:999px;transition:width 1s linear,background .3s}
+.qtimer.low{color:var(--bad)} .qtimer.low .fill{background:var(--bad)}
+.modal.wide{width:min(900px,100%)}
+table.ptab{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;width:100%}
+table.ptab th,table.ptab td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+table.ptab th{background:#f3f8fc;color:var(--deep);font-size:12px}
+table.ptab td:first-child,table.ptab th:first-child{text-align:left;position:sticky;left:0;background:var(--paper);z-index:1}
+table.ptab th:first-child{background:#f3f8fc}
+table.ptab td:first-child{border-left:5px solid var(--band);font-weight:700}
+table.ptab td.cur{background:#fff3c4;font-weight:900}
+table.ptab .sep{border-left:2px solid var(--line)}
+.keycard{border:3px dashed var(--sun);border-radius:14px;padding:18px;text-align:center;background:#fffbea}
+.keycard h4{margin:0 0 6px;font-family:var(--display);font-weight:400;font-size:24px;color:var(--deep)}
+.keycard p{margin:0;font-size:16px}
+table.price{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+table.price th,table.price td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}
+table.price th:first-child,table.price td:first-child{text-align:left}
+table.price tr.now td{background:#fff6d6;font-weight:700}
+.rank{display:grid;gap:8px}
+.rk{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;border-left:6px solid var(--pc)}
+.rk .no{font-family:var(--display);font-size:26px;color:var(--deep);text-align:center}
+.rk.first{background:#fff8dc;border-color:var(--sun)}
+.rk .tot{font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums}
+.rk small{display:block;color:var(--muted);font-size:12px}
+.rules{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.setup-grid{display:grid;gap:10px}
+.nameRow{display:flex;gap:8px;align-items:center}
+.nameRow .dot{width:18px;height:18px;border-radius:50%;flex:none}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--deep);color:#fff;
+  padding:10px 18px;border-radius:999px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.25);animation:pop .2s;max-width:calc(100% - 32px);text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <h1 class="brand">독도 한바퀴: 독도마블<small>독도의 날 기념 놀이 · 실물 말판 보조 앱</small></h1>
+    <div class="topbtns">
+      <button class="ghost" id="btnPrice">거점 가격표</button>
+      <button class="ghost" id="btnRules">규칙 보기</button>
+      <button class="ghost" id="btnRank">현재 순위</button>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="board" id="board"></div>
+    <aside class="panel">
+      <section class="card turn" id="turn"></section>
+      <section class="card">
+        <h3 class="h3">플레이어</h3>
+        <div class="players" id="players"></div>
+      </section>
+      <section class="card">
+        <h3 class="h3">진행 기록</h3>
+        <ul class="log" id="log"></ul>
+      </section>
+      <section class="card">
+        <details class="tools" id="tools">
+          <summary>선생님 도구</summary>
+          <div class="tgrid" id="toolBody"></div>
+        </details>
+      </section>
+    </aside>
+  </div>
+</div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ================= 데이터 ================= */
+const PL_COLORS=['#e5484d','#2f6fed','#1d9a60','#8e4ec6'];
+const T=[
+ {t:'START',n:'출발',f:'START (도동항)',ico:'⚓'},
+ {t:'PROP',n:'도동항',f:'도동항',p:20000},
+ {t:'PROP',n:'안용복기념관',f:'안용복 기념관',p:30000},
+ {t:'DPAY',n:'성금 납부',f:'독도 수호 성금 납부'},
+ {t:'PROP',n:'독도박물관',f:'독도 박물관',p:40000},
+ {t:'QUIZ',n:'퀴즈',f:'독도 퀴즈'},
+ {t:'PROP',n:'탕건봉',f:'서도 탕건봉',p:50000},
+ {t:'PROP',n:'천장굴',f:'서도 천장굴',p:60000},
+ {t:'KEY',n:'열쇠',f:'독도 열쇠'},
+ {t:'PROP',n:'서도물골',f:'서도 물골',p:70000},
+ {t:'ISLAND',n:'무인도',f:'무인도 (풍랑 주의보)',ico:'🌊'},
+ {t:'PROP',n:'어촌',f:'어촌',p:80000},
+ {t:'DPAY',n:'성금 납부',f:'독도 수호 성금 납부'},
+ {t:'PROP',n:'괭이갈매기',f:'괭이갈매기 번식지',p:90000},
+ {t:'PROP',n:'대한봉',f:'대한봉',p:100000},
+ {t:'QUIZ',n:'퀴즈',f:'독도 퀴즈'},
+ {t:'PROP',n:'숫돌바위',f:'숫돌 바위',p:110000},
+ {t:'PROP',n:'한반도지형',f:'한반도 지형',p:120000},
+ {t:'KEY',n:'열쇠',f:'독도 열쇠'},
+ {t:'PROP',n:'독도등대',f:'독도 등대',p:130000},
+ {t:'HELI',n:'헬기장',f:'독도 헬기장',ico:'🚁'},
+ {t:'PROP',n:'메탄 하이드레이트',f:'메탄 하이드레이트',p:140000},
+ {t:'DPAY',n:'성금 납부',f:'독도 수호 성금 납부'},
+ {t:'PROP',n:'동도선착장',f:'동도 선착장',p:150000},
+ {t:'PROP',n:'강치바위',f:'강치 바위',p:160000},
+ {t:'QUIZ',n:'퀴즈',f:'독도 퀴즈'},
+ {t:'PROP',n:'안용복해산',f:'안용복 해산',p:170000},
+ {t:'PROP',n:'영토표석',f:'독도 영토표석',p:180000},
+ {t:'KEY',n:'열쇠',f:'독도 열쇠'},
+ {t:'PROP',n:'이사부길',f:'독도 이사부길',p:190000},
+ {t:'GUARD',n:'의용수비대',f:'독도 의용수비대 파견',ico:'🛡'},
+ {t:'PROP',n:'사철나무',f:'사철나무 ZONE',p:200000},
+ {t:'DPAY',n:'성금 납부',f:'독도 수호 성금 납부'},
+ {t:'PROP',n:'바다제비',f:'바다제비 ZONE',p:220000},
+ {t:'PROP',n:'해국',f:'해국 ZONE',p:240000},
+ {t:'QUIZ',n:'퀴즈',f:'독도 퀴즈'},
+ {t:'PROP',n:'점박이물범',f:'점박이물범 ZONE',p:270000},
+ {t:'PROP',n:'독도새우',f:'독도 새우 ZONE',p:300000},
+ {t:'KEY',n:'열쇠',f:'독도 열쇠'},
+ {t:'DTAKE',n:'성금처',f:'독도 수호 성금처'}
+];
+const N=T.length;
+const START_BONUS=200000, START_DP=300000, DONATE=10000, FINE=5000, QUIZ_REWARD=20000, GUARD_PAY=30000;
+const BUILD=[0,0.5,1.0,1.5];            // level -> 다음 단계 건설비 배율
+const TOLL=[0,0.2,0.5,1.2,2.5];          // level -> 통행료 배율
+const INVEST=[0,1,1.5,2.5,4];            // level -> 누적 투자액 배율(확보비+건설비)
+const LV_NAME=['','거점만 소유','탐사 표지판','독도 연구소','독도 수호 센터'];
+const SPECIAL_RULE={
+ START:'지나가거나 도착하면 완주 지원금 200,000 DP를 받아요.',
+ DTAKE:'중앙 성금함에 모인 DP를 모두 받아요. 성금함은 0이 돼요.',
+ DPAY:'10,000 DP를 중앙 성금함에 내요.',
+ KEY:'독도 열쇠 카드를 한 장 뽑아 그대로 따라요.',
+ QUIZ:'독도 퀴즈! 정답이면 통행료 50% 할인권 1장(최대 2장 보관), 오답이면 벌금 5,000 DP(성금함).',
+ GUARD:'독도 의용수비대의 특혜! 내 거점 하나를 골라 건물을 한 단계 무료로 업그레이드해요. 헬기로는 이 칸에 바로 올 수 없어요.',
+ HELI:'다음 턴에 주사위 대신 원하는 칸을 골라 바로 날아가요. 출발지를 지나면 지원금도 받아요. 단, 독도 의용수비대 칸으로는 갈 수 없어요.',
+ ISLAND:'풍랑 주의보! 최대 3턴 동안 갇혀요. 주사위에 6이 나오면 바로 탈출해 움직여요.'
+};
+const QUIZ=[
+ {q:'독도의 행정 주소는 "경상북도 울릉군 울릉읍 독도리"이다.',o:['O','X'],a:0,e:'독도는 경상북도 울릉군 울릉읍 독도리에 속해 있어요.'},
+ {q:'매년 기념하는 "독도의 날"은 언제일까요?',o:['3월 1일','8월 15일','10월 25일','2월 22일'],a:2,e:'1900년 10월 25일 대한제국 칙령 제41호 반포를 기념해 10월 25일이 독도의 날이에요.'},
+ {q:'1900년 대한제국 칙령 제41호에서 독도를 가리킨 이름은?',o:['우산도','석도','죽도','가지도'],a:1,e:'칙령 제41호는 울도군의 관할 구역을 울릉전도·죽도·석도로 정했어요. 여기서 석도가 독도예요.'},
+ {q:'512년 우산국을 신라에 복속시킨 장군은?',o:['김유신','장보고','이사부','을지문덕'],a:2,e:'신라 지증왕 때 이사부가 우산국을 복속시켰어요. 독도의 길 이름 "이사부길"도 여기서 왔어요.'},
+ {q:'조선 숙종 때 일본에 건너가 울릉도와 독도가 조선 땅임을 주장한 어부는?',o:['안용복','홍순칠','이규원','심흥택'],a:0,e:'안용복은 두 차례 일본에 건너가 울릉도와 독도가 조선의 영토임을 주장했어요.'},
+ {q:'1953년부터 독도를 지킨 "독도 의용수비대"의 대장은?',o:['안용복','홍순칠','이사부','장보고'],a:1,e:'홍순칠 대장이 이끈 독도 의용수비대가 1953년부터 1956년까지 독도를 지켰어요.'},
+ {q:'독도 의용수비대는 정부 군대가 아니라 울릉도 주민들이 스스로 만든 민간 조직이었다.',o:['O','X'],a:0,e:'6·25 전쟁 참전 용사 등 울릉도 주민들이 자발적으로 결성한 민간 조직이었어요.'},
+ {q:'독도는 동도와 서도, 그리고 89개의 부속 섬으로 이루어져 있다.',o:['O','X'],a:0,e:'독도는 동도·서도 두 큰 섬과 89개의 부속 도서로 이루어져 있어요.'},
+ {q:'독도에서 가장 높은 봉우리인 "대한봉"은 동도에 있다.',o:['O','X'],a:1,e:'대한봉은 서도의 최고봉이에요. 동도의 최고봉은 우산봉이에요.'},
+ {q:'울릉도에서 독도까지는 일본 오키섬에서 독도까지보다 가깝다.',o:['O','X'],a:0,e:'울릉도–독도는 약 87.4km, 오키섬–독도는 약 157.5km예요.'},
+ {q:'일본 어부들의 마구잡이 사냥으로 독도에서 사라진 바다사자는?',o:['점박이물범','강치','물개','돌고래'],a:1,e:'독도 강치는 20세기 초 일본의 남획으로 개체 수가 급감해 결국 사라졌어요.'},
+ {q:'울음소리가 고양이와 비슷해 이름이 붙은 독도의 대표 새는?',o:['바다제비','괭이갈매기','슴새','가마우지'],a:1,e:'"괭이"는 고양이를 뜻해요. 괭이갈매기는 독도의 대표적인 번식 조류예요.'},
+ {q:'"불타는 얼음"이라고 불리며 독도 주변 바다 밑에 묻혀 있는 자원은?',o:['석유','메탄 하이드레이트','망간','석탄'],a:1,e:'메탄 하이드레이트는 메탄가스가 얼음처럼 굳은 물질로, 불을 붙이면 타서 "불타는 얼음"이라 불려요.'},
+ {q:'독도는 섬 전체가 천연기념물(독도 천연보호구역)로 지정되어 있다.',o:['O','X'],a:0,e:'독도는 천연기념물 제336호 독도 천연보호구역으로 보호받고 있어요.'},
+ {q:'서도에 있으며, 독도에서 먹는 물을 얻을 수 있는 곳은?',o:['물골','숫돌바위','탕건봉','한반도 지형'],a:0,e:'서도의 물골에서는 바위 틈으로 물이 스며 나와 식수를 얻을 수 있어요.'},
+ {q:'독도는 울릉도보다 먼저 생겨난 화산섬이다.',o:['O','X'],a:0,e:'독도는 약 460만~250만 년 전에 만들어져 울릉도보다 나이가 많은 화산섬이에요.'},
+ {q:'"우산과 무릉 두 섬은 서로 멀지 않아 날씨가 맑으면 바라볼 수 있다"는 기록이 실린 조선 시대 책은?',o:['세종실록 지리지','경국대전','동의보감','삼국유사'],a:0,e:'1454년 편찬된 세종실록 지리지에 나오는 기록이에요. 우산은 독도, 무릉은 울릉도를 가리켜요.'},
+ {q:'1905년 일본은 "시마네현 고시 제40호"로 독도를 자기 땅에 편입하려 했다.',o:['O','X'],a:0,e:'일본은 대한제국 몰래 지방 고시로 편입을 시도했어요. 우리나라는 이를 불법으로 보고 있어요.'},
+ {q:'현재 독도를 지키는 독도경비대는 해군 소속이다.',o:['O','X'],a:1,e:'독도경비대는 경찰(경상북도경찰청) 소속이에요.'},
+ {q:'1946년 연합국 최고사령부가 일본의 통치 범위에서 독도를 제외한 지령은?',o:['SCAPIN 제677호','포츠담 선언','카이로 선언','칙령 제41호'],a:0,e:'SCAPIN 제677호는 울릉도·독도·제주도 등을 일본의 통치 범위에서 제외했어요.'},
+ {q:'독도 주변 바다에 물고기가 많은 가장 큰 까닭은?',o:['수심이 얕아서','한류와 난류가 만나서','강물이 흘러들어서','바닷물이 짜지 않아서'],a:1,e:'차가운 한류와 따뜻한 난류가 만나는 조경 수역이라 플랑크톤과 어족 자원이 풍부해요.'},
+ {q:'독도의 사철나무는 천연기념물로 지정되어 있다.',o:['O','X'],a:0,e:'동도 비탈에서 자라는 독도 사철나무는 천연기념물로 지정되어 있어요.'},
+ {q:'가을에 연보라색 꽃을 피우는 독도의 대표 들꽃은?',o:['해국','무궁화','진달래','민들레'],a:0,e:'해국은 바닷가 바위틈에서 자라는 국화과 꽃으로, 독도의 가을을 대표해요.'},
+ {q:'독도에는 등대가 있어 밤바다를 지나는 배들의 길잡이가 된다.',o:['O','X'],a:0,e:'동도에 있는 독도 등대가 동해를 지나는 배들의 안전을 지켜요.'},
+ {q:'독도가 자리한 바다의 이름은?',o:['서해','남해','동해','황해'],a:2,e:'독도는 우리나라 동해 한가운데에 있어요.'},
+ {q:'우리나라 영토에서 가장 동쪽 끝에 있는 섬은?',o:['울릉도','독도','마라도','백령도'],a:1,e:'독도는 우리나라 가장 동쪽 끝의 섬이에요. 마라도는 가장 남쪽, 백령도는 서북쪽 끝이에요.'},
+ {q:'일본이 현재 독도를 부르는 이름은?',o:['다케시마','오키노시마','쓰시마','리앙쿠르'],a:0,e:'일본은 독도를 "다케시마(竹島)"라고 부르며 영유권을 주장하고 있어요.'},
+ {q:'1849년 프랑스 포경선의 이름을 따서 서양에서 독도를 부른 이름은?',o:['리앙쿠르 암초','마쓰시마','다케시마','우산도'],a:0,e:'프랑스 포경선 리앙쿠르호가 독도를 발견해 서양에는 "리앙쿠르 암초(Liancourt Rocks)"로 알려졌어요.'},
+ {q:'신라 이사부가 우산국을 정벌한 우산국은 지금의 어느 섬에 있던 나라일까요?',o:['제주도','울릉도','거제도','강화도'],a:1,e:'우산국은 울릉도를 중심으로 독도까지 아우르던 고대 나라예요.'},
+ {q:'삼국사기에 따르면 이사부는 우산국 사람들을 겁주기 위해 배에 무엇을 실었을까요?',o:['나무로 만든 사자','쇠로 만든 거북','불화살','큰 북'],a:0,e:'이사부는 나무 사자를 배에 싣고 가 항복하지 않으면 풀어 놓겠다고 위협했어요.'},
+ {q:'안용복이 일본에 건너가 울릉도와 독도가 조선 땅임을 주장한 때의 조선 임금은?',o:['세종','숙종','영조','고종'],a:1,e:'안용복은 조선 숙종 때인 1693년과 1696년에 일본에 건너갔어요.'},
+ {q:'1882년 고종의 명으로 울릉도를 조사한 "울릉도 검찰사"는?',o:['이규원','안용복','홍순칠','이사부'],a:0,e:'이규원은 울릉도를 직접 조사했고, 이후 조선 정부는 울릉도 개척을 본격화했어요.'},
+ {q:'동도에서 가장 높은 봉우리의 이름은?',o:['대한봉','우산봉','탕건봉','촛대봉'],a:1,e:'동도의 최고봉은 우산봉, 서도의 최고봉은 대한봉이에요.'},
+ {q:'독도의 옛 주소는 "울릉읍 도동리"였는데, 2000년에 "독도리"로 바뀌었다.',o:['O','X'],a:0,e:'2000년부터 독도는 독자적인 행정 구역인 울릉읍 독도리가 되었어요.'},
+ {q:'독도에는 "한국령(韓國領)"이라고 새긴 표석이 있다.',o:['O','X'],a:0,e:'동도에 우리 영토임을 알리는 영토 표석이 세워져 있어요.'},
+ {q:'바다 위로 보이는 독도는 깊은 바다 밑에서 솟아오른 거대한 화산체의 꼭대기 부분이다.',o:['O','X'],a:0,e:'독도는 해저 약 2,000m에서 솟은 화산의 윗부분이 바다 위로 드러난 거예요.'},
+ {q:'독도를 이루는 암석은 주로 어떤 종류일까요?',o:['화산암','석회암','대리암','사암'],a:0,e:'독도는 현무암·조면암·응회암 같은 화산 활동으로 만들어진 암석으로 이루어져 있어요.'},
+ {q:'독도는 1982년 "독도 해조류(海鳥類) 번식지"라는 이름으로 처음 천연기념물이 되었다. 여기서 "해조류"는 무엇을 뜻할까요?',o:['바닷새','바닷말(미역 등)','물고기','조개'],a:0,e:'海鳥類는 바닷새예요. 괭이갈매기·바다제비·슴새 등의 번식지라서 지정되었어요.'},
+ {q:'바다제비는 독도에서 번식하는 바닷새이다.',o:['O','X'],a:0,e:'바다제비는 독도의 흙이 있는 비탈에 굴을 파고 번식하는 바닷새예요.'},
+ {q:'다음 중 흔히 "독도새우"라고 부르는 새우가 아닌 것은?',o:['도화새우','닭새우(가시배새우)','꽃새우(물렁가시붉은새우)','대하'],a:3,e:'독도새우는 동해 깊은 바다에 사는 도화새우·닭새우·꽃새우를 말해요. 대하는 서해에서 많이 잡혀요.'},
+ {q:'몸에 점무늬가 있고 우리나라 천연기념물로 보호받는 바다 포유류는?',o:['점박이물범','돌고래','수달','해달'],a:0,e:'점박이물범은 천연기념물이자 해양보호생물이에요. 서해 백령도에 많고 동해에서도 관찰돼요.'},
+ {q:'해국은 어떤 식물 무리에 속할까요?',o:['국화','장미','난초','소나무'],a:0,e:'해국(海菊)은 이름처럼 바닷가에 피는 국화 무리의 꽃이에요.'},
+ {q:'독도의 사철나무는 겨울에도 잎이 지지 않는 늘푸른나무(상록수)이다.',o:['O','X'],a:0,e:'사철나무는 이름처럼 사계절 내내 푸른 잎을 가진 상록수예요.'},
+ {q:'메탄 하이드레이트는 낮은 온도와 높은 압력에서 만들어진다.',o:['O','X'],a:0,e:'깊은 바다 밑처럼 차갑고 압력이 높은 곳에서 메탄과 물이 얼음 같은 고체가 돼요.'},
+ {q:'독도 주변 바다에서 많이 잡히는 대표적인 수산물은?',o:['오징어','꼬막','낙지','바지락'],a:0,e:'동해의 조경 수역에서는 오징어·꽁치·명태 같은 회유성 어종이 많이 잡혀 왔어요. 꼬막·낙지·바지락은 주로 서남해 갯벌에서 나요.'},
+ {q:'독도 주변 바다에는 미역·감태 같은 해조류가 "바다숲"을 이룬다.',o:['O','X'],a:0,e:'바다숲은 물고기의 산란장이자 먹이터가 되는 중요한 생태 공간이에요.'},
+ {q:'바다숲이 사라지고 하얀 석회조류가 바위를 뒤덮는 현상을 무엇이라 할까요?',o:['갯녹음(바다 사막화)','적조','녹조','해일'],a:0,e:'갯녹음은 바다 사막화라고도 해요. 독도 주변에서도 바다숲을 되살리는 노력이 이어지고 있어요.'},
+ {q:'바다의 기준선에서 12해리까지를 무엇이라고 할까요?',o:['영해','배타적 경제 수역','공해','대륙붕'],a:0,e:'영해는 기준선에서 12해리까지예요. 독도는 우리 영해의 기준이 되는 섬이에요.'},
+ {q:'배타적 경제 수역(EEZ)은 기준선에서 최대 몇 해리까지일까요?',o:['12해리','24해리','100해리','200해리'],a:3,e:'EEZ는 최대 200해리까지로, 그 안의 수산·광물 자원을 개발할 권리를 가져요.'},
+ {q:'날씨가 맑은 날에는 울릉도에서 맨눈으로 독도가 보인다.',o:['O','X'],a:0,e:'울릉도와 독도는 약 87.4km 떨어져 있어 맑은 날 맨눈으로 볼 수 있어요. 옛 기록에도 나와요.'},
+ {q:'독도는 동해의 따뜻한 해류의 영향을 받아 바다를 끼고 있는 해양성 기후를 보인다.',o:['O','X'],a:0,e:'독도는 바다의 영향을 크게 받아 여름과 겨울의 기온 차가 내륙보다 작아요.'}
+];
+const KEYS=[
+ {h:'독도 지킴이 SNS 홍보',d:'독도를 알리는 카드뉴스를 만들어 공유했어요. 30,000 DP를 받아요.',fx:p=>{gain(p,30000);return'홍보 상금 +30,000 DP'}},
+ {h:'해양 쓰레기 정화 활동',d:'독도 바다를 깨끗하게! 봉사 장학금 20,000 DP를 받아요.',fx:p=>{gain(p,20000);return'장학금 +20,000 DP'}},
+ {h:'독도 연구 발표 대회 입상',d:'멋진 탐구 발표로 상금 50,000 DP를 받아요.',fx:p=>{gain(p,50000);return'상금 +50,000 DP'}},
+ {h:'독도의 날 축하금',d:'모든 친구에게서 10,000 DP씩 축하금을 받아요.',fx:p=>{alive().forEach(q=>{if(q!==p)transfer(q,p,10000)});return'친구들에게 축하금을 받았어요'}},
+ {h:'독도 탐방 경비 분담',d:'모든 친구에게 10,000 DP씩 나눠 줘요.',fx:p=>{alive().forEach(q=>{if(q!==p)transfer(p,q,10000)});return'친구들에게 경비를 나눠 줬어요'}},
+ {h:'풍랑 주의보 발효',d:'무인도로 바로 이동해요. 출발지를 지나도 지원금은 없어요.',fx:async p=>{p.pos=10;render();return {resolve:true}}},
+ {h:'울릉도에서 다시 출발',d:'출발지(도동항)로 이동해 완주 지원금을 받아요.',fx:async p=>{await moveTo(p,0);return {resolve:true}}},
+ {h:'헬기 탑승권',d:'독도 헬기장으로 이동해요. 출발지를 지나면 지원금을 받아요.',fx:async p=>{await moveTo(p,20);return {resolve:true}}},
+ {h:'맞바람',d:'거센 바람에 뒤로 3칸 밀려나요.',fx:async p=>{await moveBy(p,-3);return {resolve:true}}},
+ {h:'순풍',d:'바람을 타고 앞으로 3칸 이동해요.',fx:async p=>{await moveBy(p,3);return {resolve:true}}},
+ {h:'독도 박물관 견학',d:'독도 박물관으로 이동해요. 출발지를 지나면 지원금을 받아요.',fx:async p=>{await moveTo(p,4);return {resolve:true}}},
+ {h:'무인도 탈출권',d:'보관했다가 무인도에 갇혔을 때 바로 탈출할 수 있어요.',fx:p=>{p.esc++;return'무인도 탈출권을 보관했어요'}},
+ {h:'통행료 면제권',d:'보관했다가 친구 거점에 도착했을 때 통행료를 한 번 내지 않아요.',fx:p=>{p.free++;return'통행료 면제권을 보관했어요'}},
+ {h:'시설 안전 점검',d:'내 거점의 시설 1단계마다 10,000 DP를 성금함에 내요.',fx:p=>{let n=0;for(const k in S.own){const o=S.own[k];if(o.owner===S.players.indexOf(p))n+=o.level-1}const a=n*10000;if(a)toVault(p,a);return a?`점검비 ${fmt(a)}를 성금함에 냈어요`:'지을 시설이 없어 점검비가 없어요'}},
+ {h:'독도 수호 성금 기부',d:'20,000 DP를 중앙 성금함에 기부해요.',fx:p=>{toVault(p,20000);return'성금함에 20,000 DP를 기부했어요'}},
+ {h:'깜짝 독도 퀴즈',d:'퀴즈를 맞히면 50,000 DP! 틀려도 벌금은 없어요.',fx:p=>({quiz:50000})}
+];
+
+/* ================= 상태 ================= */
+const SAVE='dokdo-marble-v2';
+let S=null, busy=false;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>(n<0?'−':'')+Math.abs(Math.round(n)).toLocaleString('ko-KR')+' DP';
+const sleep=ms=>new Promise(r=>setTimeout(r,matchMedia('(prefers-reduced-motion: reduce)').matches?0:ms));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const cp=()=>S.players[S.cur];
+const alive=()=>S.players.filter(p=>!p.out);
+const save=()=>{try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}};
+const load=()=>{try{const v=localStorage.getItem(SAVE);return v?JSON.parse(v):null}catch(e){return null}};
+
+function newGame(names){const dice=1;
+  S={players:names.map((n,i)=>({name:n,color:PL_COLORS[i],dp:START_DP,pos:0,island:0,heli:false,rest:0,esc:0,free:0,half:0,out:false})),
+     own:{},vault:0,cur:0,phase:'roll',pend:null,msg:'',dice,mode:'app',last:null,pick:[0,0],log:[],qd:[],kd:[],turnNo:1};
+  log(`게임 시작! 모두 ${fmt(START_DP)}를 받았어요.`);
+  render();
+  if($('#tools').open)renderTools();
+}
+function log(t){S.log.unshift(t);S.log=S.log.slice(0,40)}
+function toast(t){const r=$('#toastRoot');r.innerHTML=`<div class="toast">${esc(t)}</div>`;clearTimeout(toast._t);toast._t=setTimeout(()=>r.innerHTML='',2200)}
+
+/* ================= 돈 ================= */
+function gain(p,a){p.dp+=a}
+function transfer(from,to,a){from.dp-=a;to.dp+=a}
+function toVault(p,a){p.dp-=a;S.vault+=a}
+const tollOf=i=>{const o=S.own[i];return o?T[i].p*TOLL[o.level]:0};
+const buildCost=i=>T[i].p*BUILD[S.own[i].level];
+const investOf=i=>{const o=S.own[i];return o?T[i].p*INVEST[o.level]:0};
+
+/* ================= 이동 ================= */
+async function moveBy(p,steps){
+  busy=true;
+  const dir=steps<0?-1:1;
+  for(let k=0;k<Math.abs(steps);k++){
+    p.pos=(p.pos+dir+N)%N;
+    if(dir>0&&p.pos===0){gain(p,START_BONUS);log(`<b>${esc(p.name)}</b> 출발지 통과 +200,000 DP`);toast(`${p.name} 출발지 통과! +200,000 DP`)}
+    render();await sleep(150);
+  }
+  busy=false;
+}
+async function moveTo(p,dest){const st=(dest-p.pos+N)%N;await moveBy(p,st===0?N:st)}
+
+/* ================= 턴 진행 ================= */
+function diceFaces(){return S.last||Array(S.dice).fill(0)}
+async function rollApp(){
+  if(busy)return;busy=true;
+  for(let k=0;k<7;k++){S.last=Array.from({length:S.dice},()=>1+(Math.random()*6|0));renderCenter(true);await sleep(60)}
+  busy=false;
+  await doRoll(S.last);
+}
+async function doRoll(vals){
+  const p=cp();S.last=vals;const sum=vals.reduce((a,b)=>a+b,0);
+  if(p.island>0){
+    if(vals.includes(6)){p.island=0;log(`<b>${esc(p.name)}</b> 6이 나와 무인도 탈출!`);toast('6! 무인도 탈출!')}
+    else{p.island--;S.phase='done';S.msg=p.island>0?`탈출 실패… 남은 기회 ${p.island}번.`:'탈출 실패… 3턴을 다 쉬었으니 다음 턴부터는 자유롭게 움직여요.';
+      log(`<b>${esc(p.name)}</b> 무인도 탈출 실패 (${vals.join('+')})`);render();return}
+  }
+  log(`<b>${esc(p.name)}</b> 주사위 ${vals.join(' + ')}${vals.length>1?' = '+sum:''}`);
+  await moveBy(p,sum);
+  resolveTile(p);
+}
+async function heliTo(i){
+  const p=cp();if(i===p.pos){toast('지금 있는 칸이에요. 다른 칸을 골라 주세요.');return}
+  if(T[i].t==='GUARD'){toast('독도 의용수비대 칸으로는 헬기로 갈 수 없어요.');return}
+  p.heli=false;log(`<b>${esc(p.name)}</b> 헬기로 ${esc(T[i].f)}까지 이동`);
+  busy=true;const st=(i-p.pos+N)%N;
+  for(let k=0;k<st;k++){p.pos=(p.pos+1)%N;if(p.pos===0){gain(p,START_BONUS);log(`<b>${esc(p.name)}</b> 출발지 통과 +200,000 DP`);toast(`${p.name} 출발지 통과! +200,000 DP`)}render();await sleep(45)}
+  busy=false;resolveTile(p);
+}
+function resolveTile(p){
+  const i=p.pos,t=T[i],me=S.cur;S.pend=null;S.phase='done';
+  switch(t.t){
+    case 'START':S.msg='출발지에 도착! 완주 지원금을 받았어요.';break;
+    case 'PROP':{
+      const o=S.own[i];
+      if(!o){S.phase='act';S.pend={k:'buy',i}}
+      else if(o.owner===me){ if(o.level<4){S.phase='act';S.pend={k:'build',i}} else S.msg='이미 독도 수호 센터까지 완성한 내 거점이에요!'}
+      else{S.phase='act';S.pend={k:'toll',i}}
+      break}
+    case 'QUIZ':S.phase='act';S.pend={k:'quiz'};break;
+    case 'KEY':S.phase='act';S.pend={k:'key'};break;
+    case 'DPAY':toVault(p,DONATE);S.msg='독도 수호 성금 10,000 DP를 성금함에 냈어요.';log(`<b>${esc(p.name)}</b> 성금 납부 10,000 DP`);break;
+    case 'DTAKE':{const a=S.vault;gain(p,a);S.vault=0;S.msg=a?`성금함의 ${fmt(a)}를 모두 받았어요!`:'아직 성금함이 비어 있어요.';if(a)log(`<b>${esc(p.name)}</b> 성금함 ${fmt(a)} 수령`);break}
+    case 'GUARD':{const ok=Object.keys(S.own).some(k=>S.own[k].owner===me&&S.own[k].level<4);
+      if(ok){S.phase='act';S.pend={k:'guard'}}else S.msg='독도 의용수비대 도착! 하지만 업그레이드할 수 있는 내 거점이 없어요.';break}
+    case 'HELI':p.heli=true;S.msg='독도 헬기장 도착! 다음 턴에는 주사위 대신 가고 싶은 칸을 골라요.';break;
+    case 'ISLAND':p.island=3;S.msg='풍랑 주의보로 무인도에 갇혔어요. 다음 턴부터 6이 나오면 탈출!';log(`<b>${esc(p.name)}</b> 무인도에 갇힘`);break;
+  }
+  render();
+}
+function endTurn(){
+  if(busy)return;
+  if(alive().length<=1){showRank(true);return}
+  let n=S.cur;do{n=(n+1)%S.players.length}while(S.players[n].out);
+  if(n<=S.cur)S.turnNo++;
+  S.cur=n;S.phase='roll';S.pend=null;S.msg='';S.last=null;S.pick=[0,0];render();
+}
+
+/* ================= 액션 ================= */
+function actBuy(){const p=cp(),i=S.pend.i,c=T[i].p;transfer(p,{dp:0},c);S.own[i]={owner:S.cur,level:1};
+  S.phase='done';S.msg=`${T[i].f} 거점을 확보했어요! 다음에 다시 오면 시설을 지을 수 있어요.`;log(`<b>${esc(p.name)}</b> ${esc(T[i].f)} 확보 (${fmt(c)})`);render()}
+function actBuild(){const p=cp(),i=S.pend.i,c=buildCost(i);p.dp-=c;S.own[i].level++;
+  S.phase='done';S.msg=`${LV_NAME[S.own[i].level]} 완공! 이제 통행료는 ${fmt(tollOf(i))}예요.`;log(`<b>${esc(p.name)}</b> ${esc(T[i].f)}에 ${LV_NAME[S.own[i].level]} 건설 (${fmt(c)})`);render()}
+function actSkip(){S.phase='done';S.msg='이번에는 그냥 지나가요.';render()}
+function actFree(){const p=cp(),i=S.pend.i;p.free--;S.phase='done';S.msg='통행료 면제권을 사용했어요. 통행료 0 DP!';log(`<b>${esc(p.name)}</b> 통행료 면제권 사용 (${esc(T[i].f)})`);render()}
+function actToll(useHalf){
+  const p=cp(),i=S.pend.i,o=S.own[i],owner=S.players[o.owner],base=tollOf(i);
+  const a=useHalf?Math.round(base*0.5):base;
+  if(useHalf)p.half--;
+  transfer(p,owner,a);
+  log(`<b>${esc(p.name)}</b> → ${esc(owner.name)} 통행료 ${fmt(a)}${useHalf?' (50% 할인권 사용)':''}`);
+  S.phase='done';S.msg=useHalf?`할인권을 써서 ${owner.name} 님에게 절반인 ${fmt(a)}만 냈어요.`:`${owner.name} 님에게 통행료 ${fmt(a)}를 냈어요.`;
+  render();
+}
+const HALF_MAX=2;
+function actQuizTile(reward,fine=true){
+  const p=cp(),tile=fine;
+  openQuiz({tag:tile?'독도 퀴즈 칸':'깜짝 독도 퀴즈',color:'#0d4677',
+    info:tile?`정답이면 통행료 50% 할인권 1장(최대 ${HALF_MAX}장) · 오답이면 벌금 5,000 DP`:`정답 +${fmt(reward)} · 오답이어도 벌금 없음`,
+    settle:ok=>{
+      if(tile){
+        if(ok){
+          if(p.half<HALF_MAX){p.half++;log(`<b>${esc(p.name)}</b> 퀴즈 정답 → 통행료 50% 할인권 적립`);return `통행료 50% 할인권 1장을 받았어요! (보유 ${p.half}장)`}
+          gain(p,QUIZ_REWARD);log(`<b>${esc(p.name)}</b> 퀴즈 정답 (할인권 가득) +${fmt(QUIZ_REWARD)}`);return `할인권이 이미 ${HALF_MAX}장이라 대신 ${fmt(QUIZ_REWARD)}를 받았어요.`}
+        toVault(p,FINE);log(`<b>${esc(p.name)}</b> 퀴즈 오답 벌금 5,000 DP`);return '벌금 5,000 DP가 성금함으로 갔어요.'}
+      if(ok){gain(p,reward);log(`<b>${esc(p.name)}</b> 깜짝 퀴즈 정답 +${fmt(reward)}`);return `정답 상금 ${fmt(reward)}를 받았어요!`}
+      return '아쉽지만 상금은 없어요.'},
+    done:m=>{S.phase='done';S.msg=m;render()}});
+}
+function drawKey(){
+  if(!S.kd.length)S.kd=shuffle(KEYS.map((_,i)=>i));
+  const card=KEYS[S.kd.pop()],p=cp();
+  modal(`<div class="mhead" style="--mh:#c79a17"><div class="tag">독도 열쇠</div><h3>${esc(p.name)} 님의 열쇠 카드</h3></div>
+   <div class="mbody"><div class="keycard"><h4>${esc(card.h)}</h4><p>${esc(card.d)}</p></div>
+   <div class="btns"><button class="btn gold big" id="kgo">카드 내용 실행</button></div></div>`);
+  $('#kgo').onclick=async()=>{
+    closeModal();log(`<b>${esc(p.name)}</b> 열쇠 카드: ${esc(card.h)}`);
+    const r=await card.fx(p);
+    if(r&&r.resolve){resolveTile(p);return}
+    if(r&&r.quiz){actQuizTile(r.quiz,false);return}
+    S.phase='done';S.msg=r||card.h;render();
+  };
+}
+function useEscape(){const p=cp();p.esc--;p.island=0;log(`<b>${esc(p.name)}</b> 무인도 탈출권 사용`);toast('탈출권 사용! 이제 주사위를 굴려요.');render()}
+function restOver(){const p=cp();p.rest=0;S.phase='done';S.msg='파견 근무를 마쳤어요. 다음 턴부터 다시 움직여요.';log(`<b>${esc(p.name)}</b> 의용수비대 근무로 1턴 휴식`);render()}
+function sellProp(i){
+  const p=cp(),r=Math.round(investOf(i)*0.5);gain(p,r);log(`<b>${esc(p.name)}</b> ${esc(T[i].f)} 매각 +${fmt(r)}`);delete S.own[i];render();
+}
+function bankrupt(){
+  const p=cp(),idx=S.cur;for(const k in S.own)if(S.own[k].owner===idx)delete S.own[k];
+  p.out=true;p.dp=0;log(`<b>${esc(p.name)}</b> 파산… 거점이 모두 빈 땅이 됐어요`);
+  if(alive().length<=1){render();showRank(true);return}
+  endTurn();
+}
+
+/* ================= 퀴즈 모달 ================= */
+function nextQuiz(){if(!S.qd.length)S.qd=shuffle(QUIZ.map((_,i)=>i));return QUIZ[S.qd.pop()]}
+function openQuiz(ctx){
+  const qz=nextQuiz(),ox=qz.o.length===2,LIMIT=30;
+  modal(`<div class="mhead" style="--mh:${ctx.color}"><div class="tag">${esc(ctx.tag)}</div><h3>독도 퀴즈</h3></div>
+   <div class="mbody"><div class="qtimer" id="qt"><span>⏱</span><div class="track"><div class="fill" id="qfill"></div></div><span id="qsec">${LIMIT}초</span></div>
+   <div class="where">${esc(ctx.info)}</div><p class="q">${esc(qz.q)}</p>
+   <div class="opts ${ox?'ox':''}">${qz.o.map((o,k)=>`<button class="opt" data-k="${k}">${ox?'':`<span class="n">${k+1}</span>`}${esc(o)}</button>`).join('')}</div>
+   <div id="qres"></div></div>`);
+  let left=LIMIT,done=false;
+  const tick=()=>{$('#qsec').textContent=left+'초';$('#qfill').style.width=(left/LIMIT*100)+'%';$('#qt').classList.toggle('low',left<=10)};
+  const iv=setInterval(()=>{left--;if(!$('#qt')){clearInterval(iv);return}tick();if(left<=0)answer(-1)},1000);
+  function answer(k){
+    if(done)return;done=true;clearInterval(iv);
+    const ok=k===qz.a,timeout=k===-1;
+    document.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.k===qz.a)x.classList.add('right')});
+    if(!ok&&!timeout)document.querySelector(`.opt[data-k="${k}"]`).classList.add('wrong');
+    const m=ctx.settle(ok);
+    $('#qres').innerHTML=`<div class="result ${ok?'ok':'no'}"><b>${ok?'정답이에요!':timeout?'시간 초과! 오답 처리':'아쉬워요, 오답!'}</b> ${esc(m)}<p>${esc(qz.e)}</p></div>
+      <div class="btns" style="margin-top:12px"><button class="btn" id="qok">확인</button></div>`;
+    $('#qok').onclick=()=>{closeModal();ctx.done(m)};$('#qok').focus();
+  }
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.k));
+}
+
+/* ================= 모달 공통 ================= */
+function modal(html,wide){$('#modalRoot').innerHTML=`<div class="overlay"><div class="modal ${wide?'wide':''}" role="dialog" aria-modal="true">${html}</div></div>`}
+function closeModal(){$('#modalRoot').innerHTML=''}
+function closable(){const o=$('.overlay');o.onclick=e=>{if(e.target===o)closeModal()}}
+
+function showTile(i){
+  const t=T[i];
+  if(t.t!=='PROP'){
+    modal(`<div class="mhead" style="--mh:#0d4677"><div class="tag">특수 칸</div><h3>${esc(t.f)}</h3></div>
+     <div class="mbody"><p class="msg">${esc(SPECIAL_RULE[t.t])}</p><div class="btns"><button class="btn alt" onclick="closeModal()">닫기</button></div></div>`);closable();return}
+  const o=S.own[i],lv=o?o.level:0,owner=o?S.players[o.owner]:null;
+  const rows=[1,2,3,4].map(l=>`<tr class="${l===lv?'now':''}"><td>${LV_NAME[l]}</td><td>${l===1?fmt(t.p)+' (확보)':fmt(t.p*BUILD[l-1])}</td><td>${fmt(t.p*TOLL[l])}</td></tr>`).join('');
+  const bandColor={sun:'#c79a17',sand:'#a77a37',coral:'#d4534a',sea:'#1c7cc0'}[groupOf(i)];
+  modal(`<div class="mhead" style="--mh:${bandColor}"><div class="tag">거점 · 기본가 ${fmt(t.p)}</div><h3>${esc(t.f)}</h3></div>
+   <div class="mbody"><p class="msg">${owner?`<b style="color:${owner.color}">${esc(owner.name)}</b> 님의 거점 · 지금 단계: ${LV_NAME[lv]}`:'아직 주인이 없는 빈 거점이에요.'}</p>
+   <div style="overflow-x:auto"><table class="price"><thead><tr><th>단계</th><th>드는 비용</th><th>통행료</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <p class="where">통행료 50% 할인권이 있으면 절반만 내요. 1차 방문 때는 거점 확보만, 다시 오면 한 단계씩 건설해요.</p>
+   <div class="btns"><button class="btn alt" onclick="closeModal()">닫기</button></div></div>`);closable();
+}
+function showPrices(){
+  const num=n=>Math.round(n).toLocaleString('ko-KR');
+  const rows=T.map((t,i)=>{
+    if(t.t!=='PROP')return'';
+    const o=S.own[i],lv=o?o.level:0,ow=o?S.players[o.owner]:null;
+    const b=[1,2,3].map(k=>`<td class="${k===1?'sep':''}">${num(t.p*BUILD[k])}</td>`).join('');
+    const tl=[1,2,3,4].map(k=>`<td class="${k===1?'sep':''} ${lv===k?'cur':''}">${num(t.p*TOLL[k])}</td>`).join('');
+    return `<tr><td class="g-${groupOf(i)}">${esc(t.f)}${ow?`<span class="owner" style="color:${ow.color}">${esc(ow.name)} · ${LV_NAME[lv]}</span>`:''}</td><td class="sep ${lv>=1?'':''}">${num(t.p)}</td>${b}${tl}</tr>`;
+  }).join('');
+  modal(`<div class="mhead"><div class="tag">단위: DP · 출발지에서 가까운 순</div><h3>거점 가격표</h3></div>
+   <div class="mbody"><div style="overflow-x:auto"><table class="ptab"><thead>
+    <tr><th rowspan="2">거점</th><th rowspan="2" class="sep">거점비<br>(확보)</th><th colspan="3" class="sep">건물비</th><th colspan="4" class="sep">통행료</th></tr>
+    <tr><th class="sep">탐사 표지판</th><th>독도 연구소</th><th>수호 센터</th><th class="sep">거점만</th><th>표지판</th><th>연구소</th><th>수호 센터</th></tr>
+   </thead><tbody>${rows}</tbody></table></div>
+   <p class="where">건물비는 거점비의 50% · 100% · 150%, 통행료는 20% · 50% · 120% · 250%예요. 통행료 50% 할인권을 쓰면 절반만 내요. 노랗게 칠해진 칸이 지금 적용 중인 통행료예요.</p>
+   <div class="btns"><button class="btn alt" onclick="closeModal()">닫기</button></div></div>`,true);closable();
+}
+function showRules(){
+  modal(`<div class="mhead"><div class="tag">독도 한바퀴</div><h3>독도마블 규칙</h3></div><div class="mbody"><ol class="rules">
+   <li>모두 <b>300,000 DP</b>로 시작해요. 출발지를 지나거나 도착하면 <b>+200,000 DP</b>.</li>
+   <li>빈 거점에 도착하면 <b>기본가</b>를 내고 확보해요. 확보한 그날은 건물을 지을 수 없어요.</li>
+   <li>내 거점에 다시 오면 <b>탐사 표지판 → 독도 연구소 → 독도 수호 센터</b> 순서로 한 단계씩 지어요. (건설비: 기본가의 50% · 100% · 150%)</li>
+   <li>친구 거점에 도착하면 통행료를 <b>전액</b> 내요. <b>통행료 50% 할인권</b>이 있으면 써서 절반만 낼 수 있어요.</li>
+   <li><b>독도 퀴즈 칸</b>에서 맞히면 할인권 1장 적립(최대 2장), 틀리거나 30초가 지나면 벌금 5,000 DP.</li>
+   <li>통행료: 거점만 20% · 표지판 50% · 연구소 120% · 수호 센터 250% (기본가 기준)</li>
+   <li>성금 납부 칸은 10,000 DP를 성금함에, 성금처 칸에서는 성금함 전액을 받아요.</li>
+   <li>무인도는 최대 3턴 쉬고, 6이 나오면 탈출. 헬기장에 서면 다음 턴에 원하는 칸으로 날아가요(의용수비대 칸 제외).</li>
+   <li><b>독도 의용수비대</b> 칸에 도착하면 내 거점 하나의 건물을 <b>한 단계 무료</b>로 올려요.</li>
+   <li>DP가 모자라면 거점을 투자액의 절반에 팔 수 있어요. 그래도 모자라면 파산.</li>
+   <li>게임이 끝나면 <b>잔여 DP + 거점 확보비 + 시설 가치</b>를 더해 순위를 정해요.</li>
+   </ol><div class="btns"><button class="btn" onclick="closeModal()">알겠어요</button></div></div>`);closable();
+}
+function assets(pi){let land=0,fac=0;for(const k in S.own){const o=S.own[k];if(o.owner===pi){land+=T[k].p;fac+=investOf(k)-T[k].p}}return {land,fac}}
+function showRank(final){
+  const list=S.players.map((p,i)=>{const a=assets(i);return {p,...a,tot:p.out?0:p.dp+a.land+a.fac}}).sort((x,y)=>(x.p.out-y.p.out)||y.tot-x.tot);
+  modal(`<div class="mhead" style="--mh:#e86fa0"><div class="tag">${final?'게임 종료':'중간 점검'}</div><h3>${final?'최종 순위':'현재 순위'}</h3></div>
+   <div class="mbody"><div class="rank">${list.map((r,k)=>`<div class="rk ${k===0&&!r.p.out?'first':''}" style="--pc:${r.p.color}"><div class="no">${r.p.out?'–':k+1}</div>
+     <div><b>${esc(r.p.name)}</b>${r.p.out?' (파산)':''}<small>잔여 ${fmt(r.p.dp)} · 거점 ${fmt(r.land)} · 시설 ${fmt(r.fac)}</small></div><div class="tot">${fmt(r.tot)}</div></div>`).join('')}</div>
+   <div class="btns">${final?'<button class="btn warm" id="rnew">새 게임</button>':''}<button class="btn alt" onclick="closeModal()">닫기</button></div></div>`);
+  closable();if(final)$('#rnew').onclick=()=>{closeModal();showSetup()};
+}
+function showSetup(){
+  const prev=S?S.players.map(p=>p.name):[];
+  modal(`<div class="mhead"><div class="tag">독도 한바퀴</div><h3>새 게임 준비</h3></div><div class="mbody setup-grid">
+   <div><div class="where" style="margin-bottom:6px">플레이어 수</div><div class="seg" id="sN">${[2,3,4].map(n=>`<button data-n="${n}" class="${n===4?'on':''}">${n}명</button>`).join('')}</div></div>
+   <div id="sNames" class="setup-grid"></div>
+   <div class="btns"><button class="btn big" id="sGo">게임 시작</button>${S?'<button class="btn alt" onclick="closeModal()">취소</button>':''}</div></div>`);
+  let n=4;
+  const draw=()=>{$('#sNames').innerHTML=Array.from({length:n},(_,i)=>`<div class="nameRow"><span class="dot" style="background:${PL_COLORS[i]}"></span><input type="text" id="nm${i}" maxlength="10" value="${esc(prev[i]||'플레이어 '+(i+1))}" aria-label="플레이어 ${i+1} 이름"></div>`).join('')};
+  draw();
+  $('#sN').onclick=e=>{const b=e.target.closest('button');if(!b)return;n=+b.dataset.n;[...$('#sN').children].forEach(x=>x.classList.toggle('on',x===b));draw()};
+  $('#sGo').onclick=()=>{const names=Array.from({length:n},(_,i)=>($('#nm'+i).value.trim()||`플레이어 ${i+1}`));closeModal();newGame(names)};
+}
+function confirmBox(title,text,ok){
+  modal(`<div class="mhead" style="--mh:#d64545"><h3>${esc(title)}</h3></div><div class="mbody"><p class="msg">${esc(text)}</p>
+   <div class="btns"><button class="btn warm" id="cOk">확인</button><button class="btn alt" onclick="closeModal()">취소</button></div></div>`);
+  $('#cOk').onclick=()=>{closeModal();ok()};
+}
+
+/* ================= 렌더 ================= */
+/* 시작은 왼쪽 아래, 시계 방향: 도동항 줄(왼쪽) → 윗줄 → 오른쪽 줄 → 아랫줄(사철나무~독도새우) → 출발 */
+function gridPos(i){if(i<=10)return[11-i,1];if(i<=20)return[1,1+(i-10)];if(i<=30)return[1+(i-20),11];return[11,11-(i-30)]}
+function sideOf(i){if(i%10===0)return'c';return i<10?'l':i<20?'t':i<30?'r':'b'}
+function groupOf(i){return ['sea','coral','sand','sun'][Math.floor(i/10)]}
+const PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+const dieHTML=(v,roll)=>`<div class="die ${v===6?'six':''} ${roll?'roll':''}" aria-label="주사위 ${v||'?'}">${Array.from({length:9},(_,k)=>`<i class="${v&&PIPS[v].includes(k)?'on':''}"></i>`).join('')}</div>`;
+
+function render(){renderBoard();renderTurn();renderPlayers();$('#log').innerHTML=S.log.slice(0,12).map(l=>`<li>${l}</li>`).join('');save()}
+function renderBoard(){
+  const p=cp(),picking=S.phase==='roll'&&p.heli&&!p.rest;
+  let h='';
+  T.forEach((t,i)=>{
+    const [r,c]=gridPos(i),sd=sideOf(i),o=S.own[i];
+    const toks=S.players.map((q,k)=>q.out||q.pos!==i?'':`<span class="tok ${k===S.cur?'now':''}" style="background:${q.color}">${k+1}</span>`).join('');
+    const own=o?`<span class="own" style="background:${S.players[o.owner].color}" title="${esc(S.players[o.owner].name)} · ${LV_NAME[o.level]}">${'★'.repeat(o.level)}</span>`:'';
+    const cls=['tile',sd,sd==='c'?'':'g-'+groupOf(i),t.t!=='PROP'&&sd!=='c'?'sp':'',picking&&i!==p.pos&&t.t!=='GUARD'?'pick':'',i===p.pos?'here':''].join(' ');
+    const label=sd==='c'?`<span class="ico" aria-hidden="true">${t.ico}</span><span class="nm">${esc(t.n)}</span>`:`<span class="nm">${esc(t.n)}</span>`;
+    h+=`<button class="${cls}" style="grid-row:${r};grid-column:${c}" data-i="${i}" aria-label="${esc(t.f)}">${label}${own}<span class="tokens">${toks}</span></button>`;
+  });
+  h+=`<div class="center" id="center"></div>`;
+  $('#board').innerHTML=h;renderCenter(false);
+}
+function renderCenter(roll){
+  const p=cp();
+  $('#center').innerHTML=`<div class="eyebrow">독도의 날 기념 놀이</div><h2>독도마블</h2>
+   <svg class="isles" viewBox="0 -8 160 78" aria-hidden="true"><ellipse cx="80" cy="60" rx="76" ry="9" fill="#8fcdf0"/>
+    <path d="M14 60 L38 18 Q46 10 54 20 L72 60Z" fill="#7a8a8f"/><path d="M30 34 Q40 14 50 22 Q42 28 34 36Z" fill="#6fae4a"/>
+    <path d="M78 60 L104 12 Q112 4 122 14 L150 60Z" fill="#6c7d83"/><path d="M96 30 Q108 6 122 16 Q112 22 100 32Z" fill="#6fae4a"/>
+    <line x1="112" y1="9" x2="112" y2="-6" stroke="#16314a" stroke-width="1.5"/><rect x="112" y="-6" width="14" height="9" fill="#fff" stroke="#16314a" stroke-width=".6"/><circle cx="119" cy="-1.5" r="2.4" fill="#e5484d"/></svg>
+   <div class="vault"><span>중앙 성금함</span><b>${fmt(S.vault)}</b></div>
+   <div class="dicebox">${diceFaces().map(v=>dieHTML(v,roll)).join('')}</div>`;
+
+}
+function diceControls(label){
+  if(S.mode==='app')return `<button class="btn big" id="bRoll">${label}</button>`;
+  let h='<div class="pick6">';
+  for(let d=0;d<S.dice;d++){h+=`<span>${S.dice>1?(d+1)+'번':'눈'}</span>`+[1,2,3,4,5,6].map(v=>`<button data-d="${d}" data-v="${v}" class="${S.pick[d]===v?'on':''}">${v}</button>`).join('')}
+  h+='</div>';
+  const ready=S.pick.slice(0,S.dice).every(v=>v>0);
+  return h+`<button class="btn big" id="bManual" ${ready?'':'disabled'}>${ready?`${S.pick.slice(0,S.dice).reduce((a,b)=>a+b,0)}칸 이동`:'주사위 눈을 고르세요'}</button>`;
+}
+function renderTurn(){
+  const p=cp(),t=T[p.pos];
+  let body='',msg='';
+  const modeSeg=`<div class="seg" id="modeSeg"><button data-m="app" class="${S.mode==='app'?'on':''}">앱 주사위</button><button data-m="real" class="${S.mode==='real'?'on':''}">실물 주사위 입력</button></div>`;
+  if(S.phase==='roll'){
+    if(p.rest){msg='독도 의용수비대 파견 근무 중! 이번 턴은 쉬어요.';body=`<button class="btn big" id="bRest">근무 완료 · 턴 넘기기</button>`}
+    else if(p.heli){msg='헬기 출발! 보드에서 반짝이는 칸 중 가고 싶은 곳을 누르세요.'}
+    else if(p.island>0){msg=`무인도에 갇혀 있어요. 주사위에 6이 나오면 탈출! (남은 기회 ${p.island}번)`;
+      body=modeSeg+diceControls('탈출 주사위 굴리기')+(p.esc?`<button class="btn gold" id="bEsc">무인도 탈출권 사용 (${p.esc}장)</button>`:'')}
+    else{msg=`${p.name} 차례예요. 주사위를 굴려 주세요.`;body=modeSeg+diceControls('주사위 굴리기')}
+  }else if(S.phase==='act'){
+    const k=S.pend.k,i=S.pend.i;
+    if(k==='buy'){const c=T[i].p;msg=`빈 거점이에요! 확보비 ${fmt(c)}를 내면 내 거점이 돼요.`;
+      body=`<div class="btns"><button class="btn" id="bBuy" ${p.dp<c?'disabled':''}>거점 확보 (${fmt(c)})</button><button class="btn alt" id="bSkip">지나가기</button></div>${p.dp<c?'<p class="msg warn">DP가 모자라요.</p>':''}`}
+    if(k==='build'){const o=S.own[i],c=buildCost(i);msg=`내 거점에 다시 왔어요! ${LV_NAME[o.level+1]}을(를) 지을 수 있어요.`;
+      body=`<div class="btns"><button class="btn" id="bBuild" ${p.dp<c?'disabled':''}>${LV_NAME[o.level+1]} 건설 (${fmt(c)})</button><button class="btn alt" id="bSkip">다음에</button></div>
+        <p class="where">완공하면 통행료 ${fmt(tollOf(i))} → <b>${fmt(T[i].p*TOLL[o.level+1])}</b></p>`}
+    if(k==='toll'){const o=S.own[i],ow=S.players[o.owner];msg=`${ow.name} 님의 거점(${LV_NAME[o.level]})이에요. 통행료 ${fmt(tollOf(i))}`;
+      body=`<button class="btn warm big" id="bToll">통행료 내기 (${fmt(tollOf(i))})</button>${p.half?`<button class="btn gold" id="bHalf">50% 할인권 사용 → ${fmt(Math.round(tollOf(i)*0.5))} (${p.half}장)</button>`:''}${p.free?`<button class="btn gold" id="bFree">통행료 면제권 사용 (${p.free}장)</button>`:''}`}
+    if(k==='quiz'){msg='독도 퀴즈 칸! 맞히면 통행료 50% 할인권 1장, 틀리면 벌금 5,000 DP.';body=`<button class="btn big" id="bQuiz">퀴즈 풀기</button>`}
+    if(k==='guard'){msg='독도 의용수비대의 특혜! 업그레이드할 내 거점을 하나 고르세요. 건설비는 무료예요.';
+      const mine=Object.keys(S.own).map(Number).filter(k=>S.own[k].owner===S.cur&&S.own[k].level<4).sort((a,b)=>a-b);
+      body=`<div class="btns">${mine.map(k=>`<button class="btn" data-guard="${k}">${esc(T[k].f)}<br><small style="font-weight:500">${LV_NAME[S.own[k].level]} → ${LV_NAME[S.own[k].level+1]} (건설비 ${fmt(buildCost(k))} 무료)</small></button>`).join('')}</div><button class="btn alt" id="bSkip">사용하지 않기</button>`}
+    if(k==='key'){msg='독도 열쇠 칸! 카드를 한 장 뽑아요.';body=`<button class="btn gold big" id="bKey">열쇠 카드 뽑기</button>`}
+  }else{
+    msg=S.msg;
+    if(p.dp<0&&!p.out){
+      const mine=Object.keys(S.own).filter(k=>S.own[k].owner===S.cur);
+      body=`<p class="msg warn">DP가 ${fmt(p.dp)}예요. 거점을 팔아 0 이상으로 만들거나 파산해야 턴을 넘길 수 있어요.</p>
+        <div class="btns">${mine.map(k=>`<button class="btn alt" data-sell="${k}">${esc(T[k].f)} 매각 +${fmt(Math.round(investOf(k)*0.5))}</button>`).join('')}</div>
+        <button class="btn warm" id="bBank">파산 선언</button>`;
+    }else body=`<button class="btn big" id="bNext">다음 차례로</button>`;
+  }
+  const hold=[p.esc?`<span class="chip">무인도 탈출권 ×${p.esc}</span>`:'',p.free?`<span class="chip">통행료 면제권 ×${p.free}</span>`:'',p.half?`<span class="chip">50% 할인권 ×${p.half}</span>`:''].join('');
+  $('#turn').style.setProperty('--pc',p.color);
+  $('#turn').innerHTML=`<div class="turnhead"><div class="who"><small>${S.turnNo}바퀴째 차례</small>${esc(p.name)}</div><div class="money">${fmt(p.dp)}</div></div>
+   <div class="turnbody"><div class="where">현재 위치 <b>${esc(t.f)}</b></div>${msg?`<p class="msg">${esc(msg)}</p>`:''}${body}${hold?`<div class="hold">${hold}</div>`:''}</div>`;
+  const on=(id,f)=>{const el=$(id);if(el)el.onclick=f};
+  on('#bRoll',rollApp);on('#bRest',()=>{restOver()});on('#bEsc',useEscape);
+  on('#bBuy',actBuy);on('#bBuild',actBuild);on('#bSkip',actSkip);on('#bToll',()=>actToll(false));on('#bHalf',()=>actToll(true));on('#bFree',actFree);
+  on('#bQuiz',()=>actQuizTile(0,true));on('#bKey',drawKey);on('#bNext',endTurn);on('#bBank',()=>confirmBox('파산 선언',`${p.name} 님의 거점이 모두 빈 땅이 되고 게임에서 빠져요.`,bankrupt));
+  on('#bManual',()=>{if(!busy)doRoll(S.pick.slice(0,S.dice))});
+  document.querySelectorAll('[data-guard]').forEach(b=>b.onclick=()=>{const k=+b.dataset.guard;S.own[k].level++;
+    log(`<b>${esc(p.name)}</b> 의용수비대 특혜로 ${esc(T[k].f)}에 ${LV_NAME[S.own[k].level]} 무료 건설`);
+    S.phase='done';S.msg=`${T[k].f}에 ${LV_NAME[S.own[k].level]}을(를) 무료로 지었어요! 통행료는 이제 ${fmt(tollOf(k))}예요.`;render()});
+  document.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>sellProp(+b.dataset.sell));
+  document.querySelectorAll('.pick6 button').forEach(b=>b.onclick=()=>{S.pick[+b.dataset.d]=+b.dataset.v;renderTurn()});
+  const seg=$('#modeSeg');if(seg)seg.onclick=e=>{const b=e.target.closest('button');if(b){S.mode=b.dataset.m;renderTurn();save()}};
+}
+function renderPlayers(){
+  $('#players').innerHTML=S.players.map((p,k)=>{
+    const props=Object.keys(S.own).filter(i=>S.own[i].owner===k).map(Number).sort((a,b)=>a-b)
+      .map(i=>`<span class="prop g-${groupOf(i)}">${esc(T[i].n)} <span class="lv">${'★'.repeat(S.own[i].level)}</span></span>`).join('');
+    const st=[p.out?'파산':'',p.island?`무인도(${p.island})`:'',p.heli?'헬기 대기':'',p.rest?'파견 근무':'',p.half?`할인권 ${p.half}장`:''].filter(Boolean).join(' · ');
+    return `<div class="pl ${k===S.cur?'cur':''} ${p.out?'out':''}" style="--pc:${p.color}">
+      <div class="pl-top"><b>${k+1}. ${esc(p.name)}</b><span class="dp ${p.dp<0?'neg':''}">${fmt(p.dp)}</span></div>
+      <div class="status">${esc(T[p.pos].f)}${st?' · '+st:''}</div>
+      ${props?`<div class="props">${props}</div>`:''}</div>`}).join('');
+}
+function renderTools(){
+  const opts=S.players.map((p,i)=>`<option value="${i}">${esc(p.name)}</option>`).join('');
+  $('#toolBody').innerHTML=`
+   <div class="trow"><label for="tg">출발지 통과 지원금 (실물 판으로 진행할 때)</label><select id="tg">${opts}</select><button class="sbtn" id="tgo">+200,000 DP</button></div>
+   <div class="trow"><label>DP 보내기 (통행료 수동 정산 등)</label>
+     <select id="tf" aria-label="보내는 쪽"><option value="bank">은행</option>${opts}</select>
+     <select id="tt" aria-label="받는 쪽">${opts}<option value="bank">은행</option><option value="vault">성금함</option></select>
+     <input type="number" id="ta" min="0" step="1000" value="10000" aria-label="금액"><button class="sbtn" id="tsend">보내기</button></div>
+   <div class="trow"><label>말 위치 옮기기 (칸 효과 없음)</label><select id="tp">${opts}</select>
+     <select id="tpos">${T.map((t,i)=>`<option value="${i}">${i}. ${esc(t.f)}</option>`).join('')}</select><button class="sbtn" id="tmove">옮기기</button></div>
+   <div class="trow"><button class="sbtn" id="tend">게임 종료 · 최종 순위</button><button class="sbtn red" id="treset">새 게임</button></div>`;
+  $('#tgo').onclick=()=>{const p=S.players[+$('#tg').value];gain(p,START_BONUS);log(`<b>${esc(p.name)}</b> 출발지 지원금 +200,000 DP (수동)`);toast(`${p.name} +200,000 DP`);render()};
+  $('#tsend').onclick=()=>{const a=Math.max(0,+$('#ta').value||0),f=$('#tf').value,t=$('#tt').value;if(!a||f===t)return;
+    const name=v=>v==='bank'?'은행':v==='vault'?'성금함':S.players[+v].name;
+    if(f!=='bank')S.players[+f].dp-=a;
+    if(t==='vault')S.vault+=a;else if(t!=='bank')S.players[+t].dp+=a;
+    log(`${esc(name(f))} → ${esc(name(t))} ${fmt(a)} (수동)`);toast(`${name(f)} → ${name(t)} ${fmt(a)}`);render()};
+  $('#tmove').onclick=()=>{const p=S.players[+$('#tp').value];p.pos=+$('#tpos').value;log(`<b>${esc(p.name)}</b> 말을 ${esc(T[p.pos].f)}(으)로 옮김 (수동)`);render()};
+  $('#tend').onclick=()=>showRank(true);
+  $('#treset').onclick=()=>confirmBox('새 게임','지금 게임 기록이 모두 지워져요. 새로 시작할까요?',showSetup);
+}
+
+/* ================= 시작 ================= */
+$('#board').addEventListener('click',e=>{
+  const b=e.target.closest('.tile');if(!b||busy)return;const i=+b.dataset.i,p=cp();
+  if(S.phase==='roll'&&p.heli&&!p.rest)heliTo(i);else showTile(i);
+});
+$('#btnRules').onclick=showRules;
+$('#btnPrice').onclick=showPrices;
+$('#btnRank').onclick=()=>showRank(false);
+$('#tools').addEventListener('toggle',()=>{if($('#tools').open)renderTools()});
+
+S=load();if(S&&S.dice!==1)S.dice=1;if(S&&S.players)S.players.forEach(p=>{if(p.half==null)p.half=0});
+if(S&&S.players){render();if(S.phase==='roll'&&busy===false){}}
+else{newGame(['플레이어 1','플레이어 2','플레이어 3','플레이어 4']);showSetup()}
+</script>
