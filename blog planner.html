@@ -92,6 +92,12 @@
   .item-field-head .label{font-size:13.5px;font-weight:700;flex:1;}
   .verify-toggle{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--sub);cursor:pointer;white-space:nowrap;flex:none;}
   .verify-toggle input{width:15px;height:15px;accent-color:var(--good);}
+  .field-actions{display:flex;align-items:center;gap:10px;flex:none;}
+  .exclude-btn{background:none;border:none;color:var(--sub);font-size:11px;cursor:pointer;text-decoration:underline;white-space:nowrap;}
+  .exclude-btn:hover{color:var(--accent-dark);}
+  .item-field.excluded{opacity:.45;}
+  .item-field.excluded .value-ta,.item-field.excluded .source-input{pointer-events:none;background:var(--line);}
+  .item-field.excluded .exclude-btn{color:var(--accent-dark);text-decoration:none;font-weight:700;}
   .source-row{display:flex;gap:8px;margin-top:6px;align-items:center;}
   .source-row input[type="text"]{font-size:12px;padding:7px 10px;}
   .source-label{font-size:11px;color:var(--sub);flex:none;white-space:nowrap;}
@@ -167,6 +173,10 @@
       <h2 style="margin-top:22px;">🗒️ 조사 시트 — 돌아와서 정리하기</h2>
       <div class="section-desc">현장에서 적어온 내용과 사진을 아래 칸에 옮겨 정리하세요. 확인이 끝나면 "확인됨"에 체크하세요.</div>
       <div id="sheet-output"></div>
+
+      <div class="section-label">✏️ 자유 서술 (그 외 적고 싶은 내용)</div>
+      <div class="section-desc">정해진 항목에 없는 느낀 점, 특이사항, 아이디어 등을 자유롭게 적어주세요.</div>
+      <textarea id="freeform-ta" style="min-height:120px;" placeholder="예: 사장님이 친절했음, 포토존 줄이 길어서 평일 방문 추천, 다음엔 OO 메뉴도 먹어보고 싶음 등"></textarea>
 
       <details class="ai-helper">
         <summary>🔎 AI 참고 검색 요청문 보기 (참고용 — 출처는 직접 확인 필요)</summary>
@@ -462,6 +472,7 @@ document.getElementById('generate-btn').addEventListener('click', ()=>{
   // ----- fillable sheet -----
   const sheetOut = document.getElementById('sheet-output');
   sheetOut.innerHTML = '';
+  document.getElementById('freeform-ta').value = '';
   chosenKeys.forEach(key=>{
     const field = buildItemField(key, itemLabels[key], '', '', false);
     sheetOut.appendChild(field);
@@ -489,17 +500,21 @@ document.getElementById('generate-btn').addEventListener('click', ()=>{
   document.getElementById('result-card').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
-function buildItemField(key, label, value, source, verified, photos){
+function buildItemField(key, label, value, source, verified, photos, excluded){
   photos = photos || [];
   const field = document.createElement('div');
-  field.className = 'item-field' + (verified ? ' verified' : '');
+  field.className = 'item-field' + (verified ? ' verified' : '') + (excluded ? ' excluded' : '');
   field.dataset.key = key;
   field.dataset.label = label;
   field._photos = photos.slice();
+  field._excluded = !!excluded;
   field.innerHTML = `
     <div class="item-field-head">
       <div class="label">${label}</div>
-      <label class="verify-toggle"><input type="checkbox" class="verify-cb" ${verified?'checked':''}> 확인됨</label>
+      <div class="field-actions">
+        <label class="verify-toggle"><input type="checkbox" class="verify-cb" ${verified?'checked':''}> 확인됨</label>
+        <button type="button" class="exclude-btn">${excluded ? '↺ 제외 취소' : '✕ 이 항목 제외'}</button>
+      </div>
     </div>
     <textarea class="value-ta" placeholder="조사하거나 현장에서 확인한 내용을 적어주세요. (사진은 채팅에 올려 분석을 요청한 뒤, 요약 내용을 여기에 적어주세요)">${value||''}</textarea>
     <div class="source-row">
@@ -516,6 +531,14 @@ function buildItemField(key, label, value, source, verified, photos){
   `;
   field.querySelector('.verify-cb').addEventListener('change', (e)=>{
     field.classList.toggle('verified', e.target.checked);
+  });
+
+  const excludeBtn = field.querySelector('.exclude-btn');
+  excludeBtn.addEventListener('click', ()=>{
+    field._excluded = !field._excluded;
+    field.classList.toggle('excluded', field._excluded);
+    excludeBtn.textContent = field._excluded ? '↺ 제외 취소' : '✕ 이 항목 제외';
+    field.dispatchEvent(new Event('excludechange'));
   });
 
   const thumbsWrap = field.querySelector('.photo-thumbs');
@@ -587,7 +610,9 @@ document.getElementById('save-btn').addEventListener('click', ()=>{
   const targets = TARGETS.filter(t=>selectedTargets.has(t.id));
 
   const fields = [];
+  let excludedCount = 0;
   document.querySelectorAll('#sheet-output .item-field').forEach(f=>{
+    if(f._excluded){ excludedCount++; return; }
     fields.push({
       label: f.dataset.label,
       value: f.querySelector('.value-ta').value,
@@ -603,13 +628,14 @@ document.getElementById('save-btn').addEventListener('click', ()=>{
     targetNames: targets.map(t=>t.name),
     fieldText: document.getElementById('field-output').textContent,
     fields,
+    freeform: document.getElementById('freeform-ta').value,
     shootTips: cat.shoot.slice(),
     createdAt: new Date().toLocaleString('ko-KR')
   };
   savedList.unshift(entry);
   persist();
   syncSave(entry);
-  showToast('저장했어요. "내 리서치 목록"에서 확인하세요.');
+  showToast(excludedCount>0 ? `저장했어요 (제외 ${excludedCount}개). "내 리서치 목록"에서 확인하세요.` : '저장했어요. "내 리서치 목록"에서 확인하세요.');
   renderSavedList();
 });
 
@@ -637,6 +663,9 @@ function buildBlogExportText(entry){
     if(f.source && f.source.trim()) out += ` (출처: ${f.source.trim()})`;
     out += `\n`;
   });
+  if(entry.freeform && entry.freeform.trim()){
+    out += `\n[자유 서술 메모]\n${entry.freeform.trim()}\n`;
+  }
   out += `\n[촬영 가이드 참고]\n`;
   (entry.shootTips||[]).forEach(tip=>{ out += `- ${tip}\n`; });
   out += `\n이 정보들을 자연스러운 블로그 글 형태(도입-본문-마무리)로 써주고, 기록이 없는 항목은 비워두거나 자연스럽게 생략해줘.`;
@@ -704,7 +733,7 @@ function renderSavedList(){
     body.appendChild(fieldsLab);
 
     entry.fields.forEach((f, idx)=>{
-      const field = buildItemField('f'+idx, f.label, f.value, f.source, f.verified, f.photos);
+      const field = buildItemField('f'+idx, f.label, f.value, f.source, f.verified, f.photos, false);
       field.querySelector('.value-ta').addEventListener('input', (e)=>{ f.value = e.target.value; });
       field.querySelector('.value-ta').addEventListener('blur', ()=>{ persist(); syncSave(entry); });
       field.querySelector('.source-input').addEventListener('input', (e)=>{ f.source = e.target.value; });
@@ -719,8 +748,28 @@ function renderSavedList(){
         f.photos = field._photos.slice();
         persist();
       });
+      field.querySelector('.exclude-btn').addEventListener('click', ()=>{
+        if(!confirm(`"${f.label}" 항목을 조사 시트에서 완전히 삭제할까요?`)) return;
+        entry.fields = entry.fields.filter(x=>x!==f);
+        persist();
+        syncSave(entry);
+        field.remove();
+        head.querySelector('.progress').textContent = `${entry.fields.filter(x=>x.verified).length}/${entry.fields.length} 확인됨`;
+      });
       body.appendChild(field);
     });
+
+    const ffLab = document.createElement('div');
+    ffLab.className='section-label';
+    ffLab.textContent='✏️ 자유 서술';
+    body.appendChild(ffLab);
+    const ffTa = document.createElement('textarea');
+    ffTa.style.minHeight='90px';
+    ffTa.value = entry.freeform || '';
+    ffTa.placeholder='그 외 적고 싶은 내용을 자유롭게 적어주세요.';
+    ffTa.addEventListener('input', ()=>{ entry.freeform = ffTa.value; });
+    ffTa.addEventListener('blur', ()=>{ persist(); syncSave(entry); });
+    body.appendChild(ffTa);
 
     const exLab = document.createElement('div');
     exLab.className='section-label';
