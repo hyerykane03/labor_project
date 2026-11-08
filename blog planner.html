@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>답사 리서치 플래너</title>
+<style>
+  :root{
+    --bg:#FBF7F2;--card:#FFFFFF;--ink:#2B241E;--sub:#8A7F74;
+    --accent:#E8703A;--accent-dark:#C85A28;--accent-soft:#FBE3D3;
+    --line:#EFE7DC;--good:#4C8B5C;--good-soft:#E7F3E9;
+    --warn:#C8973A;--warn-soft:#FBF0DC;--shadow:0 2px 10px rgba(43,36,30,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Pretendard","Apple SD Gothic Neo","Segoe UI",sans-serif;line-height:1.5;}
+  .wrap{max-width:860px;margin:0 auto;padding:24px 16px 80px;}
+  header{margin-bottom:20px;}
+  header h1{font-size:22px;margin:0 0 4px;}
+  header p{margin:0;color:var(--sub);font-size:13.5px;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--line);}
+  .tab{padding:10px 16px;font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;user-select:none;}
+  .tab.active{color:var(--accent-dark);border-bottom-color:var(--accent);}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow);}
+  .card h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:6px;}
+  .step-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;flex:none;}
+
+  .grid-cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+  .cat-btn{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;font-size:12.5px;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .cat-btn .emoji{font-size:20px;}
+  .cat-btn:hover{border-color:var(--accent);}
+  .cat-btn.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark);font-weight:700;}
+
+  .chip-wrap{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;}
+  .chip:hover{border-color:var(--accent);}
+  .chip.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-dark);font-weight:700;}
+
+  input[type="text"]{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);}
+  input[type="text"]:focus{outline:none;border-color:var(--accent);}
+
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:13.5px;font-weight:700;cursor:pointer;transition:background .15s;}
+  .btn:hover{background:var(--accent-dark);}
+  .btn.ghost{background:transparent;color:var(--accent-dark);border:1.5px solid var(--accent);}
+  .btn.ghost:hover{background:var(--accent-soft);}
+  .btn:disabled{background:var(--line);color:var(--sub);cursor:not-allowed;}
+  .btn.small{padding:6px 12px;font-size:12px;}
+  .link-btn{background:none;border:none;color:var(--accent-dark);font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0;}
+
+  .out-box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;white-space:pre-wrap;color:var(--ink);max-height:240px;overflow-y:auto;}
+  .row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap;}
+  .row-between h3{font-size:13.5px;margin:0;color:var(--sub);}
+
+  .section-label{font-size:11.5px;font-weight:700;color:var(--accent-dark);text-transform:uppercase;letter-spacing:.03em;margin:16px 0 6px;}
+  .section-label:first-child{margin-top:0;}
+  .section-desc{font-size:12px;color:var(--sub);margin:-2px 0 8px;}
+
+  ul.checklist{list-style:none;margin:0 0 4px;padding:0;}
+  ul.checklist li{display:flex;align-items:flex-start;gap:8px;padding:6px 4px;font-size:13px;border-radius:8px;}
+  ul.checklist li:hover{background:var(--bg);}
+  ul.checklist input[type="checkbox"]{margin-top:2px;width:16px;height:16px;accent-color:var(--accent);flex:none;}
+  ul.checklist label{cursor:pointer;flex:1;}
+
+  .shoot-tip{background:var(--warn-soft);border-left:3px solid var(--warn);padding:8px 10px;border-radius:6px;font-size:12.5px;margin-bottom:6px;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 18px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:50;}
+  .toast.show{opacity:1;}
+
+  .saved-item{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff;}
+  .saved-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;}
+  .saved-head .meta{display:flex;flex-direction:column;gap:2px;}
+  .saved-head .meta .title{font-weight:700;font-size:14px;}
+  .saved-head .meta .sub{font-size:11.5px;color:var(--sub);}
+  .saved-head .progress{font-size:11px;color:var(--good);font-weight:700;}
+  .saved-body{padding:0 16px 16px;display:none;border-top:1px solid var(--line);}
+  .saved-item.open .saved-body{display:block;}
+  .saved-item.open .chevron{transform:rotate(180deg);}
+  .chevron{transition:transform .2s;color:var(--sub);}
+
+  textarea{width:100%;min-height:60px;border:1.5px solid var(--line);border-radius:10px;padding:10px;font-size:13px;font-family:inherit;resize:vertical;color:var(--ink);}
+  textarea:focus{outline:none;border-color:var(--accent);}
+
+  .empty{text-align:center;color:var(--sub);font-size:13.5px;padding:40px 16px;}
+  .hint{font-size:12px;color:var(--sub);margin-top:6px;}
+  .del-btn{background:none;border:none;color:var(--sub);cursor:pointer;font-size:12px;text-decoration:underline;}
+  .del-btn:hover{color:var(--accent-dark);}
+
+  .item-field{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:#fff;}
+  .item-field.verified{border-color:var(--good);background:var(--good-soft);}
+  .item-field-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
+  .item-field-head .label{font-size:13.5px;font-weight:700;flex:1;}
+  .verify-toggle{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--sub);cursor:pointer;white-space:nowrap;flex:none;}
+  .verify-toggle input{width:15px;height:15px;accent-color:var(--good);}
+  .source-row{display:flex;gap:8px;margin-top:6px;align-items:center;}
+  .source-row input[type="text"]{font-size:12px;padding:7px 10px;}
+  .source-label{font-size:11px;color:var(--sub);flex:none;white-space:nowrap;}
+  details.ai-helper{margin-top:4px;}
+  details.ai-helper summary{cursor:pointer;font-size:12.5px;color:var(--accent-dark);}
+
+  .photo-row{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;}
+  .photo-btn{font-size:11.5px;color:var(--accent-dark);border:1px dashed var(--accent);background:var(--accent-soft);border-radius:8px;padding:6px 10px;cursor:pointer;}
+  .photo-btn input{display:none;}
+  .photo-thumb-wrap{position:relative;display:inline-block;}
+  .photo-thumb{width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;}
+  .photo-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer;border:none;}
+  .photo-hint{font-size:11px;color:var(--sub);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📍 답사 리서치 플래너</h1>
+    <p>카테고리 선택 → 장소 입력 → 조사 항목 선택 → 직접 조사한 내용을 채워 넣는 조사 시트를 만들어요.</p>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="new">새 리서치 만들기</div>
+    <div class="tab" data-tab="list">내 리서치 목록 <span id="list-count"></span></div>
+  </div>
+
+  <!-- NEW RESEARCH TAB -->
+  <div id="tab-new">
+
+    <div class="card">
+      <h2><span class="step-num">1</span> 카테고리 선택</h2>
+      <div class="grid-cat" id="cat-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step-num">2</span> 공간(장소) 이름 작성</h2>
+      <input type="text" id="place-input" placeholder="예: 성수동 OO카페, 올림픽공원, OO 콘서트 등">
+    </div>
+
+    <div class="card" id="items-card">
+      <h2><span class="step-num">3</span> 조사할 정보 선택</h2>
+      <div class="section-desc">카테고리 선택 시 기본 조사 항목이 나와요. 필요 없는 항목은 체크를 해제하세요.</div>
+      <div id="items-checklist"></div>
+
+      <button class="link-btn" id="toggle-target-btn" style="margin-top:10px;">+ 타겟층별 조사 항목 추가 (영유아 가족, 커플 등)</button>
+      <div id="target-chip-area" style="display:none;margin-top:10px;">
+        <div class="chip-wrap" id="target-chips"></div>
+      </div>
+
+      <br>
+      <button class="link-btn" id="toggle-reserve-btn" style="margin-top:8px;">+ 예약 시스템/플랫폼 조사 항목 추가 (캐치테이블, 네이버예약 등)</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="step-num">4</span> 제출 → 조사 시트 만들기</h2>
+      <button class="btn" id="generate-btn">조사 시트 만들기</button>
+      <div class="hint" id="gen-hint"></div>
+    </div>
+
+    <div class="card" id="result-card" style="display:none;">
+      <h2>📝 현장용 메모 텍스트</h2>
+      <div class="section-desc">복사해서 메모앱에 붙여넣거나 출력해서 들고 가세요. 현장에서 체크·기록하고, 돌아와서 아래 "조사 시트"에 정리하면 돼요.</div>
+      <div class="row-between">
+        <h3>이 텍스트를 들고 현장에 가세요</h3>
+        <button class="btn small ghost" id="copy-field-btn">복사</button>
+      </div>
+      <div class="out-box" id="field-output" style="max-height:320px;"></div>
+
+      <h2 style="margin-top:22px;">📸 촬영 매뉴얼</h2>
+      <div id="shoot-output"></div>
+
+      <h2 style="margin-top:22px;">🗒️ 조사 시트 — 돌아와서 정리하기</h2>
+      <div class="section-desc">현장에서 적어온 내용과 사진을 아래 칸에 옮겨 정리하세요. 확인이 끝나면 "확인됨"에 체크하세요.</div>
+      <div id="sheet-output"></div>
+
+      <details class="ai-helper">
+        <summary>🔎 AI 참고 검색 요청문 보기 (참고용 — 출처는 직접 확인 필요)</summary>
+        <div style="margin-top:10px;">
+          <div class="row-between">
+            <h3>이 채팅에 붙여넣으면 참고 자료를 찾아드려요</h3>
+            <button class="btn small ghost" id="copy-prompt-btn">복사</button>
+          </div>
+          <div class="out-box" id="prompt-output"></div>
+          <div class="hint">AI 답변은 출처가 불명확할 수 있어요. 받은 내용을 그대로 믿지 말고, 위 조사 시트의 "출처" 칸에 실제 확인한 링크나 현장 확인 여부를 직접 적어주세요.</div>
+        </div>
+      </details>
+
+      <div style="margin-top:16px;text-align:right;">
+        <button class="btn" id="save-btn">이 조사 시트 저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVED LIST TAB -->
+  <div id="tab-list" style="display:none;">
+    <div id="saved-list"></div>
+    <div class="empty" id="empty-msg" style="display:none;">아직 저장된 리서치가 없어요. "새 리서치 만들기"에서 시작해보세요.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const CATEGORIES = [
+  {id:'food', emoji:'🍽️', name:'맛집/카페',
+    research:['메뉴·가격, 대표메뉴','영업시간/라스트오더/정기휴무','주차 가능 여부 및 요금','웨이팅 시스템(예약/현장대기)','카드·제휴·지역화폐 할인 정보','영수증 리뷰 등 현장 이벤트'],
+    shoot:['음식은 45도 위 or 사이드 앵글, 창가 자연광 활용해 채도 살짝 올려서 색감 생동감 있게 촬영','스팀/김, 소스 흐르는 "먹방 모먼트"는 슬로우모션으로','첫 입 베어무는 순간·자연스러운 리액션 컷 확보','매장은 사람 적은 타이밍에 와이드샷으로 분위기 먼저']},
+
+  {id:'travel', emoji:'🏞️', name:'여행지/명소',
+    research:['입장료, 운영시간, 정기휴무','접근성(대중교통/주차)','추천 체류시간','날씨에 따른 운영 변동'],
+    shoot:['골든아워(일출·일몰 전후 1시간) 활용해 색감 극대화','랜드마크는 사람을 작게 배치해서 스케일감(웅장함) 강조','낮은 각도로 올려찍기 → 건축물 위압감 살리기','정적 풍경샷 + 걷는 뒷모습 같은 무드 영상 섞기']},
+
+  {id:'concert', emoji:'🎤', name:'콘서트/공연',
+    research:['티켓 가격·오픈일','좌석/스탠딩 구조','공연장 규정(응원봉/카메라)','교통·주차, 근처 숙소'],
+    shoot:['촬영 허용 구역/시간 반드시 확인 후 그 안에서만','저조도 환경 → 벽 지지·짐벌로 흔들림 방지','떼창·함성 분위기는 영상, 무대 비주얼은 정적 사진으로 구분','대기줄·포토월은 밝은 낮 시간에 미리 확보']},
+
+  {id:'exhibit', emoji:'🖼️', name:'전시/팝업스토어',
+    research:['예약 필수 여부','입장료, 운영기간(마감일)','촬영 허용 구역','한정판 굿즈 종류'],
+    shoot:['작품 전체샷보다 디테일 클로즈업 + 관람객 리액션 조합','유리 액자는 반사광 피하는 사각 각도 찾기','사람 없는 찰나(입장 직후)를 공략']},
+
+  {id:'stay', emoji:'🛏️', name:'숙소/호텔',
+    research:['가격대·예약 플랫폼','체크인/아웃 시간','편의시설, 조식 포함 여부','뷰(오션뷰/시티뷰 등)'],
+    shoot:['와이드렌즈로 공간감, 창가 자연광 드는 시간대에 촬영','침구는 정리된 상태 + 소품(커피잔 등)으로 생활감 추가','야경 뷰는 해질 무렵과 야간 둘 다 확보']},
+
+  {id:'shop', emoji:'🛍️', name:'쇼핑/상점가',
+    research:['영업시간','세일·할인 정보','환불 규정','결제수단(면세 등)'],
+    shoot:['진열대는 라인·패턴감 살려서 와이드로','득템 아이템은 손에 들고 클로즈업 + 배경 블러']},
+
+  {id:'activity', emoji:'🚴', name:'액티비티/체험',
+    research:['예약 필수 여부, 가격','난이도, 준비물, 소요시간','안전규정'],
+    shoot:['다이나믹한 순간(점프·움직임)은 연속촬영/버스트 모드','가능하면 액션캠으로 1인칭 시점 확보','비포(긴장) → 애프터(성취감) 리액션 컷']},
+
+  {id:'product', emoji:'📦', name:'제품 리뷰/언박싱',
+    research:['구매처·가격비교','스펙, 출시일','경쟁 제품','커뮤니티 평가'],
+    shoot:['깔끔한 배경 + 측면광으로 입체감','박스 개봉 과정은 손 동작 클로즈업','비교 제품은 나란히 배치해서 차이 강조']},
+
+  {id:'beauty', emoji:'💇', name:'뷰티/헤어샵',
+    research:['시술 종류·가격','예약 방식, 디자이너 지정 여부','소요시간'],
+    shoot:['비포/애프터는 동일 각도·동일 조명으로 고정 (비교 핵심)','과정은 타임랩스로 축약']},
+
+  {id:'pet', emoji:'🐾', name:'반려동물 동반',
+    research:['동반 조건(크기/목줄/입마개)','동반 요금','배변시설'],
+    shoot:['반려동물 눈높이에 맞춘 로우앵글','움직임이 많으니 연속촬영/버스트 모드 필수','간식으로 시선 유도해서 정면 응시 컷 확보']},
+
+  {id:'game', emoji:'🎮', name:'게임 리뷰',
+    research:['플랫폼, 가격·할인, 출시일','장르·플레이타임, 시스템 요구사항','평점/유저 반응'],
+    shoot:['캡처 프레임레이트 60fps 이상 권장 (끊김 방지)','스포일러 구간은 블러·모자이크 처리 포인트 미리 체크','리액션캠 PIP(화면 속 화면) 합성 고려']},
+];
+
+const TARGETS = [
+  {id:'infant', emoji:'👶', name:'영유아 동반 가족',
+    items:['유모차 진입 가능 여부(턱/계단/엘리베이터)','기저귀 교환대, 유아 의자(하이체어) 유무','수유실/놀이공간 여부','아이 메뉴·알레르기 대응 여부','낮잠시간 고려한 조용한 시간대','콘센트/모서리 등 안전요소']},
+  {id:'kids', emoji:'🧒', name:'어린이 동반 가족',
+    items:['키즈존/놀이시설 유무','눈높이 체험 요소, 지루함 방지용 소요시간','안전사고 위험 요소(물가, 높은 곳 등)']},
+  {id:'couple', emoji:'💑', name:'데이트 커플',
+    items:['분위기(조명·음악), 프라이빗 좌석 여부','커플샷/인생샷 포인트','저녁·야경 타이밍','가격대 대비 분위기(특별한 날 적합성)']},
+  {id:'solo', emoji:'🧍', name:'혼자 여행/혼밥',
+    items:['1인 좌석·혼밥 환영 여부','인적 드문 시간대 안전도','짐 보관(락커) 가능 여부']},
+  {id:'senior', emoji:'👵', name:'시니어/부모님 동반',
+    items:['계단 없는 접근성, 휠체어 가능 여부','의자 편안함, 화장실 접근성','메뉴판 글씨 크기, 오래 서있지 않아도 되는지']},
+  {id:'group', emoji:'👯', name:'친구/단체 모임',
+    items:['단체석 예약 가능 인원, 콜키지 여부','인원별 가격(1인당 예산)','사진찍기 좋은 넓은 공간 여부']},
+  {id:'foreign', emoji:'🌏', name:'외국인 동반/관광객',
+    items:['영어·다국어 메뉴 여부','와이파이, 결제수단(카드 전용 등)','번역 필요한 안내문 유무']},
+];
+
+/* ---------------- GOOGLE SHEET SYNC ----------------
+   깃허브 등 외부에 호스팅한 뒤, 아래 URL에 Apps Script 웹 앱 주소를 붙여넣으면
+   저장/수정/삭제 시 구글 시트에도 자동 반영됩니다. (클로드 아티팩트 안에서는
+   외부 네트워크 호출이 막혀있어 비워둬도, 채워도 동작하지 않습니다 — 깃허브 등
+   외부에 올린 뒤에만 작동합니다.)
+*/
+const SHEET_API_URL = ''; // 예: 'https://script.google.com/macros/s/AKfycb.../exec'
+
+function stripPhotosForSync(entry){
+  const copy = JSON.parse(JSON.stringify(entry));
+  copy.fields = (copy.fields||[]).map(f=>({
+    ...f,
+    photos: (f.photos && f.photos.length) ? [`[사진 ${f.photos.length}장 — 이 기기에만 저장됨]`] : []
+  }));
+  return copy;
+}
+
+async function syncSave(entry){
+  if(!SHEET_API_URL) return;
+  try{
+    await fetch(SHEET_API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'save', entry: stripPhotosForSync(entry)})
+    });
+  }catch(e){ /* 오프라인이거나 호출이 막힘 — 로컬 저장은 이미 끝났으니 무시 */ }
+}
+
+async function syncDelete(id){
+  if(!SHEET_API_URL) return;
+  try{
+    await fetch(SHEET_API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'delete', id})
+    });
+  }catch(e){}
+}
+
+async function syncLoadAll(){
+  if(!SHEET_API_URL) return null;
+  try{
+    const res = await fetch(SHEET_API_URL + '?action=list');
+    if(!res.ok) return null;
+    return await res.json();
+  }catch(e){ return null; }
+}
+
+const RESERVE_ITEMS = [
+  '예약 가능 플랫폼 종류 (캐치테이블/네이버예약/카카오톡채널/전화예약 등)',
+  '예약 오픈 시간 (언제부터 예약 가능한지, 매주/매월 오픈 주기)',
+  '예약금·노쇼 방지 정책 여부 및 금액',
+  '앱 설치 필요 여부, 회원가입 필요 여부',
+  '실시간 잔여석/잔여 테이블 확인 가능 여부',
+  '예약 취소·변경 정책 (취소 수수료 등)',
+  '현장 등록 웨이팅(테이블링/캐치테이블 웨이팅 등) 연동 여부'
+];
+
+/* ---------------- STATE ---------------- */
+let selectedCat = null;
+let selectedTargets = new Set();
+let reserveEnabled = false;
+let itemChecked = {};
+let itemLabels = {};
+let savedList = [];
+
+try{
+  const raw = localStorage.getItem('research_planner_list');
+  if(raw) savedList = JSON.parse(raw);
+}catch(e){ savedList = []; }
+function persist(){ try{ localStorage.setItem('research_planner_list', JSON.stringify(savedList)); }catch(e){} }
+
+/* ---------------- CATEGORY GRID ---------------- */
+const catGrid = document.getElementById('cat-grid');
+CATEGORIES.forEach(cat=>{
+  const btn = document.createElement('div');
+  btn.className='cat-btn';
+  btn.innerHTML = `<span class="emoji">${cat.emoji}</span><span>${cat.name}</span>`;
+  btn.addEventListener('click', ()=>{
+    selectedCat = cat.id;
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    document.getElementById('result-card').style.display='none';
+    rebuildItemsChecklist();
+  });
+  catGrid.appendChild(btn);
+});
+
+/* ---------------- TARGET CHIPS ---------------- */
+document.getElementById('toggle-target-btn').addEventListener('click', ()=>{
+  const area = document.getElementById('target-chip-area');
+  area.style.display = area.style.display==='none' ? 'block' : 'none';
+});
+const targetWrap = document.getElementById('target-chips');
+TARGETS.forEach(t=>{
+  const chip = document.createElement('div');
+  chip.className='chip';
+  chip.innerHTML = `<span>${t.emoji}</span><span>${t.name}</span>`;
+  chip.addEventListener('click', ()=>{
+    if(selectedTargets.has(t.id)){ selectedTargets.delete(t.id); chip.classList.remove('sel'); }
+    else { selectedTargets.add(t.id); chip.classList.add('sel'); }
+    document.getElementById('result-card').style.display='none';
+    rebuildItemsChecklist();
+  });
+  targetWrap.appendChild(chip);
+});
+
+const reserveToggleBtn = document.getElementById('toggle-reserve-btn');
+reserveToggleBtn.addEventListener('click', ()=>{
+  reserveEnabled = !reserveEnabled;
+  reserveToggleBtn.textContent = reserveEnabled
+    ? '− 예약 시스템/플랫폼 조사 항목 숨기기'
+    : '+ 예약 시스템/플랫폼 조사 항목 추가 (캐치테이블, 네이버예약 등)';
+  document.getElementById('result-card').style.display='none';
+  rebuildItemsChecklist();
+});
+
+/* ---------------- ITEMS CHECKLIST (step 3) ---------------- */
+function rebuildItemsChecklist(){
+  const wrap = document.getElementById('items-checklist');
+  wrap.innerHTML = '';
+  itemChecked = {};
+  itemLabels = {};
+  if(!selectedCat){
+    wrap.innerHTML = '<div class="section-desc">먼저 카테고리를 선택해주세요.</div>';
+    return;
+  }
+  const cat = CATEGORIES.find(c=>c.id===selectedCat);
+
+  function renderGroup(label, items, prefix){
+    const lab = document.createElement('div');
+    lab.className='section-label';
+    lab.textContent = label;
+    wrap.appendChild(lab);
+    const ul = document.createElement('ul');
+    ul.className='checklist';
+    items.forEach((item, idx)=>{
+      const key = prefix+'_'+idx;
+      itemChecked[key] = true;
+      itemLabels[key] = item;
+      const li = document.createElement('li');
+      li.innerHTML = `<input type="checkbox" id="chk_${key}" checked><label for="chk_${key}">${item}</label>`;
+      li.querySelector('input').addEventListener('change', (e)=>{ itemChecked[key] = e.target.checked; });
+      ul.appendChild(li);
+    });
+    wrap.appendChild(ul);
+  }
+
+  renderGroup(`${cat.emoji} ${cat.name} 기본 조사 항목`, cat.research, 'base');
+
+  TARGETS.filter(t=>selectedTargets.has(t.id)).forEach(t=>{
+    renderGroup(`${t.emoji} ${t.name} 추가 항목`, t.items, 'tgt_'+t.id);
+  });
+
+  if(reserveEnabled){
+    renderGroup('📅 예약 시스템/플랫폼 조사 항목', RESERVE_ITEMS, 'reserve');
+  }
+}
+rebuildItemsChecklist();
+
+/* ---------------- SUBMIT / GENERATE SHEET ---------------- */
+document.getElementById('generate-btn').addEventListener('click', ()=>{
+  const place = document.getElementById('place-input').value.trim();
+  const hint = document.getElementById('gen-hint');
+  if(!selectedCat){ hint.textContent='카테고리를 먼저 선택해주세요.'; hint.style.color='var(--accent-dark)'; return; }
+  if(!place){ hint.textContent='장소명을 입력해주세요.'; hint.style.color='var(--accent-dark)'; return; }
+  const chosenKeys = Object.keys(itemChecked).filter(k=>itemChecked[k]);
+  if(chosenKeys.length===0){ hint.textContent='조사할 정보를 1개 이상 선택해주세요.'; hint.style.color='var(--accent-dark)'; return; }
+  hint.textContent='';
+
+  const cat = CATEGORIES.find(c=>c.id===selectedCat);
+  const targets = TARGETS.filter(t=>selectedTargets.has(t.id));
+  const chosenLabels = chosenKeys.map(k=>itemLabels[k]);
+
+  // ----- 현장용 메모 텍스트 -----
+  let field = `📍 ${place}\n`;
+  field += `분류: ${cat.emoji} ${cat.name}`;
+  if(targets.length) field += `  |  타겟: ${targets.map(t=>t.name).join(', ')}`;
+  field += `\n${'-'.repeat(28)}\n\n`;
+  field += `[ 체크 & 기록 ]\n`;
+  chosenLabels.forEach(l=>{
+    field += `□ ${l}\n   → \n`;
+  });
+  field += `\n[ 📸 촬영 체크 ]\n`;
+  cat.shoot.forEach(tip=>{ field += `□ ${tip}\n`; });
+  field += `\n[ 기타 메모 ]\n   \n   \n`;
+  document.getElementById('field-output').textContent = field;
+
+  // ----- fillable sheet -----
+  const sheetOut = document.getElementById('sheet-output');
+  sheetOut.innerHTML = '';
+  chosenKeys.forEach(key=>{
+    const field = buildItemField(key, itemLabels[key], '', '', false);
+    sheetOut.appendChild(field);
+  });
+
+  // ----- optional AI reference prompt -----
+  let prompt = `다음 장소에 대해 참고가 될 만한 정보를 검색해줘. (출처를 꼭 함께 알려줘)\n\n`;
+  prompt += `장소명: ${place}\n카테고리: ${cat.name}\n`;
+  if(targets.length) prompt += `타겟층: ${targets.map(t=>t.name).join(', ')}\n`;
+  prompt += `\n[검색해줬으면 하는 항목]\n` + chosenLabels.map(r=>`- ${r}`).join('\n');
+  prompt += `\n\n항목별로 어디서 찾은 정보인지(링크/출처명) 꼭 같이 적어줘.`;
+  document.getElementById('prompt-output').textContent = prompt.trim();
+
+  // ----- shoot manual -----
+  const shootOut = document.getElementById('shoot-output');
+  shootOut.innerHTML = '';
+  cat.shoot.forEach(tip=>{
+    const d = document.createElement('div');
+    d.className='shoot-tip';
+    d.textContent = tip;
+    shootOut.appendChild(d);
+  });
+
+  document.getElementById('result-card').style.display='block';
+  document.getElementById('result-card').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+function buildItemField(key, label, value, source, verified, photos){
+  photos = photos || [];
+  const field = document.createElement('div');
+  field.className = 'item-field' + (verified ? ' verified' : '');
+  field.dataset.key = key;
+  field.dataset.label = label;
+  field._photos = photos.slice();
+  field.innerHTML = `
+    <div class="item-field-head">
+      <div class="label">${label}</div>
+      <label class="verify-toggle"><input type="checkbox" class="verify-cb" ${verified?'checked':''}> 확인됨</label>
+    </div>
+    <textarea class="value-ta" placeholder="조사하거나 현장에서 확인한 내용을 적어주세요. (사진은 채팅에 올려 분석을 요청한 뒤, 요약 내용을 여기에 적어주세요)">${value||''}</textarea>
+    <div class="source-row">
+      <span class="source-label">출처/메모</span>
+      <input type="text" class="source-input" placeholder="예: 네이버지도 리뷰, 공식 인스타그램, 현장 직접 확인 등" value="${(source||'').replace(/"/g,'&quot;')}">
+    </div>
+    <div class="photo-row">
+      <label class="photo-btn">📷 사진 첨부
+        <input type="file" class="photo-input" accept="image/*" multiple>
+      </label>
+      <span class="photo-hint">기록용 보관만 가능 — 분석은 채팅에 사진을 올려 요청해주세요</span>
+    </div>
+    <div class="photo-thumbs" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;"></div>
+  `;
+  field.querySelector('.verify-cb').addEventListener('change', (e)=>{
+    field.classList.toggle('verified', e.target.checked);
+  });
+
+  const thumbsWrap = field.querySelector('.photo-thumbs');
+  function renderThumbs(){
+    thumbsWrap.innerHTML = '';
+    field._photos.forEach((dataUrl, idx)=>{
+      const w = document.createElement('div');
+      w.className = 'photo-thumb-wrap';
+      w.innerHTML = `<img class="photo-thumb" src="${dataUrl}"><button type="button" class="photo-remove">×</button>`;
+      w.querySelector('.photo-remove').addEventListener('click', ()=>{
+        field._photos.splice(idx,1);
+        renderThumbs();
+        field.dispatchEvent(new Event('photoschange'));
+      });
+      thumbsWrap.appendChild(w);
+    });
+  }
+  renderThumbs();
+
+  field.querySelector('.photo-input').addEventListener('change', (e)=>{
+    const files = Array.from(e.target.files || []);
+    files.forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        const img = new Image();
+        img.onload = ()=>{
+          const maxW = 900;
+          const scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.7);
+          field._photos.push(compressed);
+          renderThumbs();
+          field.dispatchEvent(new Event('photoschange'));
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  });
+
+  return field;
+}
+
+/* copy field text */
+document.getElementById('copy-field-btn').addEventListener('click', ()=>{
+  const text = document.getElementById('field-output').textContent;
+  try{
+    navigator.clipboard.writeText(text).then(()=>showToast('복사되었어요 — 메모앱에 붙여넣으세요')).catch(()=>showToast('복사 실패 — 직접 선택해 복사해주세요'));
+  }catch(e){ showToast('복사 실패 — 직접 선택해 복사해주세요'); }
+});
+
+/* copy prompt */
+document.getElementById('copy-prompt-btn').addEventListener('click', ()=>{
+  const text = document.getElementById('prompt-output').textContent;
+  try{
+    navigator.clipboard.writeText(text).then(()=>showToast('복사되었어요')).catch(()=>showToast('복사 실패 — 직접 선택해 복사해주세요'));
+  }catch(e){ showToast('복사 실패 — 직접 선택해 복사해주세요'); }
+});
+
+/* save */
+document.getElementById('save-btn').addEventListener('click', ()=>{
+  const place = document.getElementById('place-input').value.trim();
+  const cat = CATEGORIES.find(c=>c.id===selectedCat);
+  const targets = TARGETS.filter(t=>selectedTargets.has(t.id));
+
+  const fields = [];
+  document.querySelectorAll('#sheet-output .item-field').forEach(f=>{
+    fields.push({
+      label: f.dataset.label,
+      value: f.querySelector('.value-ta').value,
+      source: f.querySelector('.source-input').value,
+      verified: f.querySelector('.verify-cb').checked,
+      photos: (f._photos || []).slice()
+    });
+  });
+
+  const entry = {
+    id: Date.now().toString(),
+    place, catId: cat.id, catName: cat.name, catEmoji: cat.emoji,
+    targetNames: targets.map(t=>t.name),
+    fieldText: document.getElementById('field-output').textContent,
+    fields,
+    shootTips: cat.shoot.slice(),
+    createdAt: new Date().toLocaleString('ko-KR')
+  };
+  savedList.unshift(entry);
+  persist();
+  syncSave(entry);
+  showToast('저장했어요. "내 리서치 목록"에서 확인하세요.');
+  renderSavedList();
+});
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const which = tab.dataset.tab;
+    document.getElementById('tab-new').style.display = which==='new' ? 'block':'none';
+    document.getElementById('tab-list').style.display = which==='list' ? 'block':'none';
+    if(which==='list') renderSavedList();
+  });
+});
+
+/* ---------------- BLOG EXPORT ---------------- */
+function buildBlogExportText(entry){
+  let out = `아래는 내가 직접 조사·답사한 내용이야. 이걸 바탕으로 블로그 글을 완성해줘.\n\n`;
+  out += `장소명: ${entry.place}\n`;
+  out += `카테고리: ${entry.catName}\n`;
+  if(entry.targetNames && entry.targetNames.length) out += `타겟층: ${entry.targetNames.join(', ')}\n`;
+  out += `\n[조사 내용]\n`;
+  entry.fields.forEach(f=>{
+    out += `- ${f.label}: ${f.value && f.value.trim() ? f.value.trim() : '(기록 없음)'}`;
+    if(f.source && f.source.trim()) out += ` (출처: ${f.source.trim()})`;
+    out += `\n`;
+  });
+  out += `\n[촬영 가이드 참고]\n`;
+  (entry.shootTips||[]).forEach(tip=>{ out += `- ${tip}\n`; });
+  out += `\n이 정보들을 자연스러운 블로그 글 형태(도입-본문-마무리)로 써주고, 기록이 없는 항목은 비워두거나 자연스럽게 생략해줘.`;
+  return out;
+}
+
+/* ---------------- SAVED LIST ---------------- */
+function renderSavedList(){
+  const wrap = document.getElementById('saved-list');
+  const emptyMsg = document.getElementById('empty-msg');
+  const countBadge = document.getElementById('list-count');
+  countBadge.textContent = savedList.length ? `(${savedList.length})` : '';
+  wrap.innerHTML = '';
+  if(savedList.length===0){ emptyMsg.style.display='block'; return; }
+  emptyMsg.style.display='none';
+
+  savedList.forEach(entry=>{
+    const item = document.createElement('div');
+    item.className='saved-item';
+
+    const doneCount = entry.fields.filter(f=>f.verified).length;
+    const head = document.createElement('div');
+    head.className='saved-head';
+    head.innerHTML = `
+      <div class="meta">
+        <div class="title">${entry.catEmoji} ${entry.place || '(장소명 없음)'}</div>
+        <div class="sub">${entry.catName}${entry.targetNames.length ? ' · '+entry.targetNames.join(', ') : ''} · ${entry.createdAt}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="progress">${doneCount}/${entry.fields.length} 확인됨</div>
+        <div class="chevron">▾</div>
+      </div>
+    `;
+    head.addEventListener('click', ()=>{ item.classList.toggle('open'); });
+
+    const body = document.createElement('div');
+    body.className='saved-body';
+
+    if(entry.fieldText){
+      const ftLab = document.createElement('div');
+      ftLab.className='section-label';
+      ftLab.textContent='현장용 메모 텍스트';
+      body.appendChild(ftLab);
+      const ftBox = document.createElement('div');
+      ftBox.className='out-box';
+      ftBox.style.maxHeight='160px';
+      ftBox.textContent = entry.fieldText;
+      body.appendChild(ftBox);
+    }
+
+    const shLab2 = document.createElement('div');
+    shLab2.className='section-label';
+    shLab2.textContent='촬영 매뉴얼';
+    body.appendChild(shLab2);
+    (entry.shootTips||[]).forEach(tip=>{
+      const d = document.createElement('div');
+      d.className='shoot-tip';
+      d.textContent = tip;
+      body.appendChild(d);
+    });
+
+    const fieldsLab = document.createElement('div');
+    fieldsLab.className='section-label';
+    fieldsLab.textContent='조사 시트';
+    body.appendChild(fieldsLab);
+
+    entry.fields.forEach((f, idx)=>{
+      const field = buildItemField('f'+idx, f.label, f.value, f.source, f.verified, f.photos);
+      field.querySelector('.value-ta').addEventListener('input', (e)=>{ f.value = e.target.value; });
+      field.querySelector('.value-ta').addEventListener('blur', ()=>{ persist(); syncSave(entry); });
+      field.querySelector('.source-input').addEventListener('input', (e)=>{ f.source = e.target.value; });
+      field.querySelector('.source-input').addEventListener('blur', ()=>{ persist(); syncSave(entry); });
+      field.querySelector('.verify-cb').addEventListener('change', (e)=>{
+        f.verified = e.target.checked;
+        persist();
+        syncSave(entry);
+        head.querySelector('.progress').textContent = `${entry.fields.filter(x=>x.verified).length}/${entry.fields.length} 확인됨`;
+      });
+      field.addEventListener('photoschange', ()=>{
+        f.photos = field._photos.slice();
+        persist();
+      });
+      body.appendChild(field);
+    });
+
+    const exLab = document.createElement('div');
+    exLab.className='section-label';
+    exLab.textContent='✍️ 블로그 글 작성용으로 내보내기';
+    body.appendChild(exLab);
+    const exDesc = document.createElement('div');
+    exDesc.className='section-desc';
+    exDesc.textContent='아래 내용을 복사해서 채팅에 붙여넣고 "이 내용으로 블로그 글 써줘"라고 요청하면, 작성한 조사 시트를 바탕으로 글을 완성해드려요.';
+    body.appendChild(exDesc);
+    const exBtnRow = document.createElement('div');
+    exBtnRow.className='row-between';
+    exBtnRow.innerHTML = `<h3></h3><button class="btn small ghost">복사</button>`;
+    body.appendChild(exBtnRow);
+    const exBox = document.createElement('div');
+    exBox.className='out-box';
+    exBox.style.maxHeight='200px';
+    exBox.textContent = buildBlogExportText(entry);
+    body.appendChild(exBox);
+    exBtnRow.querySelector('button').addEventListener('click', ()=>{
+      const text = buildBlogExportText(entry);
+      try{
+        navigator.clipboard.writeText(text).then(()=>showToast('복사되었어요 — 채팅에 붙여넣어 보세요')).catch(()=>showToast('복사 실패 — 직접 선택해 복사해주세요'));
+      }catch(e){ showToast('복사 실패 — 직접 선택해 복사해주세요'); }
+    });
+
+    const actions = document.createElement('div');
+    actions.style.textAlign='right';
+    actions.style.marginTop='10px';
+    const del = document.createElement('button');
+    del.className='del-btn';
+    del.textContent='삭제';
+    del.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      savedList = savedList.filter(x=>x.id!==entry.id);
+      persist();
+      syncDelete(entry.id);
+      renderSavedList();
+    });
+    actions.appendChild(del);
+    body.appendChild(actions);
+
+    item.appendChild(head);
+    item.appendChild(body);
+    wrap.appendChild(item);
+  });
+}
+renderSavedList();
+
+/* 구글 시트 연동이 설정돼 있으면, 시작 시 시트 데이터를 불러와 병합 (사진은 로컬 데이터 유지) */
+(async function initSheetSync(){
+  const remote = await syncLoadAll();
+  if(!remote || !Array.isArray(remote)) return;
+  const localById = {};
+  savedList.forEach(e=>{ localById[e.id] = e; });
+  const merged = remote.map(r=>{
+    const local = localById[r.id];
+    if(local){
+      r.fields = (r.fields||[]).map((f,idx)=>({...f, photos: (local.fields && local.fields[idx] && local.fields[idx].photos) || []}));
+    }
+    return r;
+  });
+  savedList = merged;
+  persist();
+  renderSavedList();
+})();
+
+/* ---------------- TOAST ---------------- */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
