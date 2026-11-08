@@ -266,7 +266,8 @@ const TARGETS = [
    외부 네트워크 호출이 막혀있어 비워둬도, 채워도 동작하지 않습니다 — 깃허브 등
    외부에 올린 뒤에만 작동합니다.)
 */
-const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbwzSJfWtADdbcvrxtdE7moxwIziLgOXru-EwwHDVtNf8c54b12oqTuf8FTPiOLUPWwX/exec';
+const SHEET_API_URL = ''; // 예: 'https://script.google.com/macros/s/AKfycb.../exec'
+
 function stripPhotosForSync(entry){
   const copy = JSON.parse(JSON.stringify(entry));
   copy.fields = (copy.fields||[]).map(f=>({
@@ -277,14 +278,22 @@ function stripPhotosForSync(entry){
 }
 
 async function syncSave(entry){
-  if(!SHEET_API_URL) return;
+  if(!SHEET_API_URL){ showToast('⚠️ 구글시트 연동 URL이 설정되지 않았어요'); return; }
   try{
-    await fetch(SHEET_API_URL, {
+    const res = await fetch(SHEET_API_URL, {
       method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({action:'save', entry: stripPhotosForSync(entry)})
     });
-  }catch(e){ /* 오프라인이거나 호출이 막힘 — 로컬 저장은 이미 끝났으니 무시 */ }
+    const text = await res.text();
+    if(res.ok){
+      showToast('✅ 구글시트에도 저장됐어요');
+    }else{
+      showToast('❌ 구글시트 저장 실패 (상태코드 '+res.status+')');
+    }
+  }catch(e){
+    showToast('❌ 구글시트 연결 실패: '+(e && e.message ? e.message : '알 수 없는 오류'));
+  }
 }
 
 async function syncDelete(id){
@@ -302,9 +311,12 @@ async function syncLoadAll(){
   if(!SHEET_API_URL) return null;
   try{
     const res = await fetch(SHEET_API_URL + '?action=list');
-    if(!res.ok) return null;
+    if(!res.ok){ showToast('❌ 구글시트 불러오기 실패 (상태코드 '+res.status+')'); return null; }
     return await res.json();
-  }catch(e){ return null; }
+  }catch(e){
+    showToast('❌ 구글시트 연결 실패: '+(e && e.message ? e.message : '알 수 없는 오류'));
+    return null;
+  }
 }
 
 const RESERVE_ITEMS = [
